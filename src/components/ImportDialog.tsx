@@ -15,8 +15,7 @@ import { useBoardStore } from "@/lib/stores/boardStore";
 import { useSettingsStore } from "@/lib/stores/settingsStore";
 import { 
   readJsonFile, 
-  previewImportData,
-  formatFileSize 
+  previewImportData
 } from "@/lib/utils/fileHandling";
 import { 
   processAdvancedImport,
@@ -39,8 +38,6 @@ import {
   CheckCircle,
   Loader2,
   File,
-  Calendar,
-  Hash,
   AlertTriangle,
   Info
 } from "lucide-react";
@@ -148,7 +145,7 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
       // Add validation warnings if any
       if (fileResult.validationResult?.warnings) {
         setWarnings(fileResult.validationResult.warnings.map(w => 
-          typeof w === 'string' ? w : w.message
+          typeof w === 'string' ? w : (w as { message: string }).message
         ));
       }
 
@@ -387,7 +384,7 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
                   <AlertTriangle className="h-4 w-4" />
                   <AlertDescription>
                     Conflicts detected! Some data already exists in your workspace. 
-                    You'll need to resolve these conflicts before importing.
+                    You&apos;ll need to resolve these conflicts before importing.
                   </AlertDescription>
                 </Alert>
               )}

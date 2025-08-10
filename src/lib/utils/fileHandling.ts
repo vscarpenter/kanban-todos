@@ -72,7 +72,7 @@ export async function readJsonFile(file: File): Promise<FileReadResult> {
     const fileContent = await readFileAsText(file);
     
     // Parse JSON
-    let jsonData: any;
+    let jsonData: unknown;
     try {
       jsonData = JSON.parse(fileContent);
     } catch (parseError) {

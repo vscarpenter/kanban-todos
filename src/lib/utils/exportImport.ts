@@ -5,13 +5,13 @@ import {
   sanitizeData, 
   SanitizationOptions,
   DetailedValidationResult,
-  exportDataSchema
+  exportDataSchema,
+  ValidationSchema
 } from './validation';
 import { 
   resolveImportConflicts, 
   ConflictResolutionOptions, 
-  ConflictResolutionResult,
-  generateResolutionSummary
+  ConflictResolutionResult
 } from './conflictResolution';
 
 // Version for data format compatibility
@@ -49,9 +49,7 @@ export interface SerializedBoard extends Omit<Board, 'createdAt' | 'updatedAt' |
   archivedAt?: string;
 }
 
-export interface SerializedSettings extends Settings {
-  // Settings don't have Date fields, so no conversion needed
-}
+export type SerializedSettings = Settings;
 
 // Import validation results
 export interface ImportValidationResult {
@@ -247,7 +245,7 @@ export function exportSettings(settings: Settings): ExportData {
 /**
  * Validates imported JSON data with enhanced validation
  */
-export function validateImportData(jsonData: any): ImportValidationResult {
+export function validateImportData(jsonData: unknown): ImportValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
 
@@ -417,26 +415,26 @@ export function processAdvancedImport(
   const validationResult = validateExportData(importData);
   
   // Step 2: Sanitize the data if there are warnings or recoverable errors
-  let sanitizedData = importData;
+  const sanitizedData = { ...importData };
   const sanitizationLog: string[] = [];
   
   if (validationResult.warnings.length > 0 || 
       validationResult.errors.some(e => e.severity === 'error')) {
     
     // Sanitize tasks
-    const taskSanitization = sanitizeData(importData.tasks, exportDataSchema.properties!.tasks, sanitizationOptions);
-    sanitizedData.tasks = taskSanitization.sanitized;
+    const taskSanitization = sanitizeData(sanitizedData.tasks, exportDataSchema.properties!.tasks as ValidationSchema, sanitizationOptions);
+    sanitizedData.tasks = taskSanitization.sanitized as SerializedTask[];
     sanitizationLog.push(...taskSanitization.changes.map(c => `Tasks: ${c}`));
     
     // Sanitize boards
-    const boardSanitization = sanitizeData(importData.boards, exportDataSchema.properties!.boards, sanitizationOptions);
-    sanitizedData.boards = boardSanitization.sanitized;
+    const boardSanitization = sanitizeData(importData.boards, exportDataSchema.properties!.boards as ValidationSchema, sanitizationOptions);
+    sanitizedData.boards = boardSanitization.sanitized as SerializedBoard[];
     sanitizationLog.push(...boardSanitization.changes.map(c => `Boards: ${c}`));
     
     // Sanitize settings if present
     if (importData.settings) {
-      const settingsSanitization = sanitizeData(importData.settings, exportDataSchema.properties!.settings!, sanitizationOptions);
-      sanitizedData.settings = settingsSanitization.sanitized;
+      const settingsSanitization = sanitizeData(importData.settings, exportDataSchema.properties!.settings as ValidationSchema, sanitizationOptions);
+      sanitizedData.settings = settingsSanitization.sanitized as Settings;
       sanitizationLog.push(...settingsSanitization.changes.map(c => `Settings: ${c}`));
     }
   }
@@ -500,7 +498,7 @@ export function validateAndSanitizeExport(
       setDefaultValues: false,   // Don't set defaults for export
     });
     
-    sanitizedExportData = sanitizationResult.sanitized;
+    sanitizedExportData = sanitizationResult.sanitized as ExportData;
     sanitizationLog.push(...sanitizationResult.changes);
   }
 

@@ -81,6 +81,52 @@ const guideSteps = [
     )
   },
   {
+    title: "Managing Your Boards",
+    icon: <Settings className="h-6 w-6" />,
+    content: (
+      <div className="space-y-4">
+        <p className="text-muted-foreground">
+          Once you have boards, you can easily manage them with editing, duplication, and deletion options.
+        </p>
+        <div className="space-y-3">
+          <div className="flex items-start gap-3">
+            <Badge variant="outline" className="mt-1">1</Badge>
+            <div>
+              <p className="font-medium">Access board options</p>
+              <p className="text-sm text-muted-foreground">Hover over any board in the sidebar to see the menu (⋯) button</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <Badge variant="outline" className="mt-1">2</Badge>
+            <div>
+              <p className="font-medium">Edit board settings</p>
+              <p className="text-sm text-muted-foreground">Change name, description, or color anytime</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <Badge variant="outline" className="mt-1">3</Badge>
+            <div>
+              <p className="font-medium">Duplicate boards</p>
+              <p className="text-sm text-muted-foreground">Create copies of boards for similar projects</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <Badge variant="outline" className="mt-1">4</Badge>
+            <div>
+              <p className="font-medium">Delete boards safely</p>
+              <p className="text-sm text-muted-foreground">Confirmation required - default boards cannot be deleted</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg border border-amber-200 dark:border-amber-800">
+          <p className="text-sm text-amber-800 dark:text-amber-200">
+            <strong>Safety First:</strong> Deleting a board will permanently remove all its tasks. You&apos;ll need to type the board name to confirm deletion.
+          </p>
+        </div>
+      </div>
+    )
+  },
+  {
     title: "Adding and Managing Tasks",
     icon: <Edit3 className="h-6 w-6" />,
     content: (

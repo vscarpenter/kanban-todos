@@ -25,6 +25,7 @@ import { SettingsDialog } from "./SettingsDialog";
 import { UserGuideDialog } from "./UserGuideDialog";
 import { ExportDialog } from "./ExportDialog";
 import { ImportDialog } from "./ImportDialog";
+import { BoardMenu } from "./BoardMenu";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -44,13 +45,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
     return tasks.filter(task => task.boardId === boardId && !task.archivedAt).length;
   };
 
-  const getTaskCountByStatus = (boardId: string, status: string) => {
-    return tasks.filter(task => 
-      task.boardId === boardId && 
-      task.status === status && 
-      !task.archivedAt
-    ).length;
-  };
+
 
   return (
     <>
@@ -234,7 +229,7 @@ function BoardItem({ board, isActive, taskCount, onSelect }: BoardItemProps) {
   return (
     <Card
       className={`
-        cursor-pointer transition-all duration-200 hover:shadow-md
+        group cursor-pointer transition-all duration-200 hover:shadow-md
         ${isActive ? 'ring-2 ring-primary' : 'hover:ring-1 hover:ring-border'}
       `}
       onClick={onSelect}
@@ -255,9 +250,12 @@ function BoardItem({ board, isActive, taskCount, onSelect }: BoardItemProps) {
               </div>
             )}
           </div>
-          <Badge variant="secondary" className="text-xs">
-            {taskCount}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="text-xs">
+              {taskCount}
+            </Badge>
+            <BoardMenu board={board} />
+          </div>
         </div>
       </CardContent>
     </Card>

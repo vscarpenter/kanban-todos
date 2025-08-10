@@ -1,10 +1,9 @@
-import { Task, Board, Settings } from '@/lib/types';
 import { ExportData } from './exportImport';
 
 // JSON Schema definitions for validation
 export interface ValidationSchema {
   type: string;
-  properties?: Record<string, any>;
+  properties?: Record<string, unknown>;
   required?: string[];
   additionalProperties?: boolean;
   items?: ValidationSchema;
@@ -12,7 +11,7 @@ export interface ValidationSchema {
   minLength?: number;
   maxLength?: number;
   pattern?: string;
-  enum?: any[];
+  enum?: unknown[];
   format?: string;
   minimum?: number;
   maximum?: number;
@@ -110,20 +109,20 @@ export interface DetailedValidationResult {
   isValid: boolean;
   errors: ValidationError[];
   warnings: ValidationWarning[];
-  sanitizedData?: any;
+  sanitizedData?: unknown;
 }
 
 export interface ValidationError {
   path: string;
   message: string;
-  value?: any;
+  value?: unknown;
   severity: 'error' | 'critical';
 }
 
 export interface ValidationWarning {
   path: string;
   message: string;
-  value?: any;
+  value?: unknown;
   suggestion?: string;
 }
 
@@ -140,15 +139,14 @@ export interface SanitizationOptions {
 /**
  * Validates data against a JSON schema
  */
-export function validateSchema(data: any, schema: ValidationSchema, path = ''): DetailedValidationResult {
+export function validateSchema(data: unknown, schema: ValidationSchema, path = ''): DetailedValidationResult {
   const errors: ValidationError[] = [];
   const warnings: ValidationWarning[] = [];
 
   // Handle undefined/null values for optional fields
   if (data === undefined || data === null) {
     // If the field is optional (not in required array), allow undefined/null
-    const parentPath = path.split('.').slice(0, -1).join('.');
-    const fieldName = path.split('.').pop();
+    // Field is optional, allow undefined/null
     
     // For now, allow undefined/null values - they will be handled during sanitization
     return { isValid: true, errors, warnings };
@@ -164,7 +162,7 @@ export function validateSchema(data: any, schema: ValidationSchema, path = ''): 
       dataType = 'array';
     }
     
-    const isValidType = allowedTypes.includes(dataType as any) || 
+    const isValidType = allowedTypes.includes(dataType as string) || 
                        (allowedTypes.includes('null') && data === null) ||
                        (allowedTypes.includes('undefined') && data === undefined);
     
@@ -224,7 +222,7 @@ export function validateSchema(data: any, schema: ValidationSchema, path = ''): 
       for (const [propName, propSchema] of Object.entries(schema.properties)) {
         if (propName in data) {
           const propPath = path ? `${path}.${propName}` : propName;
-          const propResult = validateSchema(data[propName], propSchema, propPath);
+          const propResult = validateSchema((data as Record<string, unknown>)[propName], propSchema as ValidationSchema, propPath);
           errors.push(...propResult.errors);
           warnings.push(...propResult.warnings);
         }
@@ -239,7 +237,7 @@ export function validateSchema(data: any, schema: ValidationSchema, path = ''): 
           warnings.push({
             path: `${path}.${prop}`,
             message: `Unexpected property: ${prop}`,
-            value: data[prop],
+            value: (data as Record<string, unknown>)[prop],
             suggestion: 'This property will be removed during sanitization'
           });
         }
@@ -354,10 +352,10 @@ export function validateSchema(data: any, schema: ValidationSchema, path = ''): 
  * Sanitizes data based on validation results and options
  */
 export function sanitizeData(
-  data: any, 
+  data: unknown, 
   schema: ValidationSchema, 
   options: SanitizationOptions
-): { sanitized: any; changes: string[] } {
+): { sanitized: unknown; changes: string[] } {
   const changes: string[] = [];
   let sanitized = JSON.parse(JSON.stringify(data)); // Deep clone
 
@@ -388,7 +386,7 @@ export function sanitizeData(
     if (schema.properties) {
       for (const [propName, propSchema] of Object.entries(schema.properties)) {
         if (propName in sanitized) {
-          const result = sanitizeData(sanitized[propName], propSchema, options);
+          const result = sanitizeData(sanitized[propName], propSchema as ValidationSchema, options);
           sanitized[propName] = result.sanitized;
           changes.push(...result.changes.map(change => `${propName}.${change}`));
         }
@@ -420,7 +418,7 @@ export function sanitizeData(
     }
 
     if (schema.items) {
-      sanitized = sanitized.map((item: any, index: number) => {
+      sanitized = sanitized.map((item: unknown, index: number) => {
         const result = sanitizeData(item, schema.items!, options);
         if (result.changes.length > 0) {
           changes.push(...result.changes.map(change => `[${index}].${change}`));
@@ -436,7 +434,7 @@ export function sanitizeData(
 /**
  * Gets default value for a schema type
  */
-function getDefaultValue(schema: any): any {
+function getDefaultValue(schema: unknown): unknown {
   switch (schema.type) {
     case 'string':
       if (schema.enum) return schema.enum[0];
@@ -458,28 +456,28 @@ function getDefaultValue(schema: any): any {
 /**
  * Validates task data with detailed error reporting
  */
-export function validateTask(task: any): DetailedValidationResult {
+export function validateTask(task: unknown): DetailedValidationResult {
   return validateSchema(task, taskSchema, 'task');
 }
 
 /**
  * Validates board data with detailed error reporting
  */
-export function validateBoard(board: any): DetailedValidationResult {
+export function validateBoard(board: unknown): DetailedValidationResult {
   return validateSchema(board, boardSchema, 'board');
 }
 
 /**
  * Validates settings data with detailed error reporting
  */
-export function validateSettings(settings: any): DetailedValidationResult {
+export function validateSettings(settings: unknown): DetailedValidationResult {
   return validateSchema(settings, settingsSchema, 'settings');
 }
 
 /**
  * Validates export data with detailed error reporting
  */
-export function validateExportData(data: any): DetailedValidationResult {
+export function validateExportData(data: unknown): DetailedValidationResult {
   return validateSchema(data, exportDataSchema, 'exportData');
 }
 

@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { Task, TaskFilters } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
-import { exportTasks, ExportData, ExportOptions } from '@/lib/utils/exportImport';
+import { exportTasks, ExportData } from '@/lib/utils/exportImport';
 
 interface TaskState {
   tasks: Task[];
@@ -25,7 +25,7 @@ interface TaskActions {
   updateTask: (taskId: string, updates: Partial<Task>) => Promise<void>;
   deleteTask: (taskId: string) => Promise<void>;
   moveTask: (taskId: string, newStatus: Task['status']) => Promise<void>;
-  archiveTask: (taskId: string, reason?: string) => Promise<void>;
+  archiveTask: (taskId: string) => Promise<void>;
   
   // Filtering and search
   applyFilters: () => void;
@@ -182,7 +182,7 @@ export const useTaskStore = create<TaskState & TaskActions>()(
           }
         },
 
-        archiveTask: async (taskId, reason?) => {
+        archiveTask: async (taskId) => {
           try {
             const task = get().tasks.find(t => t.id === taskId);
             if (!task) return;

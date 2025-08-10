@@ -55,8 +55,8 @@ export interface MergeResult<T> {
 
 export interface FieldConflict {
   field: string;
-  existingValue: any;
-  importedValue: any;
+  existingValue: unknown;
+  importedValue: unknown;
   resolution: 'kept_existing' | 'used_imported' | 'merged';
   reason: string;
 }
@@ -413,7 +413,7 @@ function resolveSettingsConflicts(
 function mergeBoards(existing: Board, imported: Board, strategy: MergeStrategy): MergeResult<Board> {
   const conflicts: FieldConflict[] = [];
   const mergedFields: string[] = [];
-  let merged = { ...existing };
+  const merged = { ...existing };
 
   const fields: (keyof Board)[] = ['name', 'description', 'color', 'isDefault'];
 
@@ -429,18 +429,18 @@ function mergeBoards(existing: Board, imported: Board, strategy: MergeStrategy):
 
       switch (strategy) {
         case 'use_imported':
-          (merged as any)[field] = imported[field];
+          (merged as Record<string, unknown>)[field] = imported[field];
           mergedFields.push(field);
           break;
         case 'keep_newer':
           if (imported.updatedAt > existing.updatedAt) {
-            (merged as any)[field] = imported[field];
+            (merged as Record<string, unknown>)[field] = imported[field];
             mergedFields.push(field);
           }
           break;
         case 'merge_fields':
           if (field === 'description' && !existing[field] && imported[field]) {
-            (merged as any)[field] = imported[field];
+            (merged as Record<string, unknown>)[field] = imported[field];
             mergedFields.push(field);
           }
           break;
@@ -463,7 +463,7 @@ function mergeBoards(existing: Board, imported: Board, strategy: MergeStrategy):
 function mergeTasks(existing: Task, imported: Task, strategy: MergeStrategy): MergeResult<Task> {
   const conflicts: FieldConflict[] = [];
   const mergedFields: string[] = [];
-  let merged = { ...existing };
+  const merged = { ...existing };
 
   const fields: (keyof Task)[] = [
     'title', 'description', 'status', 'priority', 'tags', 'progress'
@@ -481,12 +481,12 @@ function mergeTasks(existing: Task, imported: Task, strategy: MergeStrategy): Me
 
       switch (strategy) {
         case 'use_imported':
-          (merged as any)[field] = imported[field];
+          (merged as Record<string, unknown>)[field] = imported[field];
           mergedFields.push(field);
           break;
         case 'keep_newer':
           if (imported.updatedAt > existing.updatedAt) {
-            (merged as any)[field] = imported[field];
+            (merged as Record<string, unknown>)[field] = imported[field];
             mergedFields.push(field);
           }
           break;
@@ -498,7 +498,7 @@ function mergeTasks(existing: Task, imported: Task, strategy: MergeStrategy): Me
             merged.tags = [...new Set([...existingTags, ...importedTags])];
             mergedFields.push(field);
           } else if (field === 'description' && !existing[field] && imported[field]) {
-            (merged as any)[field] = imported[field];
+            (merged as Record<string, unknown>)[field] = imported[field];
             mergedFields.push(field);
           }
           break;
@@ -521,7 +521,7 @@ function mergeTasks(existing: Task, imported: Task, strategy: MergeStrategy): Me
 function mergeSettings(existing: Settings, imported: Settings, strategy: MergeStrategy): MergeResult<Settings> {
   const conflicts: FieldConflict[] = [];
   const mergedFields: string[] = [];
-  let merged = { ...existing };
+  const merged = { ...existing };
 
   const fields: (keyof Settings)[] = [
     'theme', 'autoArchiveDays', 'enableNotifications', 
@@ -539,7 +539,7 @@ function mergeSettings(existing: Settings, imported: Settings, strategy: MergeSt
       });
 
       if (strategy === 'use_imported' || strategy === 'merge_fields') {
-        (merged as any)[field] = imported[field];
+        (merged as Record<string, unknown>)[field] = imported[field];
         mergedFields.push(field);
       }
     }
@@ -566,7 +566,7 @@ function mergeSettings(existing: Settings, imported: Settings, strategy: MergeSt
  * Creates a mapping of old board IDs to new board IDs
  */
 function createBoardIdMapping(
-  importedBoards: any[],
+  importedBoards: { id: string; name: string }[],
   resolvedBoards: Board[],
   resolutionLog: ResolutionAction[]
 ): Map<string, string> {
@@ -624,7 +624,7 @@ export function generateResolutionSummary(resolutionLog: ResolutionAction[]): {
   for (const action of resolutionLog) {
     const key = `${action.itemType}s${action.type.charAt(0).toUpperCase() + action.type.slice(1).replace('_', '')}`;
     if (key in details) {
-      (details as any)[key]++;
+      (details as Record<string, number>)[key]++;
     }
   }
 
