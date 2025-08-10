@@ -12,13 +12,19 @@ import {
   Archive, 
   Palette,
   Menu,
-  X
+  X,
+  HelpCircle,
+  Download,
+  Upload
 } from "lucide-react";
 import { useBoardStore } from "@/lib/stores/boardStore";
 import { useTaskStore } from "@/lib/stores/taskStore";
 import { Board } from "@/lib/types";
 import { CreateBoardDialog } from "./CreateBoardDialog";
 import { SettingsDialog } from "./SettingsDialog";
+import { UserGuideDialog } from "./UserGuideDialog";
+import { ExportDialog } from "./ExportDialog";
+import { ImportDialog } from "./ImportDialog";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -28,6 +34,9 @@ interface SidebarProps {
 export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const [showCreateBoard, setShowCreateBoard] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showUserGuide, setShowUserGuide] = useState(false);
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
   const { boards, currentBoardId, selectBoard } = useBoardStore();
   const { tasks } = useTaskStore();
 
@@ -76,7 +85,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
                 alt="Cascade Logo" 
                 className="w-8 h-8"
               />
-              <h1 className="text-2xl font-bold text-foreground">Cascade</h1>
+              <h1 className="text-2xl font-semibold text-foreground tracking-tight">Cascade</h1>
             </div>
             <Button
               variant="ghost"
@@ -87,7 +96,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
               <ChevronLeft className="h-4 w-4" />
             </Button>
           </div>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
             Task Management System
           </p>
         </div>
@@ -97,7 +106,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
           {/* Boards Section */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-foreground">Boards</h2>
+              <h2 className="text-lg font-semibold text-foreground tracking-tight">Boards</h2>
               <Button
                 variant="ghost"
                 size="sm"
@@ -123,35 +132,25 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
 
           <Separator />
 
-          {/* Quick Stats */}
-          <div>
-            <h3 className="text-sm font-medium text-foreground mb-2">Quick Stats</h3>
-            <div className="space-y-2">
-              {boards.map((board) => (
-                <div key={board.id} className="text-xs text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <div 
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: board.color }}
-                    />
-                    <span className="truncate">{board.name}</span>
-                  </div>
-                  <div className="ml-5 text-xs text-muted-foreground">
-                    <span>To Do: {getTaskCountByStatus(board.id, 'todo')}</span>
-                    <span className="mx-2">•</span>
-                    <span>In Progress: {getTaskCountByStatus(board.id, 'in-progress')}</span>
-                    <span className="mx-2">•</span>
-                    <span>Done: {getTaskCountByStatus(board.id, 'done')}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <Separator />
-
           {/* Navigation */}
           <div className="space-y-2">
+            <Button
+              variant="ghost"
+              className="w-full justify-start"
+              onClick={() => setShowExportDialog(true)}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export Data
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start"
+              onClick={() => setShowImportDialog(true)}
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Import Data
+            </Button>
+            <Separator className="my-2" />
             <Button
               variant="ghost"
               className="w-full justify-start"
@@ -159,6 +158,14 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
             >
               <Settings className="h-4 w-4 mr-2" />
               Settings
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start"
+              onClick={() => setShowUserGuide(true)}
+            >
+              <HelpCircle className="h-4 w-4 mr-2" />
+              User Guide
             </Button>
             <Button
               variant="ghost"
@@ -197,6 +204,21 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
         open={showSettings}
         onOpenChange={setShowSettings}
       />
+      
+      <UserGuideDialog
+        open={showUserGuide}
+        onOpenChange={setShowUserGuide}
+      />
+      
+      <ExportDialog
+        open={showExportDialog}
+        onOpenChange={setShowExportDialog}
+      />
+      
+      <ImportDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+      />
     </>
   );
 }
@@ -224,11 +246,11 @@ function BoardItem({ board, isActive, taskCount, onSelect }: BoardItemProps) {
             style={{ backgroundColor: board.color }}
           />
           <div className="flex-1 min-w-0">
-            <div className="font-medium text-foreground truncate">
+            <div className="font-medium text-foreground truncate tracking-tight">
               {board.name}
             </div>
             {board.description && (
-              <div className="text-xs text-muted-foreground truncate">
+              <div className="text-xs text-muted-foreground truncate leading-relaxed">
                 {board.description}
               </div>
             )}

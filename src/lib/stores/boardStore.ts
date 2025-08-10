@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { Board } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
+import { exportBoards, ExportData } from '@/lib/utils/exportImport';
 
 interface BoardState {
   boards: Board[];
@@ -26,6 +27,11 @@ interface BoardActions {
   // Board selection
   selectBoard: (boardId: string) => void;
   getCurrentBoard: () => Board | null;
+  
+  // Import/Export operations
+  exportBoards: (options?: { includeArchived: boolean }) => ExportData;
+  importBoards: (boards: Board[]) => Promise<void>;
+  bulkAddBoards: (boards: Board[]) => Promise<void>;
   
   // Store initialization
   initializeBoards: () => Promise<void>;
@@ -175,6 +181,86 @@ export const useBoardStore = create<BoardState & BoardActions>()(
         getCurrentBoard: () => {
           const { boards, currentBoardId } = get();
           return boards.find(b => b.id === currentBoardId) || null;
+        },
+
+        // Export/Import operations
+        exportBoards: (options = { includeArchived: true }) => {
+          const { boards } = get();
+          return exportBoards(boards, options);
+        },
+
+        importBoards: async (boards: Board[]) => {
+          try {
+            set({ isLoading: true, error: null });
+            
+            const { boards: existingBoards } = get();
+            const existingIds = new Set(existingBoards.map(b => b.id));
+            
+            // Add or update boards in database
+            for (const board of boards) {
+              if (existingIds.has(board.id)) {
+                // Update existing board
+                await taskDB.updateBoard(board);
+              } else {
+                // Add new board
+                await taskDB.addBoard(board);
+              }
+            }
+            
+            // Update store state
+            set((state) => {
+              const boardMap = new Map(state.boards.map(b => [b.id, b]));
+              
+              // Add or update imported boards
+              boards.forEach(board => {
+                boardMap.set(board.id, board);
+              });
+              
+              const newBoards = Array.from(boardMap.values());
+              return {
+                boards: newBoards,
+                isLoading: false,
+              };
+            });
+          } catch (error) {
+            set({ 
+              error: error instanceof Error ? error.message : 'Failed to import boards',
+              isLoading: false 
+            });
+            throw error;
+          }
+        },
+
+        bulkAddBoards: async (boards: Board[]) => {
+          try {
+            set({ isLoading: true, error: null });
+            
+            // Process boards in batches
+            const batchSize = 20;
+            const batches = [];
+            for (let i = 0; i < boards.length; i += batchSize) {
+              batches.push(boards.slice(i, i + batchSize));
+            }
+            
+            for (const batch of batches) {
+              await Promise.all(batch.map(board => taskDB.addBoard(board)));
+            }
+            
+            // Update store state
+            set((state) => {
+              const newBoards = [...state.boards, ...boards];
+              return {
+                boards: newBoards,
+                isLoading: false,
+              };
+            });
+          } catch (error) {
+            set({ 
+              error: error instanceof Error ? error.message : 'Failed to bulk add boards',
+              isLoading: false 
+            });
+            throw error;
+          }
         },
 
         initializeBoards: async () => {

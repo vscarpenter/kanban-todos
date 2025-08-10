@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { Settings } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
+import { exportSettings, ExportData } from '@/lib/utils/exportImport';
 
 interface SettingsState {
   settings: Settings;
@@ -18,6 +19,10 @@ interface SettingsActions {
   // Settings operations
   updateSettings: (updates: Partial<Settings>) => Promise<void>;
   resetSettings: () => Promise<void>;
+  
+  // Import/Export operations
+  exportSettings: () => ExportData;
+  importSettings: (settings: Settings) => Promise<void>;
   
   // Store initialization
   initializeSettings: () => Promise<void>;
@@ -98,6 +103,36 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
               error: error instanceof Error ? error.message : 'Failed to reset settings',
               isLoading: false 
             });
+          }
+        },
+
+        // Export/Import operations
+        exportSettings: () => {
+          const { settings } = get();
+          return exportSettings(settings);
+        },
+
+        importSettings: async (settings: Settings) => {
+          try {
+            set({ isLoading: true, error: null });
+            
+            // Update settings in database
+            await taskDB.updateSettings(settings);
+            
+            // Update store state
+            set({ 
+              settings,
+              isLoading: false 
+            });
+
+            // Apply theme changes immediately
+            applyTheme(settings.theme);
+          } catch (error) {
+            set({ 
+              error: error instanceof Error ? error.message : 'Failed to import settings',
+              isLoading: false 
+            });
+            throw error;
           }
         },
 

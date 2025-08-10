@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { Task, TaskFilters } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
+import { exportTasks, ExportData, ExportOptions } from '@/lib/utils/exportImport';
 
 interface TaskState {
   tasks: Task[];
@@ -29,6 +30,11 @@ interface TaskActions {
   // Filtering and search
   applyFilters: () => void;
   clearFilters: () => void;
+  
+  // Import/Export operations
+  exportTasks: (options?: { includeArchived: boolean; boardIds?: string[] }) => ExportData;
+  importTasks: (tasks: Task[]) => Promise<void>;
+  bulkAddTasks: (tasks: Task[]) => Promise<void>;
   
   // Store initialization
   initializeStore: () => Promise<void>;
@@ -242,6 +248,88 @@ export const useTaskStore = create<TaskState & TaskActions>()(
             filters: { search: '', tags: [] },
             filteredTasks: get().tasks 
           });
+        },
+
+        // Export/Import operations
+        exportTasks: (options = { includeArchived: true }) => {
+          const { tasks } = get();
+          return exportTasks(tasks, options);
+        },
+
+        importTasks: async (tasks: Task[]) => {
+          try {
+            set({ isLoading: true, error: null });
+            
+            const { tasks: existingTasks } = get();
+            const existingIds = new Set(existingTasks.map(t => t.id));
+            
+            // Add or update tasks in database
+            for (const task of tasks) {
+              if (existingIds.has(task.id)) {
+                // Update existing task
+                await taskDB.updateTask(task);
+              } else {
+                // Add new task
+                await taskDB.addTask(task);
+              }
+            }
+            
+            // Update store state
+            set((state) => {
+              const taskMap = new Map(state.tasks.map(t => [t.id, t]));
+              
+              // Add or update imported tasks
+              tasks.forEach(task => {
+                taskMap.set(task.id, task);
+              });
+              
+              const newTasks = Array.from(taskMap.values());
+              return {
+                tasks: newTasks,
+                filteredTasks: newTasks,
+                isLoading: false,
+              };
+            });
+          } catch (error) {
+            set({ 
+              error: error instanceof Error ? error.message : 'Failed to import tasks',
+              isLoading: false 
+            });
+            throw error;
+          }
+        },
+
+        bulkAddTasks: async (tasks: Task[]) => {
+          try {
+            set({ isLoading: true, error: null });
+            
+            // Process tasks in batches to avoid overwhelming the database
+            const batchSize = 50;
+            const batches = [];
+            for (let i = 0; i < tasks.length; i += batchSize) {
+              batches.push(tasks.slice(i, i + batchSize));
+            }
+            
+            for (const batch of batches) {
+              await Promise.all(batch.map(task => taskDB.addTask(task)));
+            }
+            
+            // Update store state
+            set((state) => {
+              const newTasks = [...state.tasks, ...tasks];
+              return {
+                tasks: newTasks,
+                filteredTasks: newTasks,
+                isLoading: false,
+              };
+            });
+          } catch (error) {
+            set({ 
+              error: error instanceof Error ? error.message : 'Failed to bulk add tasks',
+              isLoading: false 
+            });
+            throw error;
+          }
         },
 
         initializeStore: async () => {
