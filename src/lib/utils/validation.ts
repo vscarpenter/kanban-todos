@@ -375,7 +375,7 @@ export function sanitizeData(
     if (options.setDefaultValues && schema.required && schema.properties) {
       for (const requiredProp of schema.required) {
         if (!(requiredProp in sanitized)) {
-          const propSchema = schema.properties[requiredProp];
+          const propSchema = schema.properties[requiredProp] as ValidationSchema;
           sanitized[requiredProp] = getDefaultValue(propSchema);
           changes.push(`Set default value for missing property: ${requiredProp}`);
         }
@@ -434,7 +434,7 @@ export function sanitizeData(
 /**
  * Gets default value for a schema type
  */
-function getDefaultValue(schema: unknown): unknown {
+function getDefaultValue(schema: ValidationSchema): unknown {
   switch (schema.type) {
     case 'string':
       if (schema.enum) return schema.enum[0];

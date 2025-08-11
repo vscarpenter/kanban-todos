@@ -73,7 +73,7 @@ bun dev
 - **Styling**: Tailwind CSS with custom design system
 - **UI Components**: shadcn/ui
 - **Icons**: Lucide React
-- **Fonts**: Inter (body), JetBrains Mono (code)
+- **Fonts**: Geist (body), Geist Mono (code) with enhanced OpenType features
 
 ### State Management & Storage
 - **State**: Zustand stores
@@ -152,11 +152,11 @@ Colors and design tokens are defined in the CSS custom properties within `global
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
 - Built with [Next.js](https://nextjs.org/)
 - UI components from [shadcn/ui](https://ui.shadcn.com/)
 - Icons by [Lucide](https://lucide.dev/)
-- Typography powered by [Inter](https://rsms.me/inter/) and [JetBrains Mono](https://www.jetbrains.com/lp/mono/)
+- Typography powered by [Geist](https://vercel.com/font) and [Geist Mono](https://vercel.com/font)
