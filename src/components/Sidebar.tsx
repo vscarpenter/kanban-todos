@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +20,7 @@ import {
 } from "lucide-react";
 import { useBoardStore } from "@/lib/stores/boardStore";
 import { useTaskStore } from "@/lib/stores/taskStore";
+import { useSettingsStore } from "@/lib/stores/settingsStore";
 import { Board } from "@/lib/types";
 import { CreateBoardDialog } from "./CreateBoardDialog";
 import { SettingsDialog } from "./SettingsDialog";
@@ -40,9 +42,35 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const [showImportDialog, setShowImportDialog] = useState(false);
   const { boards, currentBoardId, selectBoard } = useBoardStore();
   const { tasks } = useTaskStore();
+  const { updateSettings } = useSettingsStore();
+  const { theme, setTheme } = useTheme();
 
   const getTaskCount = (boardId: string) => {
     return tasks.filter(task => task.boardId === boardId && !task.archivedAt).length;
+  };
+
+  const toggleTheme = () => {
+    const themeOrder = ['light', 'dark', 'system'];
+    const currentIndex = themeOrder.indexOf(theme || 'system');
+    const nextIndex = (currentIndex + 1) % themeOrder.length;
+    const nextTheme = themeOrder[nextIndex];
+    
+    // Update both next-themes and our settings store
+    setTheme(nextTheme);
+    updateSettings({ theme: nextTheme as 'light' | 'dark' | 'system' });
+  };
+
+  const getThemeIcon = () => {
+    switch (theme) {
+      case 'light':
+        return '☀️';
+      case 'dark':
+        return '🌙';
+      case 'system':
+        return '⚙️';
+      default:
+        return '🎨';
+    }
   };
 
 
@@ -173,10 +201,15 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
             <Button
               variant="ghost"
               className="w-full justify-start"
-              onClick={() => {/* TODO: Open theme picker */}}
+              onClick={toggleTheme}
             >
               <Palette className="h-4 w-4 mr-2" />
-              Theme
+              <span className="flex items-center gap-2">
+                Theme
+                <span className="text-xs opacity-70">
+                  {getThemeIcon()} {theme}
+                </span>
+              </span>
             </Button>
           </div>
         </div>

@@ -26,7 +26,8 @@ export function SearchBar() {
   };
 
   const handleFilterChange = (key: keyof TaskFilters, value: string | undefined) => {
-    const newFilters = { ...localFilters, [key]: value };
+    const filterValue = value === 'all' ? undefined : value;
+    const newFilters = { ...localFilters, [key]: filterValue };
     setLocalFilters(newFilters);
     setFilters(newFilters);
     applyFilters();
@@ -88,14 +89,14 @@ export function SearchBar() {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Status</label>
                 <Select
-                  value={localFilters.status || ''}
-                  onValueChange={(value) => handleFilterChange('status', value || undefined)}
+                  value={localFilters.status || 'all'}
+                  onValueChange={(value) => handleFilterChange('status', value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="All statuses" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All statuses</SelectItem>
+                    <SelectItem value="all">All statuses</SelectItem>
                     <SelectItem value="todo">To Do</SelectItem>
                     <SelectItem value="in-progress">In Progress</SelectItem>
                     <SelectItem value="done">Done</SelectItem>
@@ -107,14 +108,14 @@ export function SearchBar() {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Priority</label>
                 <Select
-                  value={localFilters.priority || ''}
-                  onValueChange={(value) => handleFilterChange('priority', value || undefined)}
+                  value={localFilters.priority || 'all'}
+                  onValueChange={(value) => handleFilterChange('priority', value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="All priorities" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All priorities</SelectItem>
+                    <SelectItem value="all">All priorities</SelectItem>
                     <SelectItem value="low">Low</SelectItem>
                     <SelectItem value="medium">Medium</SelectItem>
                     <SelectItem value="high">High</SelectItem>

@@ -73,10 +73,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
               isLoading: false 
             });
 
-            // Apply theme changes immediately
-            if (updates.theme) {
-              applyTheme(updates.theme);
-            }
+            // Theme changes are now handled by next-themes
           } catch (error) {
             set({ 
               error: error instanceof Error ? error.message : 'Failed to update settings',
@@ -96,8 +93,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
               isLoading: false 
             });
 
-            // Apply default theme
-            applyTheme(defaultSettings.theme);
+            // Theme reset is now handled by next-themes
           } catch (error) {
             set({ 
               error: error instanceof Error ? error.message : 'Failed to reset settings',
@@ -125,8 +121,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
               isLoading: false 
             });
 
-            // Apply theme changes immediately
-            applyTheme(settings.theme);
+            // Theme changes are now handled by next-themes
           } catch (error) {
             set({ 
               error: error instanceof Error ? error.message : 'Failed to import settings',
@@ -156,8 +151,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
               isLoading: false 
             });
 
-            // Apply theme on initialization
-            applyTheme(settings.theme);
+            // Theme initialization is now handled by next-themes
           } catch (error) {
             set({ 
               error: error instanceof Error ? error.message : 'Failed to initialize settings',
@@ -176,19 +170,3 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
   )
 );
 
-// Helper function to apply theme changes
-function applyTheme(theme: Settings['theme']) {
-  // Only apply theme if we're in a browser environment
-  if (typeof window === 'undefined' || typeof document === 'undefined') {
-    return;
-  }
-  
-  const root = document.documentElement;
-  
-  if (theme === 'system') {
-    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    root.setAttribute('data-theme', systemTheme);
-  } else {
-    root.setAttribute('data-theme', theme);
-  }
-}

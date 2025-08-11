@@ -78,14 +78,13 @@ export const useTaskStore = create<TaskState & TaskActions>()(
 
             await taskDB.addTask(newTask);
             
-            set((state) => {
-              const newTasks = [...state.tasks, newTask];
-              return {
-                tasks: newTasks,
-                filteredTasks: newTasks,
-                isLoading: false,
-              };
-            });
+            set((state) => ({
+              tasks: [...state.tasks, newTask],
+              isLoading: false,
+            }));
+            
+            // Reapply filters to include the new task
+            get().applyFilters();
           } catch (error) {
             set({ 
               error: error instanceof Error ? error.message : 'Failed to add task',
@@ -106,16 +105,15 @@ export const useTaskStore = create<TaskState & TaskActions>()(
 
             await taskDB.updateTask(updatedTask);
             
-            set((state) => {
-              const newTasks = state.tasks.map(t => 
+            set((state) => ({
+              tasks: state.tasks.map(t => 
                 t.id === taskId ? updatedTask : t
-              );
-              return {
-                tasks: newTasks,
-                filteredTasks: newTasks,
-                isLoading: false,
-              };
-            });
+              ),
+              isLoading: false,
+            }));
+            
+            // Reapply filters to update the filtered view
+            get().applyFilters();
           } catch (error) {
             set({ 
               error: error instanceof Error ? error.message : 'Failed to update task',
@@ -130,14 +128,13 @@ export const useTaskStore = create<TaskState & TaskActions>()(
             
             await taskDB.deleteTask(taskId);
             
-            set((state) => {
-              const newTasks = state.tasks.filter(t => t.id !== taskId);
-              return {
-                tasks: newTasks,
-                filteredTasks: newTasks,
-                isLoading: false,
-              };
-            });
+            set((state) => ({
+              tasks: state.tasks.filter(t => t.id !== taskId),
+              isLoading: false,
+            }));
+            
+            // Reapply filters after deletion
+            get().applyFilters();
           } catch (error) {
             set({ 
               error: error instanceof Error ? error.message : 'Failed to delete task',
@@ -283,13 +280,14 @@ export const useTaskStore = create<TaskState & TaskActions>()(
                 taskMap.set(task.id, task);
               });
               
-              const newTasks = Array.from(taskMap.values());
               return {
-                tasks: newTasks,
-                filteredTasks: newTasks,
+                tasks: Array.from(taskMap.values()),
                 isLoading: false,
               };
             });
+            
+            // Reapply filters after import
+            get().applyFilters();
           } catch (error) {
             set({ 
               error: error instanceof Error ? error.message : 'Failed to import tasks',
@@ -315,14 +313,13 @@ export const useTaskStore = create<TaskState & TaskActions>()(
             }
             
             // Update store state
-            set((state) => {
-              const newTasks = [...state.tasks, ...tasks];
-              return {
-                tasks: newTasks,
-                filteredTasks: newTasks,
-                isLoading: false,
-              };
-            });
+            set((state) => ({
+              tasks: [...state.tasks, ...tasks],
+              isLoading: false,
+            }));
+            
+            // Reapply filters after bulk add
+            get().applyFilters();
           } catch (error) {
             set({ 
               error: error instanceof Error ? error.message : 'Failed to bulk add tasks',
@@ -345,15 +342,17 @@ export const useTaskStore = create<TaskState & TaskActions>()(
             await taskDB.init();
             const tasks = await taskDB.getTasks();
             
+            const processedTasks = tasks.map(task => ({
+              ...task,
+              createdAt: new Date(task.createdAt),
+              updatedAt: new Date(task.updatedAt),
+              completedAt: task.completedAt ? new Date(task.completedAt) : undefined,
+              archivedAt: task.archivedAt ? new Date(task.archivedAt) : undefined,
+            }));
+            
             set({ 
-              tasks: tasks.map(task => ({
-                ...task,
-                createdAt: new Date(task.createdAt),
-                updatedAt: new Date(task.updatedAt),
-                completedAt: task.completedAt ? new Date(task.completedAt) : undefined,
-                archivedAt: task.archivedAt ? new Date(task.archivedAt) : undefined,
-              })),
-              filteredTasks: tasks,
+              tasks: processedTasks,
+              filteredTasks: processedTasks,
               isLoading: false 
             });
           } catch (error) {

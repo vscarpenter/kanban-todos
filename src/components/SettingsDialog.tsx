@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -9,7 +10,8 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useSettingsStore } from "@/lib/stores/settingsStore";
 import { Settings } from "@/lib/types";
-import { Palette, Monitor, Archive, Accessibility } from "lucide-react";
+import { confirmAndResetApplication } from "@/lib/utils/resetApp";
+import { Palette, Monitor, Archive, Accessibility, Trash2 } from "lucide-react";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -18,12 +20,25 @@ interface SettingsDialogProps {
 
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const { settings, updateSettings, resetSettings } = useSettingsStore();
+  const { theme, setTheme } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [localSettings, setLocalSettings] = useState<Settings>(settings);
+
+  // Sync settings when dialog opens or settings change
+  useEffect(() => {
+    setLocalSettings({
+      ...settings,
+      theme: (theme as Settings['theme']) || 'system'
+    });
+  }, [settings, theme, open]);
 
   const handleSave = async () => {
     setIsLoading(true);
     try {
+      // Ensure next-themes is in sync with local settings
+      if (localSettings.theme !== theme) {
+        setTheme(localSettings.theme);
+      }
       await updateSettings(localSettings);
       onOpenChange(false);
     } catch (error) {
@@ -38,6 +53,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       setIsLoading(true);
       try {
         await resetSettings();
+        setTheme('system'); // Reset theme in next-themes
         setLocalSettings(settings);
         onOpenChange(false);
       } catch (error) {
@@ -52,6 +68,10 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     key: K, 
     value: Settings[K]
   ) => {
+    if (key === 'theme') {
+      // For theme changes, update next-themes immediately
+      setTheme(value as string);
+    }
     setLocalSettings(prev => ({ ...prev, [key]: value }));
   };
 
@@ -97,7 +117,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Choose your preferred theme or let the app follow your system preference
+                  Choose your preferred theme. Changes apply immediately and sync with the sidebar theme toggle.
                 </p>
               </div>
             </div>
@@ -232,6 +252,24 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   checked={localSettings.enableDebugMode}
                   onCheckedChange={(checked) => updateLocalSetting('enableDebugMode', checked)}
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Reset Application</Label>
+                <div className="space-y-2">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={confirmAndResetApplication}
+                    className="w-full"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Reset App to Default
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    Permanently deletes all data including boards, tasks, settings, and preferences. This action cannot be undone.
+                  </p>
+                </div>
               </div>
             </div>
           </div>

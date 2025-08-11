@@ -221,6 +221,10 @@ export class TaskDatabase {
     }
   }
 
+  async resetDatabase(): Promise<void> {
+    await this.clearAll();
+  }
+
   private async clearAll(): Promise<void> {
     if (!this.db) throw new Error('Database not initialized');
 

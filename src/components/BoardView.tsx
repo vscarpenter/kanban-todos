@@ -21,7 +21,7 @@ import { Task } from "@/lib/types";
 
 export function BoardView() {
   const { currentBoardId, getCurrentBoard } = useBoardStore();
-  const { tasks, isLoading, error, moveTask } = useTaskStore();
+  const { tasks, filteredTasks, isLoading, error, moveTask } = useTaskStore();
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   
@@ -110,7 +110,7 @@ export function BoardView() {
     );
   }
 
-  const boardTasks = tasks.filter(task => 
+  const boardTasks = filteredTasks.filter(task => 
     task.boardId === currentBoardId && !task.archivedAt
   );
 
