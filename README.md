@@ -29,16 +29,8 @@ A modern, privacy-first kanban board task management system built with Next.js, 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18+ 
-- npm, yarn, pnpm, or bun
-
-### Installation
 
 1. Clone the repository:
-```bash
-git clone <repository-url>
-cd kanban-todos
-```
 
 2. Install dependencies:
 ```bash
@@ -46,10 +38,6 @@ npm install
 # or
 yarn install
 # or
-pnpm install
-# or
-bun install
-```
 
 3. Run the development server:
 ```bash
@@ -57,11 +45,17 @@ npm run dev
 # or
 yarn dev
 # or
-pnpm dev
-# or
-bun dev
+
+### Installation (Local Development)
+
+1. Clone the repository:
+```bash
 ```
 
+```
+
+2. Install dependencies:
+```bash
 4. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
 
 
@@ -69,6 +63,10 @@ bun dev
 
 ### Frontend
 - **Framework**: Next.js 15.4.6 (App Router)
+```
+
+3. Run the development server:
+```bash
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS with custom design system
 - **UI Components**: shadcn/ui
@@ -76,6 +74,82 @@ bun dev
 - **Fonts**: Geist (body), Geist Mono (code) with enhanced OpenType features
 
 ### State Management & Storage
+```
+
+4. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
+
+### Docker Deployment
+
+#### Build and Run Locally
+
+1. Build the Docker image:
+```bash
+docker build -t kanban-todos:latest .
+```
+
+2. Run the container:
+```bash
+docker run -p 3000:3000 --name kanban-todos kanban-todos:latest
+```
+
+3. Access the app at [http://localhost:3000](http://localhost:3000)
+
+#### Push to Registry
+
+1. Tag the image (example for Docker Hub):
+```bash
+docker tag kanban-todos:latest <your-username>/kanban-todos:latest
+```
+
+2. Push the image:
+```bash
+docker push <your-username>/kanban-todos:latest
+```
+
+#### Kubernetes Deployment
+
+1. Create a Kubernetes deployment manifest referencing your pushed image.
+2. Expose the deployment via a Service (NodePort, LoadBalancer, or Ingress).
+3. Example minimal deployment:
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: kanban-todos
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: kanban-todos
+    template:
+        metadata:
+            labels:
+                app: kanban-todos
+        spec:
+            containers:
+            - name: kanban-todos
+                image: <your-repo>/kanban-todos:latest
+                ports:
+                - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: kanban-todos
+spec:
+    type: NodePort
+    ports:
+    - port: 3000
+        targetPort: 3000
+        nodePort: 32000
+    selector:
+        app: kanban-todos
+```
+
+4. Apply with:
+```bash
+kubectl apply -f <manifest.yaml>
+```
 - **State**: Zustand stores
 - **Persistence**: Local Storage with JSON export/import
 - **Theme**: next-themes for dark/light mode
