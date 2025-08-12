@@ -254,6 +254,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 />
               </div>
 
+
               <div className="space-y-2">
                 <Label>Reset Application</Label>
                 <div className="space-y-2">

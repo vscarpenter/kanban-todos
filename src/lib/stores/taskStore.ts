@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
+import { devtools } from 'zustand/middleware';
 import { Task, TaskFilters } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
 import { exportTasks, ExportData } from '@/lib/utils/exportImport';
@@ -51,10 +51,48 @@ const initialState: TaskState = {
   error: null,
 };
 
+// Helper function to apply filters to a task list
+const applyFiltersToTasks = (tasks: Task[], filters: TaskFilters): Task[] => {
+  let filteredTasks = tasks;
+  
+  // Apply current filters
+  if (filters.search) {
+    const searchLower = filters.search.toLowerCase();
+    filteredTasks = filteredTasks.filter(task =>
+      task.title.toLowerCase().includes(searchLower) ||
+      task.description?.toLowerCase().includes(searchLower) ||
+      task.tags.some(tag => tag.toLowerCase().includes(searchLower))
+    );
+  }
+
+  if (filters.status) {
+    filteredTasks = filteredTasks.filter(task => task.status === filters.status);
+  }
+
+  if (filters.priority) {
+    filteredTasks = filteredTasks.filter(task => task.priority === filters.priority);
+  }
+
+  if (filters.tags.length > 0) {
+    filteredTasks = filteredTasks.filter(task =>
+      filters.tags.some(tag => task.tags.includes(tag))
+    );
+  }
+
+  if (filters.dateRange) {
+    filteredTasks = filteredTasks.filter(task => {
+      const taskDate = new Date(task.createdAt);
+      return taskDate >= filters.dateRange!.start && 
+             taskDate <= filters.dateRange!.end;
+    });
+  }
+  
+  return filteredTasks;
+};
+
 export const useTaskStore = create<TaskState & TaskActions>()(
   devtools(
-    persist(
-      (set, get) => ({
+    (set, get) => ({
         ...initialState,
 
         setTasks: (tasks) => set({ tasks }),
@@ -78,13 +116,15 @@ export const useTaskStore = create<TaskState & TaskActions>()(
 
             await taskDB.addTask(newTask);
             
-            set((state) => ({
-              tasks: [...state.tasks, newTask],
-              isLoading: false,
-            }));
+            const { tasks, filters } = get();
+            const updatedTasks = [...tasks, newTask];
+            const filteredTasks = applyFiltersToTasks(updatedTasks, filters);
             
-            // Reapply filters to include the new task
-            get().applyFilters();
+            set({
+              tasks: updatedTasks,
+              filteredTasks: filteredTasks,
+              isLoading: false,
+            });
           } catch (error) {
             set({ 
               error: error instanceof Error ? error.message : 'Failed to add task',
@@ -105,15 +145,17 @@ export const useTaskStore = create<TaskState & TaskActions>()(
 
             await taskDB.updateTask(updatedTask);
             
-            set((state) => ({
-              tasks: state.tasks.map(t => 
-                t.id === taskId ? updatedTask : t
-              ),
-              isLoading: false,
-            }));
+            const { tasks, filters } = get();
+            const updatedTasks = tasks.map(t => 
+              t.id === taskId ? updatedTask : t
+            );
+            const filteredTasks = applyFiltersToTasks(updatedTasks, filters);
             
-            // Reapply filters to update the filtered view
-            get().applyFilters();
+            set({
+              tasks: updatedTasks,
+              filteredTasks: filteredTasks,
+              isLoading: false,
+            });
           } catch (error) {
             set({ 
               error: error instanceof Error ? error.message : 'Failed to update task',
@@ -128,13 +170,15 @@ export const useTaskStore = create<TaskState & TaskActions>()(
             
             await taskDB.deleteTask(taskId);
             
-            set((state) => ({
-              tasks: state.tasks.filter(t => t.id !== taskId),
-              isLoading: false,
-            }));
+            const { tasks, filters } = get();
+            const updatedTasks = tasks.filter(t => t.id !== taskId);
+            const filteredTasks = applyFiltersToTasks(updatedTasks, filters);
             
-            // Reapply filters after deletion
-            get().applyFilters();
+            set({
+              tasks: updatedTasks,
+              filteredTasks: filteredTasks,
+              isLoading: false,
+            });
           } catch (error) {
             set({ 
               error: error instanceof Error ? error.message : 'Failed to delete task',
@@ -199,45 +243,8 @@ export const useTaskStore = create<TaskState & TaskActions>()(
 
         applyFilters: () => {
           const { tasks, filters } = get();
-          let filtered = tasks;
-
-          // Filter by search
-          if (filters.search) {
-            const searchLower = filters.search.toLowerCase();
-            filtered = filtered.filter(task =>
-              task.title.toLowerCase().includes(searchLower) ||
-              task.description?.toLowerCase().includes(searchLower) ||
-              task.tags.some(tag => tag.toLowerCase().includes(searchLower))
-            );
-          }
-
-          // Filter by status
-          if (filters.status) {
-            filtered = filtered.filter(task => task.status === filters.status);
-          }
-
-          // Filter by priority
-          if (filters.priority) {
-            filtered = filtered.filter(task => task.priority === filters.priority);
-          }
-
-          // Filter by tags
-          if (filters.tags.length > 0) {
-            filtered = filtered.filter(task =>
-              filters.tags.some(tag => task.tags.includes(tag))
-            );
-          }
-
-          // Filter by date range
-          if (filters.dateRange) {
-            filtered = filtered.filter(task => {
-              const taskDate = new Date(task.createdAt);
-              return taskDate >= filters.dateRange!.start && 
-                     taskDate <= filters.dateRange!.end;
-            });
-          }
-
-          set({ filteredTasks: filtered });
+          const filteredTasks = applyFiltersToTasks(tasks, filters);
+          set({ filteredTasks });
         },
 
         clearFilters: () => {
@@ -362,14 +369,6 @@ export const useTaskStore = create<TaskState & TaskActions>()(
             });
           }
         },
-      }),
-      {
-        name: 'cascade-tasks',
-        partialize: (state) => ({ 
-          tasks: state.tasks,
-          filters: state.filters 
-        }),
-      }
+      })
     )
-  )
 );

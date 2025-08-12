@@ -6,9 +6,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Core Development
 - `npm run dev` - Start development server on http://localhost:3000
-- `npm run build` - Build for production with static export 
+- `npm run build` - Clean (.next, out) and build for production with static export 
+- `npm run build:analyze` - Build with bundle analyzer enabled (ANALYZE=true)
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint with Next.js configuration
+
+### Deployment
+- `npm run deploy` - Full deployment: build + S3 sync + CloudFront invalidation
+- `npm run deploy:s3` - Sync built files to S3 with optimized cache headers
+- `npm run deploy:invalidate` - Invalidate CloudFront cache
+- `npm run deploy:check` - Verify deployment status
+- `./scripts/deploy.sh` - Comprehensive deployment script with verification
 
 ### Package Management
 - `npm install` - Install all dependencies
@@ -23,31 +31,40 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Styling**: Tailwind CSS v4 with custom design system
 - **State Management**: Zustand stores with persistence
 - **Database**: IndexedDB for client-side storage via custom TaskDatabase class
-- **Drag & Drop**: @dnd-kit for accessible kanban interactions
-- **Icons**: Lucide React
+- **Drag & Drop**: @dnd-kit for accessible kanban interactions (lazy loaded)
+- **Icons**: Lucide React (centralized exports for tree-shaking)
 - **Notifications**: Sonner for toast messages
+- **Performance**: Bundle analyzer, dynamic imports, React.memo optimizations
+- **Fonts**: Geist and Geist Mono (optimized weights)
 
 ### Project Structure
 ```
 src/
 ├── app/                 # Next.js App Router
-│   ├── layout.tsx      # Root layout with Inter/JetBrains Mono fonts
+│   ├── layout.tsx      # Root layout with Geist fonts (optimized weights)
 │   └── page.tsx        # Main application entry point
 ├── components/         # React components
 │   ├── ui/            # shadcn/ui base components
-│   ├── kanban/        # Kanban-specific components (KanbanColumn, TaskCard)
+│   ├── kanban/        # Kanban-specific components (memoized)
+│   │   ├── KanbanColumn.tsx # Memoized column component
+│   │   └── TaskCard.tsx     # Memoized task card with useCallback
+│   ├── DragDropProvider.tsx # Lazy-loaded drag-and-drop wrapper
 │   ├── KanbanBoard.tsx # Main board orchestrator
-│   ├── Sidebar.tsx    # Navigation and board management
-│   └── *Dialog.tsx    # Feature dialogs (Create, Edit, Settings, etc.)
+│   ├── Sidebar.tsx    # Navigation with lazy-loaded dialogs
+│   └── *Dialog.tsx    # Feature dialogs (dynamically imported)
 └── lib/
     ├── stores/        # Zustand state management
     ├── types/         # TypeScript type definitions
     ├── utils/         # Utility functions and database layer
-    └── utils.ts       # Common utilities (cn function)
+    │   ├── database.ts         # IndexedDB wrapper
+    │   ├── memoryOptimization.ts # Performance utilities
+    │   └── resetApp.ts         # App reset functionality
+    ├── utils.ts       # Common utilities (cn function)
+    └── icons.ts       # Centralized icon exports
 ```
 
 ### State Management Architecture
-Three main Zustand stores with IndexedDB persistence:
+Three main Zustand stores using IndexedDB for persistence (no Zustand persistence middleware to avoid conflicts):
 
 1. **useBoardStore** (`src/lib/stores/boardStore.ts`)
    - Manages board CRUD operations
@@ -60,6 +77,7 @@ Three main Zustand stores with IndexedDB persistence:
    - Status transitions with progress tracking
    - Filtering and search capabilities
    - Batch operations for import/export
+   - Uses IndexedDB directly via taskDB, no Zustand persistence to prevent state conflicts
 
 3. **useSettingsStore** (`src/lib/stores/settingsStore.ts`)
    - Theme management (light/dark/system)
@@ -77,18 +95,25 @@ Custom IndexedDB wrapper in `src/lib/utils/database.ts`:
 
 ### Component Architecture
 - **shadcn/ui configuration**: New York style with neutral base color
-- **Drag & Drop**: @dnd-kit with keyboard accessibility
+- **Drag & Drop**: @dnd-kit with keyboard accessibility (lazy loaded in DragDropProvider)
 - **Theme System**: next-themes with CSS custom properties
-- **Typography**: Inter for body text, JetBrains Mono for code
+- **Typography**: Geist for body text, Geist Mono for code (optimized font weights)
 - **Responsive Design**: Mobile-first with sidebar toggle
 - **Client-Side Rendering**: ClientOnly wrapper for hydration safety
+- **Performance Optimizations**:
+  - React.memo for TaskCard and KanbanColumn components
+  - useCallback for event handlers to prevent unnecessary re-renders
+  - Dynamic imports for dialog components (CreateBoard, Settings, etc.)
+  - Lazy loading for drag-and-drop functionality
+  - Sequential store initialization for faster app startup
 
 ### Data Flow
-1. App initialization loads all stores from IndexedDB
+1. App initialization loads stores sequentially (settings → boards → tasks) for optimal performance
 2. Board selection triggers task filtering by boardId
 3. Task operations update both Zustand state and IndexedDB
-4. Real-time UI updates via Zustand subscriptions
+4. Real-time UI updates via Zustand subscriptions with memoized components
 5. Export/import preserves complete application state
+6. Lazy-loaded components render on demand to reduce initial bundle size
 
 ### Key Features
 - **Multi-Board System**: Unlimited boards with color coding
@@ -103,5 +128,39 @@ Custom IndexedDB wrapper in `src/lib/utils/database.ts`:
 - TypeScript strict mode with path aliases (@/* -> src/*)
 - ESLint extends Next.js and TypeScript configurations
 - All database operations are async and handle browser compatibility
-- Zustand middleware includes devtools and persistence
+- Zustand stores use IndexedDB directly (no persistence middleware to avoid conflicts)
 - Theme switching preserves user preference across sessions
+
+### Production Deployment
+- **Target**: S3 bucket `cascade.vinny.dev` with CloudFront distribution `E1351EA4HZ20NY`
+- **Cache Strategy**: 1-year cache for static assets, no cache for HTML, 5-min cache for dynamic files
+- **Deployment**: Automated via GitHub Actions or manual via `npm run deploy`
+- **Verification**: Includes health checks and Lighthouse performance audits
+- **Security**: Optimized cache headers and CloudFront invalidation
+
+### Performance Optimizations
+- **Bundle Size**: ~388kB First Load JS with optimized vendor chunks
+- **Font Loading**: Reduced from 5 weights to 2 (60-80KB savings)
+- **Dynamic Imports**: Dialog components lazy loaded (15-25KB savings)
+- **Drag & Drop**: Lazy loaded @dnd-kit functionality (35-45KB savings)
+- **Tree Shaking**: Centralized icon exports via `src/lib/icons.ts`
+- **React Optimizations**: 
+  - React.memo for TaskCard and KanbanColumn
+  - useCallback for event handlers
+  - Sequential Zustand store initialization
+- **Bundle Analysis**: Available via `npm run build:analyze`
+- **Webpack Configuration**: 
+  - Advanced chunk splitting for vendors (dnd-kit, radix-ui, lucide)
+  - Tree shaking optimizations enabled
+  - Console removal in production builds
+
+### Memory Management
+- **Utilities**: `src/lib/utils/memoryOptimization.ts` provides:
+  - Debounce and throttle functions
+  - Cleanup manager for timers and event listeners  
+  - WeakMap-based caching system
+  - Optimized array update functions
+  - Virtual scrolling helpers for large lists
+- **Component Lifecycle**: Proper cleanup of subscriptions and timers
+- **Memory Monitoring**: Browser memory usage tracking utilities
+- I have the AWS CLI configured locally and  cascade.vinny.dev is pointing to my CloudFront distribution

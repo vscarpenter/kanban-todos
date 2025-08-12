@@ -1,78 +1,27 @@
 "use client";
 
+import { useState } from "react";
+import dynamic from "next/dynamic";
 import { useBoardStore } from "@/lib/stores/boardStore";
 import { useTaskStore } from "@/lib/stores/taskStore";
-import { KanbanColumn } from "./kanban/KanbanColumn";
+import KanbanColumn from "./kanban/KanbanColumn";
 import { CreateTaskDialog } from "./CreateTaskDialog";
 import { Button } from "@/components/ui/button";
-import { Plus, AlertCircle } from "lucide-react";
-import { useState } from "react";
-import {
-  DndContext,
-  DragEndEvent,
-  DragOverEvent,
-  DragOverlay,
-  DragStartEvent,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import { Task } from "@/lib/types";
+import { Plus, AlertCircle } from "@/lib/icons";
+
+// Lazy load drag-and-drop functionality to reduce initial bundle size
+const DragDropProvider = dynamic(() => import("./DragDropProvider").then(mod => ({ default: mod.DragDropProvider })), {
+  loading: () => <div className="flex items-center justify-center h-64"><div className="text-muted-foreground">Loading board...</div></div>,
+  ssr: false
+});
 
 export function BoardView() {
   const { currentBoardId, getCurrentBoard } = useBoardStore();
-  const { tasks, filteredTasks, isLoading, error, moveTask } = useTaskStore();
+  const { filteredTasks, isLoading, error } = useTaskStore();
   const [showCreateTask, setShowCreateTask] = useState(false);
-  const [activeTask, setActiveTask] = useState<Task | null>(null);
+  
   
   const currentBoard = getCurrentBoard();
-  
-  // Configure drag sensors
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    })
-  );
-
-  const handleDragStart = (event: DragStartEvent) => {
-    const { active } = event;
-    const task = tasks.find((t: Task) => t.id === active.id);
-    if (task) {
-      setActiveTask(task);
-    }
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    
-    if (over && active.data.current?.type === 'task') {
-      const taskId = active.id as string;
-      const newStatus = over.id as Task['status'];
-      
-      // Check if the drop target is a valid column status
-      if (newStatus && ['todo', 'in-progress', 'done'].includes(newStatus)) {
-        moveTask(taskId, newStatus);
-      }
-    }
-    
-    setActiveTask(null);
-  };
-
-  const handleDragOver = (event: DragOverEvent) => {
-    const { active, over } = event;
-    
-    if (over && active.data.current?.type === 'task') {
-      const newStatus = over.id as Task['status'];
-      
-      // Check if the drop target is a valid column status
-      if (newStatus && ['todo', 'in-progress', 'done'].includes(newStatus)) {
-        // Optional: Preview the move without committing
-        // This could show a visual indicator that the task can be dropped here
-      }
-    }
-  };
   
   if (!currentBoard) {
     return (
@@ -117,6 +66,7 @@ export function BoardView() {
   const todoTasks = boardTasks.filter(task => task.status === 'todo');
   const inProgressTasks = boardTasks.filter(task => task.status === 'in-progress');
   const doneTasks = boardTasks.filter(task => task.status === 'done');
+  
 
   return (
     <div className="h-full flex flex-col">
@@ -152,12 +102,7 @@ export function BoardView() {
 
       {/* Kanban Board */}
       <div className="flex-1 overflow-hidden p-6">
-        <DndContext
-          sensors={sensors}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-          onDragOver={handleDragOver}
-        >
+        <DragDropProvider>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
             <KanbanColumn
               title="To Do"
@@ -183,21 +128,7 @@ export function BoardView() {
               borderColor="border-green-200 dark:border-green-800"
             />
           </div>
-
-          {/* Drag Overlay */}
-          <DragOverlay>
-            {activeTask ? (
-              <div className="bg-background border border-border rounded-lg shadow-lg p-4 max-w-sm">
-                <h3 className="font-medium text-foreground text-sm">{activeTask.title}</h3>
-                {activeTask.description && (
-                  <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                    {activeTask.description}
-                  </p>
-                )}
-              </div>
-            ) : null}
-          </DragOverlay>
-        </DndContext>
+        </DragDropProvider>
       </div>
 
       {/* Create Task Dialog */}

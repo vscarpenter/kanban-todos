@@ -17,14 +17,15 @@ export function KanbanBoard() {
   const { initializeSettings } = useSettingsStore();
 
   useEffect(() => {
-    // Initialize all stores on app load (client-side only)
+    // Initialize stores sequentially for better performance
     const initializeStores = async () => {
       try {
-        await Promise.all([
-          initializeStore(),
-          initializeBoards(),
-          initializeSettings()
-        ]);
+        // Initialize settings first (needed for theme)
+        await initializeSettings();
+        // Initialize boards next (needed for board selection)  
+        await initializeBoards();
+        // Initialize task store last (can be deferred until board is selected)
+        await initializeStore();
         setIsInitialized(true);
       } catch (error) {
         console.error('Failed to initialize stores:', error);

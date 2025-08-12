@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,17 +18,29 @@ import {
   HelpCircle,
   Download,
   Upload
-} from "lucide-react";
+} from "@/lib/icons";
 import { useBoardStore } from "@/lib/stores/boardStore";
 import { useTaskStore } from "@/lib/stores/taskStore";
 import { useSettingsStore } from "@/lib/stores/settingsStore";
 import { Board } from "@/lib/types";
-import { CreateBoardDialog } from "./CreateBoardDialog";
-import { SettingsDialog } from "./SettingsDialog";
-import { UserGuideDialog } from "./UserGuideDialog";
-import { ExportDialog } from "./ExportDialog";
-import { ImportDialog } from "./ImportDialog";
 import { BoardMenu } from "./BoardMenu";
+
+// Lazy load dialog components to reduce initial bundle size
+const CreateBoardDialog = dynamic(() => import("./CreateBoardDialog").then(mod => ({ default: mod.CreateBoardDialog })), {
+  loading: () => null
+});
+const SettingsDialog = dynamic(() => import("./SettingsDialog").then(mod => ({ default: mod.SettingsDialog })), {
+  loading: () => null
+});
+const UserGuideDialog = dynamic(() => import("./UserGuideDialog").then(mod => ({ default: mod.UserGuideDialog })), {
+  loading: () => null
+});
+const ExportDialog = dynamic(() => import("./ExportDialog").then(mod => ({ default: mod.ExportDialog })), {
+  loading: () => null
+});
+const ImportDialog = dynamic(() => import("./ImportDialog").then(mod => ({ default: mod.ImportDialog })), {
+  loading: () => null
+});
 
 interface SidebarProps {
   isOpen: boolean;

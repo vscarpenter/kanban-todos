@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo, useCallback } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { Task } from "@/lib/types";
@@ -32,6 +32,7 @@ interface TaskCardProps {
 }
 
 export function TaskCard({ task }: TaskCardProps) {
+  
   const [showEditDialog, setShowEditDialog] = useState(false);
   const { deleteTask, archiveTask } = useTaskStore();
   
@@ -53,15 +54,15 @@ export function TaskCard({ task }: TaskCardProps) {
     transform: CSS.Translate.toString(transform),
   };
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (confirm('Are you sure you want to delete this task?')) {
       await deleteTask(task.id);
     }
-  };
+  }, [deleteTask, task.id]);
 
-  const handleArchive = async () => {
+  const handleArchive = useCallback(async () => {
     await archiveTask(task.id);
-  };
+  }, [archiveTask, task.id]);
 
   const getPriorityColor = (priority: Task['priority']) => {
     switch (priority) {
@@ -222,3 +223,19 @@ export function TaskCard({ task }: TaskCardProps) {
     </>
   );
 }
+
+export default memo(TaskCard, (prevProps, nextProps) => {
+  const prevTask = prevProps.task;
+  const nextTask = nextProps.task;
+  
+  return (
+    prevTask.id === nextTask.id &&
+    prevTask.title === nextTask.title &&
+    prevTask.description === nextTask.description &&
+    prevTask.status === nextTask.status &&
+    prevTask.priority === nextTask.priority &&
+    prevTask.progress === nextTask.progress &&
+    prevTask.updatedAt.getTime() === nextTask.updatedAt.getTime() &&
+    JSON.stringify(prevTask.tags) === JSON.stringify(nextTask.tags)
+  );
+});

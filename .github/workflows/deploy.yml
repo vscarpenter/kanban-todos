@@ -1,0 +1,141 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Force deployment (skip checks)'
+        required: false
+        default: 'false'
+        type: boolean
+
+env:
+  NODE_VERSION: '18'
+  S3_BUCKET: 'cascade.vinny.dev'
+  CLOUDFRONT_DISTRIBUTION_ID: 'E1351EA4HZ20NY'
+  DOMAIN: 'https://cascade.vinny.dev'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write  # For OIDC authentication
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Build application
+        run: npm run build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # Option 1: Use OIDC (recommended)
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: cascade-deploy
+          aws-region: us-east-1
+          
+          # Option 2: Use access keys (fallback)
+          # aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          # aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          # aws-region: us-east-1
+
+      - name: Deploy to S3
+        run: |
+          # Upload static assets with long cache
+          aws s3 sync ./out s3://${{ env.S3_BUCKET }} \
+            --delete \
+            --cache-control "max-age=31536000,public" \
+            --exclude "*.html" \
+            --exclude "*.json" \
+            --exclude "*.txt"
+          
+          # Upload HTML files with no cache
+          aws s3 sync ./out s3://${{ env.S3_BUCKET }} \
+            --delete \
+            --cache-control "max-age=0,no-cache,no-store,must-revalidate" \
+            --include "*.html"
+          
+          # Upload dynamic files with short cache
+          aws s3 sync ./out s3://${{ env.S3_BUCKET }} \
+            --delete \
+            --cache-control "max-age=300,public" \
+            --include "*.json" \
+            --include "*.txt"
+
+      - name: Invalidate CloudFront
+        run: |
+          INVALIDATION_ID=$(aws cloudfront create-invalidation \
+            --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*" \
+            --query 'Invalidation.Id' \
+            --output text)
+          echo "CloudFront invalidation created: $INVALIDATION_ID"
+
+      - name: Verify deployment
+        run: |
+          # Wait for initial propagation
+          sleep 10
+          
+          # Check if site is accessible
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" ${{ env.DOMAIN }})
+          
+          if [ "$HTTP_STATUS" = "200" ]; then
+            echo "✅ Site is accessible at ${{ env.DOMAIN }}"
+          else
+            echo "⚠️ Site returned HTTP status: $HTTP_STATUS"
+            echo "This might be due to CloudFront cache propagation"
+          fi
+
+      - name: Create deployment summary
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Target**: ${{ env.DOMAIN }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **S3 Bucket**: s3://${{ env.S3_BUCKET }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **CloudFront Distribution**: ${{ env.CLOUDFRONT_DISTRIBUTION_ID }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Deployed by**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Build Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          find ./out -type f -name "*.js" -o -name "*.css" -o -name "*.html" | head -10 >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Note**: CloudFront cache invalidation may take 5-15 minutes to propagate globally." >> $GITHUB_STEP_SUMMARY
+
+  lighthouse:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Wait for deployment propagation
+        run: sleep 60
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          urls: |
+            https://cascade.vinny.dev
+          uploadArtifacts: true
+          temporaryPublicStorage: true

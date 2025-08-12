@@ -4,9 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "rimraf .next out && next build",
+    "build:analyze": "ANALYZE=true npm run build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "deploy": "npm run build && npm run deploy:s3 && npm run deploy:invalidate",
+    "deploy:s3": "aws s3 sync ./out s3://cascade.vinny.dev --delete --cache-control 'max-age=31536000,public' --exclude '*.html' && aws s3 sync ./out s3://cascade.vinny.dev --delete --cache-control 'max-age=0,no-cache,no-store,must-revalidate' --include '*.html'",
+    "deploy:invalidate": "aws cloudfront create-invalidation --distribution-id E1351EA4HZ20NY --paths '/*'",
+    "deploy:check": "curl -I https://cascade.vinny.dev"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -37,12 +42,14 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@next/bundle-analyzer": "^15.4.6",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.4.6",
+    "rimraf": "^6.0.1",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.6",
     "typescript": "^5"
