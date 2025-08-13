@@ -31,11 +31,12 @@ export function KanbanColumn({ title, tasks, status, color, borderColor }: Kanba
   return (
     <div
       ref={setNodeRef}
-      className={`h-full ${color} ${borderColor} border-2 rounded-lg transition-colors ${
+      className={`flex flex-col min-h-0 ${color} ${borderColor} border-2 rounded-lg transition-colors ${
         isOver ? 'opacity-75 ring-2 ring-primary' : ''
       }`}
+      style={{ height: 'calc(100vh - 280px)' }}
     >
-      <Card className="h-full border-0 bg-transparent">
+      <Card className="flex flex-col h-full border-0 bg-transparent">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg font-semibold text-foreground">
@@ -47,8 +48,8 @@ export function KanbanColumn({ title, tasks, status, color, borderColor }: Kanba
           </div>
         </CardHeader>
         
-        <CardContent className="pt-0">
-          <div className="space-y-3 min-h-[200px]">
+        <CardContent className="pt-0 flex-1 overflow-y-auto">
+          <div className="space-y-3 min-h-[200px] pb-4">
             {tasks.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <p className="text-sm">No tasks</p>

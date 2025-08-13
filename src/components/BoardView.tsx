@@ -101,9 +101,9 @@ export function BoardView() {
       </div>
 
       {/* Kanban Board */}
-      <div className="flex-1 overflow-hidden p-6">
+      <div className="flex-1 p-6">
         <DragDropProvider>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 min-h-full">
             <KanbanColumn
               title="To Do"
               tasks={todoTasks}
