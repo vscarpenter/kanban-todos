@@ -5,6 +5,8 @@ import { Sidebar } from "./Sidebar";
 import { BoardView } from "./BoardView";
 import { SearchBar } from "./SearchBar";
 import { ClientOnly } from "./ClientOnly";
+import { Button } from "@/components/ui/button";
+import { Menu } from "@/lib/icons";
 import { useTaskStore } from "@/lib/stores/taskStore";
 import { useBoardStore } from "@/lib/stores/boardStore";
 import { useSettingsStore } from "@/lib/stores/settingsStore";
@@ -56,10 +58,24 @@ export function KanbanBoard() {
     <ClientOnly fallback={<LoadingFallback />}>
       <div className="flex h-screen bg-background">
         {/* Sidebar */}
-        <Sidebar 
-          isOpen={isSidebarOpen} 
-          onToggle={() => setIsSidebarOpen(!isSidebarOpen)} 
-        />
+        {isSidebarOpen && (
+          <Sidebar 
+            isOpen={isSidebarOpen} 
+            onToggle={() => setIsSidebarOpen(!isSidebarOpen)} 
+          />
+        )}
+        
+        {/* Sidebar restore button - only show when sidebar is closed */}
+        {!isSidebarOpen && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="fixed top-4 left-4 z-50 bg-background/80 backdrop-blur-sm border border-border shadow-lg"
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            <Menu className="h-4 w-4" />
+          </Button>
+        )}
         
         {/* Main Content */}
         <div className="flex-1 flex flex-col min-w-0">

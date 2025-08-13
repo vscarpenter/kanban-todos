@@ -27,6 +27,7 @@ interface TaskActions {
   deleteTask: (taskId: string) => Promise<void>;
   moveTask: (taskId: string, newStatus: Task['status']) => Promise<void>;
   archiveTask: (taskId: string) => Promise<void>;
+  unarchiveTask: (taskId: string) => Promise<void>;
   
   // Filtering and search
   applyFilters: () => void;
@@ -252,6 +253,24 @@ export const useTaskStore = create<TaskState & TaskActions>()(
           } catch (error) {
             set({ 
               error: error instanceof Error ? error.message : 'Failed to archive task'
+            });
+          }
+        },
+
+        unarchiveTask: async (taskId) => {
+          try {
+            const task = get().tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            const updates: Partial<Task> = {
+              archivedAt: undefined,
+              updatedAt: new Date(),
+            };
+
+            await get().updateTask(taskId, updates);
+          } catch (error) {
+            set({ 
+              error: error instanceof Error ? error.message : 'Failed to unarchive task'
             });
           }
         },

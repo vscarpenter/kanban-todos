@@ -41,6 +41,9 @@ const ExportDialog = dynamic(() => import("./ExportDialog").then(mod => ({ defau
 const ImportDialog = dynamic(() => import("./ImportDialog").then(mod => ({ default: mod.ImportDialog })), {
   loading: () => null
 });
+const ArchiveDialog = dynamic(() => import("./ArchiveDialog").then(mod => ({ default: mod.ArchiveDialog })), {
+  loading: () => null
+});
 
 interface SidebarProps {
   isOpen: boolean;
@@ -53,6 +56,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const [showUserGuide, setShowUserGuide] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showArchiveDialog, setShowArchiveDialog] = useState(false);
   const { boards, currentBoardId, selectBoard } = useBoardStore();
   const { tasks } = useTaskStore();
   const { updateSettings } = useSettingsStore();
@@ -106,7 +110,6 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
           fixed md:relative inset-y-0 left-0 z-40
           transform transition-transform duration-300 ease-in-out
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-          md:translate-x-0
           w-80 bg-card border-r border-border
           flex flex-col
         `}
@@ -153,7 +156,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
               </Button>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1">
               {boards.map((board) => (
                 <BoardItem
                   key={board.id}
@@ -206,7 +209,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
             <Button
               variant="ghost"
               className="w-full justify-start"
-              onClick={() => {/* TODO: Open archive */}}
+              onClick={() => setShowArchiveDialog(true)}
             >
               <Archive className="h-4 w-4 mr-2" />
               Archive
@@ -260,6 +263,11 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
         open={showImportDialog}
         onOpenChange={setShowImportDialog}
       />
+      
+      <ArchiveDialog
+        open={showArchiveDialog}
+        onOpenChange={setShowArchiveDialog}
+      />
     </>
   );
 }
@@ -280,10 +288,10 @@ function BoardItem({ board, isActive, taskCount, onSelect }: BoardItemProps) {
       `}
       onClick={onSelect}
     >
-      <CardContent className="p-3">
-        <div className="flex items-center gap-3">
+      <CardContent className="p-2">
+        <div className="flex items-center gap-2">
           <div 
-            className="w-4 h-4 rounded-full flex-shrink-0"
+            className="w-3 h-3 rounded-full flex-shrink-0"
             style={{ backgroundColor: board.color }}
           />
           <div className="flex-1 min-w-0">
