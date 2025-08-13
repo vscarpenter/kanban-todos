@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
 import { Board } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
 import { exportBoards, ExportData } from '@/lib/utils/exportImport';

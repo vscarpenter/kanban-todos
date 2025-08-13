@@ -191,7 +191,7 @@ export class TaskDatabase {
     const settings = await this.getSettings();
 
     return {
-      version: '3.0.0',
+      version: '1.0.0',
       exportedAt: new Date().toISOString(),
       tasks,
       boards,

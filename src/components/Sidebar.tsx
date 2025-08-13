@@ -233,7 +233,14 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
         {/* Footer */}
         <div className="p-4 border-t border-border">
           <div className="text-xs text-muted-foreground text-center">
-            Cascade v3.0.0
+            Cascade v1.0.0 | <a 
+              href="https://vinny.dev/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-foreground transition-colors underline"
+            >
+              vinny.dev
+            </a>
           </div>
         </div>
       </div>
