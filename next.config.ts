@@ -68,11 +68,6 @@ const nextConfig: NextConfig = {
           },
         },
       };
-      
-      // Optimize tree shaking
-      config.optimization.usedExports = true;
-      config.optimization.providedExports = true;
-      config.optimization.sideEffects = false;
     }
     
     return config;

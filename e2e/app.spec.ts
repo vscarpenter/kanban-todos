@@ -5,7 +5,7 @@ test.describe('Kanban App', () => {
     await page.goto('/')
     
     // Check that the app loads with basic structure
-    await expect(page.locator('h1')).toContainText('My Board')
+    await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible()
     
     // Check for basic kanban structure
     await expect(page.getByText('To Do')).toBeVisible()

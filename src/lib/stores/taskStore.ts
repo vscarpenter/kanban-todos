@@ -17,6 +17,7 @@ interface TaskActions {
   setTasks: (tasks: Task[]) => void;
   setFilteredTasks: (tasks: Task[]) => void;
   setFilters: (filters: Partial<TaskFilters>) => void;
+  setBoardFilter: (boardId: string | null) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   
@@ -55,7 +56,12 @@ const initialState: TaskState = {
 const applyFiltersToTasks = (tasks: Task[], filters: TaskFilters): Task[] => {
   let filteredTasks = tasks;
   
-  // Apply current filters
+  // Filter by board first (most important filter)
+  if (filters.boardId) {
+    filteredTasks = filteredTasks.filter(task => task.boardId === filters.boardId);
+  }
+  
+  // Apply other filters
   if (filters.search) {
     const searchLower = filters.search.toLowerCase();
     filteredTasks = filteredTasks.filter(task =>
@@ -97,9 +103,18 @@ export const useTaskStore = create<TaskState & TaskActions>()(
 
         setTasks: (tasks) => set({ tasks }),
         setFilteredTasks: (tasks) => set({ filteredTasks: tasks }),
-        setFilters: (filters) => set((state) => ({ 
-          filters: { ...state.filters, ...filters } 
-        })),
+        setFilters: (filters) => {
+          set((state) => ({ 
+            filters: { ...state.filters, ...filters } 
+          }));
+          get().applyFilters();
+        },
+        setBoardFilter: (boardId) => {
+          set((state) => ({
+            filters: { ...state.filters, boardId: boardId || undefined }
+          }));
+          get().applyFilters();
+        },
         setLoading: (isLoading) => set({ isLoading }),
         setError: (error) => set({ error }),
 
@@ -248,10 +263,15 @@ export const useTaskStore = create<TaskState & TaskActions>()(
         },
 
         clearFilters: () => {
+          const { filters } = get();
           set({ 
-            filters: { search: '', tags: [] },
-            filteredTasks: get().tasks 
+            filters: { 
+              search: '', 
+              tags: [],
+              boardId: filters.boardId // Keep board filter when clearing other filters
+            }
           });
+          get().applyFilters();
         },
 
         // Export/Import operations

@@ -38,7 +38,8 @@ describe('boardStore', () => {
     await addBoard({
       name: 'Test Board',
       color: '#3b82f6',
-      description: 'Test description'
+      description: 'Test description',
+      isDefault: false
     })
     
     const { boards } = useBoardStore.getState()

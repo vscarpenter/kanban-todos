@@ -30,6 +30,7 @@ export interface Settings {
   enableNotifications: boolean;
   enableKeyboardShortcuts: boolean;
   enableDebugMode: boolean;
+  currentBoardId?: string; // Persist current board selection
   accessibility: {
     highContrast: boolean;
     reduceMotion: boolean;
@@ -42,6 +43,7 @@ export interface TaskFilters {
   status?: Task['status'];
   priority?: Task['priority'];
   tags: string[];
+  boardId?: string; // Filter by board
   dateRange?: {
     start: Date;
     end: Date;

@@ -12,8 +12,8 @@ import { useSettingsStore } from "@/lib/stores/settingsStore";
 export function KanbanBoard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [, setIsInitialized] = useState(false);
-  const { initializeStore } = useTaskStore();
-  const { initializeBoards } = useBoardStore();
+  const { initializeStore, setBoardFilter } = useTaskStore();
+  const { initializeBoards, currentBoardId } = useBoardStore();
   const { initializeSettings } = useSettingsStore();
 
   useEffect(() => {
@@ -35,6 +35,11 @@ export function KanbanBoard() {
 
     initializeStores();
   }, [initializeStore, initializeBoards, initializeSettings]);
+
+  // Update task filtering when current board changes
+  useEffect(() => {
+    setBoardFilter(currentBoardId);
+  }, [currentBoardId, setBoardFilter]);
 
   const LoadingFallback = () => (
     <div className="flex h-screen bg-background">

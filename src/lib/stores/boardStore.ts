@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
+import { devtools } from 'zustand/middleware';
 import { Board } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
 import { exportBoards, ExportData } from '@/lib/utils/exportImport';
@@ -14,7 +14,7 @@ interface BoardState {
 interface BoardActions {
   // State management
   setBoards: (boards: Board[]) => void;
-  setCurrentBoard: (boardId: string) => void;
+  setCurrentBoard: (boardId: string) => Promise<void>;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   
@@ -25,7 +25,7 @@ interface BoardActions {
   duplicateBoard: (boardId: string) => Promise<void>;
   
   // Board selection
-  selectBoard: (boardId: string) => void;
+  selectBoard: (boardId: string) => Promise<void>;
   getCurrentBoard: () => Board | null;
   
   // Import/Export operations
@@ -52,14 +52,35 @@ const initialState: BoardState = {
   error: null,
 };
 
-export const useBoardStore = create<BoardState & BoardActions>()(
-  devtools(
-    persist(
-      (set, get) => ({
-        ...initialState,
+export const useBoardStore = create<BoardState & BoardActions>((set, get) => ({
+  ...initialState,
 
         setBoards: (boards) => set({ boards }),
-        setCurrentBoard: (boardId) => set({ currentBoardId: boardId }),
+        setCurrentBoard: async (boardId) => {
+          set({ currentBoardId: boardId });
+          
+          // Persist current board selection in settings
+          try {
+            const existingSettings = await taskDB.getSettings();
+            const updatedSettings = {
+              theme: 'system' as const,
+              autoArchiveDays: 30,
+              enableNotifications: false,
+              enableKeyboardShortcuts: true,
+              enableDebugMode: false,
+              accessibility: {
+                highContrast: false,
+                reduceMotion: false,
+                fontSize: 'medium' as const,
+              },
+              ...existingSettings,
+              currentBoardId: boardId,
+            };
+            await taskDB.updateSettings(updatedSettings);
+          } catch (error) {
+            console.warn('Failed to persist current board selection:', error);
+          }
+        },
         setLoading: (isLoading) => set({ isLoading }),
         setError: (error) => set({ error }),
 
@@ -145,6 +166,12 @@ export const useBoardStore = create<BoardState & BoardActions>()(
                 isLoading: false,
               };
             });
+            
+            // Update persisted current board if it changed
+            const finalState = get();
+            if (finalState.currentBoardId && finalState.currentBoardId !== boardId) {
+              await get().setCurrentBoard(finalState.currentBoardId);
+            }
           } catch (error) {
             set({ 
               error: error instanceof Error ? error.message : 'Failed to delete board',
@@ -174,8 +201,8 @@ export const useBoardStore = create<BoardState & BoardActions>()(
           }
         },
 
-        selectBoard: (boardId) => {
-          set({ currentBoardId: boardId });
+        selectBoard: async (boardId) => {
+          await get().setCurrentBoard(boardId);
         },
 
         getCurrentBoard: () => {
@@ -296,9 +323,16 @@ export const useBoardStore = create<BoardState & BoardActions>()(
               archivedAt: board.archivedAt ? new Date(board.archivedAt) : undefined,
             }));
             
+            // Restore current board from settings
+            const settings = await taskDB.getSettings();
+            const savedCurrentBoardId = settings?.currentBoardId;
+            const currentBoardId = savedCurrentBoardId && processedBoards.some(b => b.id === savedCurrentBoardId)
+              ? savedCurrentBoardId
+              : processedBoards[0]?.id || null;
+            
             set({ 
               boards: processedBoards,
-              currentBoardId: processedBoards[0]?.id || null,
+              currentBoardId,
               isLoading: false 
             });
           } catch (error) {
@@ -308,14 +342,4 @@ export const useBoardStore = create<BoardState & BoardActions>()(
             });
           }
         },
-      }),
-      {
-        name: 'cascade-boards',
-        partialize: (state) => ({ 
-          boards: state.boards,
-          currentBoardId: state.currentBoardId 
-        }),
-      }
-    )
-  )
-);
+}));
