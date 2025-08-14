@@ -6,9 +6,9 @@
 set -e  # Exit on any error
 
 # Configuration
-S3_BUCKET="s3://cascade.vinny.dev"
-CLOUDFRONT_DISTRIBUTION_ID="E1351EA4HZ20NY"
-DOMAIN="https://cascade.vinny.dev"
+S3_BUCKET="s3://todos.vinny.dev"
+CLOUDFRONT_DISTRIBUTION_ID="E2UEF9C8JAMJH5"
+DOMAIN="https://todos.vinny.dev"
 
 # Colors for output
 RED='\033[0;31m'

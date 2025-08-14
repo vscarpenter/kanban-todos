@@ -7,9 +7,9 @@
 
 const deployConfig = {
   production: {
-    s3Bucket: 'cascade.vinny.dev',
-    cloudFrontDistributionId: 'E1351EA4HZ20NY',
-    domain: 'https://cascade.vinny.dev',
+    s3Bucket: 'todos.vinny.dev',
+    cloudFrontDistributionId: 'E2UEF9C8JAMJH5',
+    domain: 'https://todos.vinny.dev',
     region: 'us-east-1',
     
     // Cache control settings
@@ -29,9 +29,9 @@ const deployConfig = {
   },
   
   staging: {
-    s3Bucket: 'staging-cascade.vinny.dev',
+    s3Bucket: 'staging-todos.vinny.dev',
     cloudFrontDistributionId: 'YOUR_STAGING_DISTRIBUTION_ID',
-    domain: 'https://staging-cascade.vinny.dev',
+    domain: 'https://staging-todos.vinny.dev',
     region: 'us-east-1',
     
     cacheControl: {

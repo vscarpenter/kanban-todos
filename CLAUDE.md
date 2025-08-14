@@ -132,7 +132,7 @@ Custom IndexedDB wrapper in `src/lib/utils/database.ts`:
 - Theme switching preserves user preference across sessions
 
 ### Production Deployment
-- **Target**: S3 bucket `cascade.vinny.dev` with CloudFront distribution `E1351EA4HZ20NY`
+- **Target**: S3 bucket `todos.vinny.dev` with CloudFront distribution `E2UEF9C8JAMJH5`
 - **Cache Strategy**: 1-year cache for static assets, no cache for HTML, 5-min cache for dynamic files
 - **Deployment**: Automated via GitHub Actions or manual via `npm run deploy`
 - **Verification**: Includes health checks and Lighthouse performance audits
@@ -163,4 +163,4 @@ Custom IndexedDB wrapper in `src/lib/utils/database.ts`:
   - Virtual scrolling helpers for large lists
 - **Component Lifecycle**: Proper cleanup of subscriptions and timers
 - **Memory Monitoring**: Browser memory usage tracking utilities
-- I have the AWS CLI configured locally and  cascade.vinny.dev is pointing to my CloudFront distribution
+- I have the AWS CLI configured locally and todos.vinny.dev is pointing to my CloudFront distribution
