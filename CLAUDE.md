@@ -12,11 +12,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run lint` - Run ESLint with Next.js configuration
 
 ### Deployment
-- `npm run deploy` - Full deployment: build + S3 sync + CloudFront invalidation
-- `npm run deploy:s3` - Sync built files to S3 with optimized cache headers
-- `npm run deploy:invalidate` - Invalidate CloudFront cache
-- `npm run deploy:check` - Verify deployment status
-- `./scripts/deploy.sh` - Comprehensive deployment script with verification
+- `npm run deploy` - Single environment deployment (todos.vinny.dev) via `./scripts/deploy.sh`
+- `npm run deploy:multi` - Interactive multi-environment deployment script
+- `npm run deploy:todos` - Deploy specifically to todos.vinny.dev environment
+- `npm run deploy:cascade` - Deploy specifically to cascade.vinny.dev environment  
+- `npm run deploy:all` - Deploy to all configured environments
+- `npm run deploy:check` - Verify todos.vinny.dev deployment status
+- `npm run deploy:check:cascade` - Verify cascade.vinny.dev deployment status
+- `./scripts/deploy-multi.sh` - Multi-environment deployment with JSON configuration
 
 ### Package Management
 - `npm install` - Install all dependencies
@@ -132,11 +135,20 @@ Custom IndexedDB wrapper in `src/lib/utils/database.ts`:
 - Theme switching preserves user preference across sessions
 
 ### Production Deployment
-- **Target**: S3 bucket `todos.vinny.dev` with CloudFront distribution `E2UEF9C8JAMJH5`
+
+#### Dual Environment Setup
+- **Primary**: `todos.vinny.dev` (S3: `s3://todos.vinny.dev`, CloudFront: `E2UEF9C8JAMJH5`)
+- **Secondary**: `cascade.vinny.dev` (S3: `s3://cascade.vinny.dev`, CloudFront: `E1351EA4HZ20NY`)
+- **Configuration**: `deploy-config.json` contains environment-specific settings
 - **Cache Strategy**: 1-year cache for static assets, no cache for HTML, 5-min cache for dynamic files
-- **Deployment**: Automated via GitHub Actions or manual via `npm run deploy`
-- **Verification**: Includes health checks and Lighthouse performance audits
-- **Security**: Optimized cache headers and CloudFront invalidation
+- **Deployment**: Multi-environment support via `./scripts/deploy-multi.sh`
+
+#### Security Configuration (Both Environments)
+- **CloudFront Response Headers Policy ID**: `784dc706-262d-418a-9003-238d40a70c6a`
+- **Content Security Policy**: `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'`
+- **Security Headers**: HSTS (1 year), X-Frame-Options (DENY), X-Content-Type-Options (nosniff), Referrer-Policy (strict-origin-when-cross-origin)
+- **Permissions-Policy**: Restricts camera, microphone, geolocation, payment, USB, sensors
+- **Testing**: Security headers validation included in deployment verification
 
 ### Performance Optimizations
 - **Bundle Size**: ~388kB First Load JS with optimized vendor chunks
@@ -164,3 +176,4 @@ Custom IndexedDB wrapper in `src/lib/utils/database.ts`:
 - **Component Lifecycle**: Proper cleanup of subscriptions and timers
 - **Memory Monitoring**: Browser memory usage tracking utilities
 - I have the AWS CLI configured locally and todos.vinny.dev is pointing to my CloudFront distribution
+- lets capture the security headers implementation details in CLAUDE.md

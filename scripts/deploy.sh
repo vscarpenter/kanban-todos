@@ -156,6 +156,14 @@ verify_deployment() {
     else
         warn "Could not verify application content"
     fi
+    
+    # Test security headers
+    info "Testing security headers..."
+    if command -v ./scripts/test-security-headers.sh &> /dev/null; then
+        ./scripts/test-security-headers.sh
+    else
+        warn "Security headers test script not found. Run manually: ./scripts/test-security-headers.sh"
+    fi
 }
 
 # Main deployment process

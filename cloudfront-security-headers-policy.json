@@ -1,0 +1,42 @@
+{
+  "Name": "kanban-todos-security-headers",
+  "Comment": "Security headers policy for todos.vinny.dev - includes CSP and standard security headers",
+  "SecurityHeadersConfig": {
+    "StrictTransportSecurity": {
+      "AccessControlMaxAgeSec": 31536000,
+      "IncludeSubdomains": true,
+      "Preload": false,
+      "Override": true
+    },
+    "ContentTypeOptions": {
+      "Override": true
+    },
+    "FrameOptions": {
+      "FrameOption": "DENY",
+      "Override": true
+    },
+    "ReferrerPolicy": {
+      "ReferrerPolicy": "strict-origin-when-cross-origin",
+      "Override": true
+    },
+    "ContentSecurityPolicy": {
+      "ContentSecurityPolicy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+      "Override": true
+    }
+  },
+  "CustomHeadersConfig": {
+    "Quantity": 2,
+    "Items": [
+      {
+        "Header": "Permissions-Policy",
+        "Value": "camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=(), ambient-light-sensor=()",
+        "Override": true
+      },
+      {
+        "Header": "X-Robots-Tag",
+        "Value": "index, follow",
+        "Override": true
+      }
+    ]
+  }
+}

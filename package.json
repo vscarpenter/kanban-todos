@@ -11,10 +11,15 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "deploy": "npm run build && npm run deploy:s3 && npm run deploy:invalidate",
+    "deploy": "./scripts/deploy.sh",
+    "deploy:multi": "./scripts/deploy-multi.sh",
+    "deploy:todos": "./scripts/deploy-multi.sh todos",
+    "deploy:cascade": "./scripts/deploy-multi.sh cascade",
+    "deploy:all": "./scripts/deploy-multi.sh all",
     "deploy:s3": "aws s3 sync ./out s3://todos.vinny.dev --delete --cache-control 'max-age=31536000,public' --exclude '*.html' && aws s3 sync ./out s3://todos.vinny.dev --delete --cache-control 'max-age=0,no-cache,no-store,must-revalidate' --include '*.html'",
     "deploy:invalidate": "aws cloudfront create-invalidation --distribution-id E2UEF9C8JAMJH5 --paths '/*'",
-    "deploy:check": "curl -I https://todos.vinny.dev"
+    "deploy:check": "curl -I https://todos.vinny.dev",
+    "deploy:check:cascade": "curl -I https://cascade.vinny.dev"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
