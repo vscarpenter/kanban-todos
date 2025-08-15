@@ -145,9 +145,9 @@ Custom IndexedDB wrapper in `src/lib/utils/database.ts`:
 
 #### Security Configuration (Both Environments)
 - **CloudFront Response Headers Policy ID**: `784dc706-262d-418a-9003-238d40a70c6a`
-- **Content Security Policy**: `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'`
+- **Content Security Policy**: `default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'`
 - **Security Headers**: HSTS (1 year), X-Frame-Options (DENY), X-Content-Type-Options (nosniff), Referrer-Policy (strict-origin-when-cross-origin)
-- **Permissions-Policy**: Restricts camera, microphone, geolocation, payment, USB, sensors
+- **Permissions-Policy**: `camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()`
 - **Testing**: Security headers validation included in deployment verification
 
 ### Performance Optimizations
