@@ -1,0 +1,65 @@
+{
+  "name": "Cascade - Task Management",
+  "short_name": "Cascade",
+  "description": "Privacy-first, accessible kanban board task management system",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#8B5CF6",
+  "orientation": "portrait-primary",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/images/cascade-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/cascade-icon.svg",
+      "sizes": "192x192", 
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/cascade-icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml", 
+      "purpose": "any"
+    },
+    {
+      "src": "/images/cascade-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/images/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/images/screenshot-desktop.png", 
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Create Task",
+      "short_name": "New Task",
+      "description": "Quickly create a new task",
+      "url": "/?action=create-task",
+      "icons": [
+        {
+          "src": "/images/cascade-icon.svg",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}
