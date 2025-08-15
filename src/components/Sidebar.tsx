@@ -17,7 +17,8 @@ import {
   X,
   HelpCircle,
   Download,
-  Upload
+  Upload,
+  Shield
 } from "@/lib/icons";
 import { useBoardStore } from "@/lib/stores/boardStore";
 import { useTaskStore } from "@/lib/stores/taskStore";
@@ -213,6 +214,14 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
             >
               <Archive className="h-4 w-4 mr-2" />
               Archive
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start"
+              onClick={() => window.open('/privacy', '_blank')}
+            >
+              <Shield className="h-4 w-4 mr-2" />
+              Privacy Policy
             </Button>
             <Button
               variant="ghost"

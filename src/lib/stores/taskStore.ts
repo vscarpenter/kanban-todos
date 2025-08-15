@@ -26,6 +26,7 @@ interface TaskActions {
   updateTask: (taskId: string, updates: Partial<Task>) => Promise<void>;
   deleteTask: (taskId: string) => Promise<void>;
   moveTask: (taskId: string, newStatus: Task['status']) => Promise<void>;
+  moveTaskToBoard: (taskId: string, targetBoardId: string) => Promise<void>;
   archiveTask: (taskId: string) => Promise<void>;
   unarchiveTask: (taskId: string) => Promise<void>;
   
@@ -236,6 +237,39 @@ export const useTaskStore = create<TaskState & TaskActions>()(
             set({ 
               error: error instanceof Error ? error.message : 'Failed to move task'
             });
+          }
+        },
+
+        moveTaskToBoard: async (taskId, targetBoardId) => {
+          try {
+            set({ isLoading: true, error: null });
+            
+            const task = get().tasks.find(t => t.id === taskId);
+            if (!task) {
+              throw new Error('Task not found');
+            }
+
+            if (task.boardId === targetBoardId) {
+              throw new Error('Task is already on this board');
+            }
+
+            const updates: Partial<Task> = {
+              boardId: targetBoardId,
+              updatedAt: new Date(),
+            };
+
+            await get().updateTask(taskId, updates);
+            
+            // Refresh filtered tasks to reflect board change
+            get().applyFilters();
+            
+          } catch (error) {
+            set({ 
+              error: error instanceof Error ? error.message : 'Failed to move task to board'
+            });
+            throw error; // Re-throw so UI can handle it
+          } finally {
+            set({ isLoading: false });
           }
         },
 

@@ -14,7 +14,9 @@ import {
   Flag,
   Edit,
   Archive,
-  Trash2
+  Trash2,
+  Share,
+  Move
 } from "lucide-react";
 import { 
   DropdownMenu, 
@@ -26,6 +28,8 @@ import {
 import { useTaskStore } from "@/lib/stores/taskStore";
 import { formatDistanceToNow } from "date-fns";
 import { EditTaskDialog } from "../EditTaskDialog";
+import { ShareTaskDialog } from "../ShareTaskDialog";
+import { MoveTaskDialog } from "../MoveTaskDialog";
 
 interface TaskCardProps {
   task: Task;
@@ -34,6 +38,8 @@ interface TaskCardProps {
 export function TaskCard({ task }: TaskCardProps) {
   
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [showMoveDialog, setShowMoveDialog] = useState(false);
   const { deleteTask, archiveTask } = useTaskStore();
   
   const {
@@ -130,6 +136,14 @@ export function TaskCard({ task }: TaskCardProps) {
                     <Edit className="h-4 w-4 mr-2" />
                     Edit Task
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowShareDialog(true)}>
+                    <Share className="h-4 w-4 mr-2" />
+                    Share Task
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowMoveDialog(true)}>
+                    <Move className="h-4 w-4 mr-2" />
+                    Move to Board
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleArchive}>
                     <Archive className="h-4 w-4 mr-2" />
                     Archive
@@ -218,6 +232,20 @@ export function TaskCard({ task }: TaskCardProps) {
       <EditTaskDialog
         open={showEditDialog}
         onOpenChange={setShowEditDialog}
+        task={task}
+      />
+
+      {/* Share Task Dialog */}
+      <ShareTaskDialog
+        open={showShareDialog}
+        onOpenChange={setShowShareDialog}
+        task={task}
+      />
+
+      {/* Move Task Dialog */}
+      <MoveTaskDialog
+        open={showMoveDialog}
+        onOpenChange={setShowMoveDialog}
         task={task}
       />
     </>

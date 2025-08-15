@@ -15,7 +15,8 @@ import {
   Settings,
   BarChart3,
   Lightbulb,
-  CheckCircle
+  CheckCircle,
+  Share
 } from "lucide-react";
 
 interface UserGuideDialogProps {
@@ -41,7 +42,14 @@ const guideSteps = [
             <li>• Progress tracking for in-progress tasks</li>
             <li>• Search and filtering capabilities</li>
             <li>• Privacy-first - all data stored locally</li>
+            <li>• Task sharing without compromising privacy</li>
           </ul>
+        </div>
+        <div className="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+          <p className="text-sm text-green-800 dark:text-green-200">
+            <strong>Privacy Guarantee:</strong> Your data never leaves your device. 
+            For complete details, see our Privacy Policy in the sidebar.
+          </p>
         </div>
       </div>
     )
@@ -156,6 +164,55 @@ const guideSteps = [
               <p className="text-sm text-muted-foreground">Click the three dots menu on any task card</p>
             </div>
           </div>
+        </div>
+      </div>
+    )
+  },
+  {
+    title: "Sharing Tasks",
+    icon: <Share className="h-6 w-6" />,
+    content: (
+      <div className="space-y-4">
+        <p className="text-muted-foreground">
+          Share task details with others via email or by copying formatted text, even if they don&apos;t have access to your Kanban app.
+        </p>
+        <div className="space-y-3">
+          <div className="flex items-start gap-3">
+            <Badge variant="outline" className="mt-1">1</Badge>
+            <div>
+              <p className="font-medium">Access the share menu</p>
+              <p className="text-sm text-muted-foreground">Click the three dots menu on any task card and select &ldquo;Share Task&rdquo;</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <Badge variant="outline" className="mt-1">2</Badge>
+            <div>
+              <p className="font-medium">Choose your sharing method</p>
+              <p className="text-sm text-muted-foreground">Email tab: Opens your email client with pre-filled details</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <Badge variant="outline" className="mt-1">3</Badge>
+            <div>
+              <p className="font-medium">Or copy task details to clipboard</p>
+              <p className="text-sm text-muted-foreground">Copy Details tab: Get plain text or Markdown formatted task information</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-muted/50 p-4 rounded-lg">
+          <h4 className="font-medium mb-2">Shared Information Includes:</h4>
+          <ul className="space-y-1 text-sm text-muted-foreground">
+            <li>• Task title and description</li>
+            <li>• Status, priority, and creation date</li>
+            <li>• Completion date (if finished)</li>
+            <li>• Tags for categorization</li>
+            <li>• Link to your Kanban app</li>
+          </ul>
+        </div>
+        <div className="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+          <p className="text-sm text-green-800 dark:text-green-200">
+            <strong>Privacy First:</strong> Task sharing works completely offline - no data is sent to external servers.
+          </p>
         </div>
       </div>
     )
