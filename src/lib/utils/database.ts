@@ -35,6 +35,7 @@ export class TaskDatabase {
         if (!db.objectStoreNames.contains('boards')) {
           const boardStore = db.createObjectStore('boards', { keyPath: 'id' });
           boardStore.createIndex('isDefault', 'isDefault', { unique: false });
+          boardStore.createIndex('order', 'order', { unique: false });
         }
 
         if (!db.objectStoreNames.contains('settings')) {

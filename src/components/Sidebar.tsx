@@ -18,7 +18,9 @@ import {
   HelpCircle,
   Download,
   Upload,
-  Shield
+  Shield,
+  ChevronUp,
+  ChevronDown
 } from "@/lib/icons";
 import { useBoardStore } from "@/lib/stores/boardStore";
 import { useTaskStore } from "@/lib/stores/taskStore";
@@ -58,7 +60,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
-  const { boards, currentBoardId, selectBoard } = useBoardStore();
+  const { boards, currentBoardId, selectBoard, reorderBoard } = useBoardStore();
   const { tasks } = useTaskStore();
   const { updateSettings } = useSettingsStore();
   const { theme, setTheme } = useTheme();
@@ -158,13 +160,16 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
             </div>
 
             <div className="space-y-1">
-              {boards.map((board) => (
+              {boards.map((board, index) => (
                 <BoardItem
                   key={board.id}
                   board={board}
                   isActive={board.id === currentBoardId}
                   taskCount={getTaskCount(board.id)}
                   onSelect={() => selectBoard(board.id)}
+                  onReorder={(direction) => reorderBoard(board.id, direction)}
+                  canMoveUp={index > 0}
+                  canMoveDown={index < boards.length - 1}
                 />
               ))}
             </div>
@@ -293,9 +298,17 @@ interface BoardItemProps {
   isActive: boolean;
   taskCount: number;
   onSelect: () => void;
+  onReorder: (direction: 'up' | 'down') => void;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
 }
 
-function BoardItem({ board, isActive, taskCount, onSelect }: BoardItemProps) {
+function BoardItem({ board, isActive, taskCount, onSelect, onReorder, canMoveUp, canMoveDown }: BoardItemProps) {
+  const handleReorder = (direction: 'up' | 'down', e: React.MouseEvent) => {
+    e.stopPropagation();
+    onReorder(direction);
+  };
+
   return (
     <Card
       className={`
@@ -320,7 +333,28 @@ function BoardItem({ board, isActive, taskCount, onSelect }: BoardItemProps) {
               </div>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            {/* Reorder buttons */}
+            <div className="flex flex-col opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-4 w-4 p-0"
+                onClick={(e) => handleReorder('up', e)}
+                disabled={!canMoveUp}
+              >
+                <ChevronUp className="h-3 w-3" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-4 w-4 p-0"
+                onClick={(e) => handleReorder('down', e)}
+                disabled={!canMoveDown}
+              >
+                <ChevronDown className="h-3 w-3" />
+              </Button>
+            </div>
             <Badge variant="secondary" className="text-xs">
               {taskCount}
             </Badge>

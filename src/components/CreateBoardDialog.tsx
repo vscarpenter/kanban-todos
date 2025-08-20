@@ -48,6 +48,7 @@ export function CreateBoardDialog({ open, onOpenChange }: CreateBoardDialogProps
         description: formData.description.trim() || undefined,
         color: formData.color,
         isDefault: false,
+        order: 0, // Will be automatically assigned by addBoard
       });
 
       // Reset form and close dialog

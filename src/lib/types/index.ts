@@ -19,6 +19,7 @@ export interface Board {
   description?: string;
   color: string;
   isDefault: boolean;
+  order: number;
   createdAt: Date;
   updatedAt: Date;
   archivedAt?: Date;

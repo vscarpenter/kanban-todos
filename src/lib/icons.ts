@@ -1,6 +1,8 @@
 // Centralized icon exports for better tree-shaking
 export {
   ChevronLeft,
+  ChevronUp,
+  ChevronDown,
   Plus,
   Settings,
   Archive,
