@@ -30,6 +30,7 @@ export const taskSchema: ValidationSchema = {
     updatedAt: { type: 'string', format: 'date-time' },
     completedAt: { type: ['string', 'undefined'], format: 'date-time' },
     archivedAt: { type: ['string', 'undefined'], format: 'date-time' },
+    dueDate: { type: ['string', 'undefined'], format: 'date-time' },
     priority: { type: 'string', enum: ['low', 'medium', 'high'] },
     tags: { 
       type: 'array', 
@@ -51,11 +52,12 @@ export const boardSchema: ValidationSchema = {
     description: { type: ['string', 'undefined'], maxLength: 500 },
     color: { type: 'string', pattern: '^#[0-9A-Fa-f]{6}$' },
     isDefault: { type: 'boolean' },
+    order: { type: 'number', minimum: 0 },
     createdAt: { type: 'string', format: 'date-time' },
     updatedAt: { type: 'string', format: 'date-time' },
     archivedAt: { type: ['string', 'undefined'], format: 'date-time' }
   },
-  required: ['id', 'name', 'color', 'isDefault', 'createdAt', 'updatedAt'],
+  required: ['id', 'name', 'color', 'isDefault', 'order', 'createdAt', 'updatedAt'],
   additionalProperties: false
 };
 

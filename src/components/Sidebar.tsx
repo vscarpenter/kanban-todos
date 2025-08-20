@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -64,6 +64,20 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const { tasks } = useTaskStore();
   const { updateSettings } = useSettingsStore();
   const { theme, setTheme } = useTheme();
+
+  // Listen for keyboard shortcut events
+  useEffect(() => {
+    const handleShowSettings = () => setShowSettings(true);
+    const handleShowHelp = () => setShowUserGuide(true);
+    
+    document.addEventListener('show-settings-dialog', handleShowSettings);
+    document.addEventListener('show-help-dialog', handleShowHelp);
+    
+    return () => {
+      document.removeEventListener('show-settings-dialog', handleShowSettings);
+      document.removeEventListener('show-help-dialog', handleShowHelp);
+    };
+  }, []);
 
   const getTaskCount = (boardId: string) => {
     return tasks.filter(task => task.boardId === boardId && !task.archivedAt).length;

@@ -36,11 +36,12 @@ export interface ExportOptions {
 }
 
 // Serialized versions with Date objects converted to strings
-export interface SerializedTask extends Omit<Task, 'createdAt' | 'updatedAt' | 'completedAt' | 'archivedAt'> {
+export interface SerializedTask extends Omit<Task, 'createdAt' | 'updatedAt' | 'completedAt' | 'archivedAt' | 'dueDate'> {
   createdAt: string;
   updatedAt: string;
   completedAt?: string;
   archivedAt?: string;
+  dueDate?: string;
 }
 
 export interface SerializedBoard extends Omit<Board, 'createdAt' | 'updatedAt' | 'archivedAt'> {
@@ -97,6 +98,7 @@ function serializeTask(task: Task): SerializedTask {
     updatedAt: serializeDate(task.updatedAt)!,
     completedAt: serializeDate(task.completedAt),
     archivedAt: serializeDate(task.archivedAt),
+    dueDate: serializeDate(task.dueDate),
   };
 }
 
@@ -110,6 +112,7 @@ function deserializeTask(serializedTask: SerializedTask): Task {
     updatedAt: deserializeDate(serializedTask.updatedAt)!,
     completedAt: deserializeDate(serializedTask.completedAt),
     archivedAt: deserializeDate(serializedTask.archivedAt),
+    dueDate: deserializeDate(serializedTask.dueDate),
   };
 }
 

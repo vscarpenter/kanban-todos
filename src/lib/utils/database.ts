@@ -30,6 +30,7 @@ export class TaskDatabase {
           taskStore.createIndex('boardId', 'boardId', { unique: false });
           taskStore.createIndex('status', 'status', { unique: false });
           taskStore.createIndex('archivedAt', 'archivedAt', { unique: false });
+          taskStore.createIndex('dueDate', 'dueDate', { unique: false });
         }
 
         if (!db.objectStoreNames.contains('boards')) {

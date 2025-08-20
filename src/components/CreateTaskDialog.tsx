@@ -24,6 +24,7 @@ export function CreateTaskDialog({ open, onOpenChange, boardId }: CreateTaskDial
     description: "",
     priority: "medium" as Task['priority'],
     tags: "",
+    dueDate: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,6 +47,7 @@ export function CreateTaskDialog({ open, onOpenChange, boardId }: CreateTaskDial
         tags,
         status: 'todo',
         boardId,
+        dueDate: formData.dueDate ? new Date(formData.dueDate) : undefined,
       });
 
       // Reset form and close dialog
@@ -54,6 +56,7 @@ export function CreateTaskDialog({ open, onOpenChange, boardId }: CreateTaskDial
         description: "",
         priority: "medium",
         tags: "",
+        dueDate: "",
       });
       onOpenChange(false);
     } catch (error) {
@@ -125,6 +128,27 @@ export function CreateTaskDialog({ open, onOpenChange, boardId }: CreateTaskDial
                 <SelectItem value="high">High</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Due Date */}
+          <div className="space-y-2">
+            <Label htmlFor="dueDate">Due Date</Label>
+            <Input
+              id="dueDate"
+              type="datetime-local"
+              value={formData.dueDate}
+              onChange={(e) => handleInputChange('dueDate', e.target.value)}
+              onFocus={(e) => {
+                // Prevent the input from closing immediately on focus
+                e.target.showPicker?.();
+              }}
+              min={new Date().toISOString().slice(0, 16)}
+              className="cursor-pointer"
+              placeholder="Select due date and time"
+            />
+            <div className="text-xs text-muted-foreground">
+              Optional deadline for this task
+            </div>
           </div>
 
           {/* Tags */}

@@ -196,7 +196,7 @@ export const useBoardStore = create<BoardState & BoardActions>((set, get) => ({
               description: board.description,
               color: board.color,
               isDefault: false,
-              order: board.order + 0.5, // Place after original board
+              order: board.order + 1, // Place after original board, will be resequenced by addBoard
               archivedAt: undefined,
             };
 
@@ -215,7 +215,10 @@ export const useBoardStore = create<BoardState & BoardActions>((set, get) => ({
             const currentBoards = get().boards.sort((a, b) => a.order - b.order);
             const boardIndex = currentBoards.findIndex(b => b.id === boardId);
             
-            if (boardIndex === -1) return;
+            if (boardIndex === -1) {
+              set({ isLoading: false });
+              return;
+            }
             
             const targetIndex = direction === 'up' ? boardIndex - 1 : boardIndex + 1;
             
@@ -225,24 +228,28 @@ export const useBoardStore = create<BoardState & BoardActions>((set, get) => ({
               return;
             }
             
-            // Swap orders
-            const boardToMove = currentBoards[boardIndex];
-            const targetBoard = currentBoards[targetIndex];
+            // Create a new array with the board moved to the target position
+            const reorderedBoards = [...currentBoards];
+            const [movedBoard] = reorderedBoards.splice(boardIndex, 1);
+            reorderedBoards.splice(targetIndex, 0, movedBoard);
             
-            const updatedBoards = [...currentBoards];
-            updatedBoards[boardIndex] = { ...boardToMove, order: targetBoard.order };
-            updatedBoards[targetIndex] = { ...targetBoard, order: boardToMove.order };
+            // Reassign sequential order values
+            const updatedBoards = reorderedBoards.map((board, index) => ({
+              ...board,
+              order: index,
+              updatedAt: new Date(),
+            }));
             
-            // Update database
-            await taskDB.updateBoard(updatedBoards[boardIndex]);
-            await taskDB.updateBoard(updatedBoards[targetIndex]);
+            // Update all boards in database with new orders
+            for (const board of updatedBoards) {
+              await taskDB.updateBoard(board);
+            }
             
             // Update store
             set((state) => ({
-              boards: state.boards.map(b => {
-                if (b.id === boardToMove.id) return updatedBoards[boardIndex];
-                if (b.id === targetBoard.id) return updatedBoards[targetIndex];
-                return b;
+              boards: state.boards.map(existingBoard => {
+                const updatedBoard = updatedBoards.find(b => b.id === existingBoard.id);
+                return updatedBoard || existingBoard;
               }).sort((a, b) => a.order - b.order),
               isLoading: false,
             }));

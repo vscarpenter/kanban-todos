@@ -26,6 +26,7 @@ export function EditTaskDialog({ open, onOpenChange, task }: EditTaskDialogProps
     priority: "medium" as Task['priority'],
     tags: "",
     progress: 0,
+    dueDate: "",
   });
 
   // Update form data when task changes
@@ -37,6 +38,7 @@ export function EditTaskDialog({ open, onOpenChange, task }: EditTaskDialogProps
         priority: task.priority,
         tags: task.tags.join(", "),
         progress: task.progress || 0,
+        dueDate: task.dueDate ? task.dueDate.toISOString().slice(0, 16) : "",
       });
     }
   }, [task]);
@@ -59,6 +61,7 @@ export function EditTaskDialog({ open, onOpenChange, task }: EditTaskDialogProps
         description: formData.description.trim() || undefined,
         priority: formData.priority,
         tags,
+        dueDate: formData.dueDate ? new Date(formData.dueDate) : undefined,
       };
 
       // Only include progress if task is in-progress
@@ -167,6 +170,27 @@ export function EditTaskDialog({ open, onOpenChange, task }: EditTaskDialogProps
               </div>
             </div>
           )}
+
+          {/* Due Date */}
+          <div className="space-y-2">
+            <Label htmlFor="dueDate">Due Date</Label>
+            <Input
+              id="dueDate"
+              type="datetime-local"
+              value={formData.dueDate}
+              onChange={(e) => handleInputChange('dueDate', e.target.value)}
+              onFocus={(e) => {
+                // Prevent the input from closing immediately on focus
+                e.target.showPicker?.();
+              }}
+              min={new Date().toISOString().slice(0, 16)}
+              className="cursor-pointer"
+              placeholder="Select due date and time"
+            />
+            <div className="text-xs text-muted-foreground">
+              Optional deadline for this task
+            </div>
+          </div>
 
           {/* Tags */}
           <div className="space-y-2">

@@ -175,5 +175,26 @@ Custom IndexedDB wrapper in `src/lib/utils/database.ts`:
   - Virtual scrolling helpers for large lists
 - **Component Lifecycle**: Proper cleanup of subscriptions and timers
 - **Memory Monitoring**: Browser memory usage tracking utilities
-- I have the AWS CLI configured locally and todos.vinny.dev is pointing to my CloudFront distribution
-- lets capture the security headers implementation details in CLAUDE.md
+
+### Keyboard Shortcuts
+Full keyboard navigation system with global hotkeys:
+
+#### Task Management
+- **`N`** - Create new task (opens quick task dialog)
+- **`Ctrl/Cmd + K`** - Alternative quick task creation
+
+#### Board Navigation  
+- **`Ctrl/Cmd + 1-9`** - Switch between first 9 boards
+- **Up/Down arrows** - Reorder boards in sidebar (on hover)
+
+#### Help & Settings
+- **`H`** - Show keyboard shortcuts dialog
+- **`F1`** - Show user guide/help
+- **`Ctrl/Cmd + ,`** - Open settings dialog
+
+#### Implementation Notes
+- Keyboard manager (`src/lib/utils/keyboard.ts`) handles shortcut registration and event handling
+- Smart input detection prevents shortcuts when typing in form fields
+- Cross-platform modifier key support (Ctrl on Windows/Linux, Cmd on Mac)
+- Lazy-loaded components for optimal performance
+- Custom event system for dialog triggers

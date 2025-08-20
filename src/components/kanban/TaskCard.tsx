@@ -10,14 +10,16 @@ import { Button } from "@/components/ui/button";
 import { 
   MoreHorizontal, 
   Calendar, 
+  Clock,
   Tag, 
   Flag,
   Edit,
   Archive,
   Trash2,
   Share,
-  Move
-} from "lucide-react";
+  Move,
+  AlertTriangle
+} from "@/lib/icons";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -94,6 +96,34 @@ export function TaskCard({ task }: TaskCardProps) {
       default:
         return <Flag className="h-3 w-3" />;
     }
+  };
+
+  const getDueDateStatus = () => {
+    if (!task.dueDate) return null;
+    
+    const now = new Date();
+    const dueDate = new Date(task.dueDate);
+    const isOverdue = dueDate < now && task.status !== 'done';
+    const isDueSoon = dueDate > now && (dueDate.getTime() - now.getTime()) <= (24 * 60 * 60 * 1000); // Within 24 hours
+    
+    return { isOverdue, isDueSoon, dueDate };
+  };
+
+  const formatDueDate = (dueDate: Date) => {
+    const now = new Date();
+    const timeDiff = dueDate.getTime() - now.getTime();
+    
+    // If due within 24 hours, show relative time
+    if (Math.abs(timeDiff) <= (24 * 60 * 60 * 1000)) {
+      return formatDistanceToNow(dueDate, { addSuffix: true });
+    }
+    
+    // Otherwise show date
+    return dueDate.toLocaleDateString(undefined, { 
+      month: 'short', 
+      day: 'numeric',
+      year: dueDate.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+    });
   };
 
   if (isDragging) {
@@ -213,7 +243,33 @@ export function TaskCard({ task }: TaskCardProps) {
                 </div>
               )}
 
-              {/* Date */}
+              {/* Due Date */}
+              {(() => {
+                const dueDateStatus = getDueDateStatus();
+                if (!dueDateStatus) return null;
+                
+                const { isOverdue, isDueSoon, dueDate } = dueDateStatus;
+                
+                return (
+                  <div className={`flex items-center gap-1 text-xs ${
+                    isOverdue 
+                      ? 'text-red-600 dark:text-red-400' 
+                      : isDueSoon 
+                      ? 'text-orange-600 dark:text-orange-400'
+                      : 'text-muted-foreground'
+                  }`}>
+                    {isOverdue ? (
+                      <AlertTriangle className="h-3 w-3" />
+                    ) : (
+                      <Clock className="h-3 w-3" />
+                    )}
+                    <span>{formatDueDate(dueDate)}</span>
+                    {isOverdue && <span className="font-medium">(Overdue)</span>}
+                  </div>
+                );
+              })()}
+
+              {/* Created Date */}
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Calendar className="h-3 w-3" />
                 <span>

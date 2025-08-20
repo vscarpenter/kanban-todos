@@ -8,6 +8,7 @@ export interface Task {
   updatedAt: Date;
   completedAt?: Date;
   archivedAt?: Date;
+  dueDate?: Date;
   priority: 'low' | 'medium' | 'high';
   tags: string[];
   progress?: number; // Progress percentage (0-100), only for 'in-progress' tasks

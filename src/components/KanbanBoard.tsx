@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { Sidebar } from "./Sidebar";
 import { BoardView } from "./BoardView";
 import { SearchBar } from "./SearchBar";
@@ -10,13 +11,23 @@ import { Menu } from "@/lib/icons";
 import { useTaskStore } from "@/lib/stores/taskStore";
 import { useBoardStore } from "@/lib/stores/boardStore";
 import { useSettingsStore } from "@/lib/stores/settingsStore";
+import { notificationManager } from "@/lib/utils/notifications";
+
+// Lazy load keyboard components
+const GlobalHotkeys = dynamic(() => import("./GlobalHotkeys").then(mod => ({ default: mod.GlobalHotkeys })), {
+  loading: () => null
+});
+const KeyboardShortcutsDialog = dynamic(() => import("./KeyboardShortcutsDialog").then(mod => ({ default: mod.KeyboardShortcutsDialog })), {
+  loading: () => null
+});
 
 export function KanbanBoard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [, setIsInitialized] = useState(false);
-  const { initializeStore, setBoardFilter } = useTaskStore();
+  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
+  const { initializeStore, setBoardFilter, tasks } = useTaskStore();
   const { initializeBoards, currentBoardId } = useBoardStore();
-  const { initializeSettings } = useSettingsStore();
+  const { initializeSettings, settings } = useSettingsStore();
 
   useEffect(() => {
     // Initialize stores sequentially for better performance
@@ -42,6 +53,35 @@ export function KanbanBoard() {
   useEffect(() => {
     setBoardFilter(currentBoardId);
   }, [currentBoardId, setBoardFilter]);
+
+  // Initialize notifications system
+  useEffect(() => {
+    if (!settings.enableNotifications) return;
+
+    const initializeNotifications = async () => {
+      const hasPermission = await notificationManager.requestPermission();
+      if (hasPermission) {
+        notificationManager.startPeriodicCheck(tasks);
+      }
+    };
+
+    initializeNotifications();
+
+    return () => {
+      notificationManager.stopPeriodicCheck();
+    };
+  }, [settings.enableNotifications, tasks]);
+
+  // Listen for custom keyboard shortcut events
+  useEffect(() => {
+    const handleShowKeyboardShortcuts = () => setShowKeyboardShortcuts(true);
+    
+    document.addEventListener('show-keyboard-shortcuts', handleShowKeyboardShortcuts);
+    
+    return () => {
+      document.removeEventListener('show-keyboard-shortcuts', handleShowKeyboardShortcuts);
+    };
+  }, []);
 
   const LoadingFallback = () => (
     <div className="flex h-screen bg-background">
@@ -88,6 +128,13 @@ export function KanbanBoard() {
           </div>
         </div>
       </div>
+      
+      {/* Global Hotkeys and Keyboard Shortcuts */}
+      <GlobalHotkeys />
+      <KeyboardShortcutsDialog
+        open={showKeyboardShortcuts}
+        onOpenChange={setShowKeyboardShortcuts}
+      />
     </ClientOnly>
   );
 }

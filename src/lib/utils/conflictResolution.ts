@@ -86,6 +86,7 @@ export function resolveImportConflicts(
         updatedAt: task.updatedAt.toISOString(),
         completedAt: task.completedAt?.toISOString(),
         archivedAt: task.archivedAt?.toISOString(),
+        dueDate: task.dueDate?.toISOString(),
       })),
       boards: existingBoards.map(board => ({
         ...board,
@@ -126,6 +127,7 @@ export function resolveImportConflicts(
       updatedAt: new Date(task.updatedAt),
       completedAt: task.completedAt ? new Date(task.completedAt) : undefined,
       archivedAt: task.archivedAt ? new Date(task.archivedAt) : undefined,
+      dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
     })),
     existingTasks,
     conflicts,
