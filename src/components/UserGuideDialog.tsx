@@ -16,7 +16,8 @@ import {
   BarChart3,
   Lightbulb,
   CheckCircle,
-  Share
+  Share,
+  Calendar
 } from "lucide-react";
 
 interface UserGuideDialogProps {
@@ -39,8 +40,10 @@ const guideSteps = [
           <ul className="space-y-1 text-sm text-muted-foreground">
             <li>• Multiple boards for different projects</li>
             <li>• Drag-and-drop task management</li>
+            <li>• Due dates with smart date picker</li>
             <li>• Progress tracking for in-progress tasks</li>
             <li>• Search and filtering capabilities</li>
+            <li>• Comprehensive keyboard shortcuts</li>
             <li>• Privacy-first - all data stored locally</li>
             <li>• Task sharing without compromising privacy</li>
           </ul>
@@ -154,7 +157,7 @@ const guideSteps = [
             <Badge variant="outline" className="mt-1">2</Badge>
             <div>
               <p className="font-medium">Fill in task details</p>
-              <p className="text-sm text-muted-foreground">Add title, description, priority, and tags</p>
+              <p className="text-sm text-muted-foreground">Add title, description, due date, priority, and tags</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
@@ -204,7 +207,8 @@ const guideSteps = [
           <ul className="space-y-1 text-sm text-muted-foreground">
             <li>• Task title and description</li>
             <li>• Status, priority, and creation date</li>
-            <li>• Completion date (if finished)</li>
+            <li>• Due date and completion date (if set)</li>
+            <li>• Progress percentage (for in-progress tasks)</li>
             <li>• Tags for categorization</li>
             <li>• Link to your Kanban app</li>
           </ul>
@@ -255,6 +259,52 @@ const guideSteps = [
               </p>
             </div>
           </div>
+        </div>
+      </div>
+    )
+  },
+  {
+    title: "Setting Due Dates",
+    icon: <Calendar className="h-6 w-6" />,
+    content: (
+      <div className="space-y-4">
+        <p className="text-muted-foreground">
+          Set due dates for tasks to track deadlines and stay organized. The smart date picker makes scheduling easy.
+        </p>
+        <div className="space-y-3">
+          <div className="flex items-start gap-3">
+            <Badge variant="outline" className="mt-1">📅</Badge>
+            <div>
+              <p className="font-medium">Smart date picker</p>
+              <p className="text-sm text-muted-foreground">Click the due date field to open the interactive calendar</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <Badge variant="outline" className="mt-1">⚡</Badge>
+            <div>
+              <p className="font-medium">Quick presets available</p>
+              <p className="text-sm text-muted-foreground">Choose &ldquo;Today&rdquo;, &ldquo;Tomorrow&rdquo;, or &ldquo;Next Week&rdquo; for faster scheduling</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <Badge variant="outline" className="mt-1">🕐</Badge>
+            <div>
+              <p className="font-medium">Set specific times</p>
+              <p className="text-sm text-muted-foreground">Choose exact times in 15-minute intervals using the time dropdown</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <Badge variant="outline" className="mt-1">🎯</Badge>
+            <div>
+              <p className="font-medium">Clear due dates anytime</p>
+              <p className="text-sm text-muted-foreground">Use the &ldquo;Clear&rdquo; button to remove due dates if plans change</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+          <p className="text-sm text-blue-800 dark:text-blue-200">
+            <strong>Smart Display:</strong> Due dates show as &ldquo;Today at 2:00 PM&rdquo; or &ldquo;Tomorrow at 9:00 AM&rdquo; for easy reading
+          </p>
         </div>
       </div>
     )
@@ -335,6 +385,13 @@ const guideSteps = [
               <p className="text-sm text-muted-foreground">View only tasks in specific columns</p>
             </div>
           </div>
+          <div className="flex items-start gap-3">
+            <Badge variant="outline" className="mt-1">📅</Badge>
+            <div>
+              <p className="font-medium">View overdue tasks</p>
+              <p className="text-sm text-muted-foreground">Tasks with past due dates are highlighted for easy identification</p>
+            </div>
+          </div>
         </div>
       </div>
     )
@@ -401,8 +458,9 @@ const guideSteps = [
             <ul className="space-y-1 text-sm text-muted-foreground ml-4">
               <li>• Create separate boards for different projects</li>
               <li>• Use the search function to quickly find tasks</li>
+              <li>• Set due dates to track important deadlines</li>
               <li>• Review your boards regularly</li>
-              <li>• Take advantage of keyboard shortcuts</li>
+              <li>• Master keyboard shortcuts (press H to see all shortcuts)</li>
             </ul>
           </div>
         </div>
