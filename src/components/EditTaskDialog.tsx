@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { useTaskStore } from "@/lib/stores/taskStore";
 import { Task } from "@/lib/types";
 
@@ -26,7 +27,7 @@ export function EditTaskDialog({ open, onOpenChange, task }: EditTaskDialogProps
     priority: "medium" as Task['priority'],
     tags: "",
     progress: 0,
-    dueDate: "",
+    dueDate: undefined as Date | undefined,
   });
 
   // Update form data when task changes
@@ -38,7 +39,7 @@ export function EditTaskDialog({ open, onOpenChange, task }: EditTaskDialogProps
         priority: task.priority,
         tags: task.tags.join(", "),
         progress: task.progress || 0,
-        dueDate: task.dueDate ? task.dueDate.toISOString().slice(0, 16) : "",
+        dueDate: task.dueDate || undefined,
       });
     }
   }, [task]);
@@ -61,7 +62,7 @@ export function EditTaskDialog({ open, onOpenChange, task }: EditTaskDialogProps
         description: formData.description.trim() || undefined,
         priority: formData.priority,
         tags,
-        dueDate: formData.dueDate ? new Date(formData.dueDate) : undefined,
+        dueDate: formData.dueDate || undefined,
       };
 
       // Only include progress if task is in-progress
@@ -81,6 +82,10 @@ export function EditTaskDialog({ open, onOpenChange, task }: EditTaskDialogProps
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleDateChange = (date: Date | undefined) => {
+    setFormData(prev => ({ ...prev, dueDate: date }));
   };
 
   return (
@@ -173,19 +178,12 @@ export function EditTaskDialog({ open, onOpenChange, task }: EditTaskDialogProps
 
           {/* Due Date */}
           <div className="space-y-2">
-            <Label htmlFor="dueDate">Due Date</Label>
-            <Input
-              id="dueDate"
-              type="datetime-local"
+            <Label>Due Date</Label>
+            <DateTimePicker
               value={formData.dueDate}
-              onChange={(e) => handleInputChange('dueDate', e.target.value)}
-              onFocus={(e) => {
-                // Prevent the input from closing immediately on focus
-                e.target.showPicker?.();
-              }}
-              min={new Date().toISOString().slice(0, 16)}
-              className="cursor-pointer"
+              onChange={handleDateChange}
               placeholder="Select due date and time"
+              minDate={new Date()}
             />
             <div className="text-xs text-muted-foreground">
               Optional deadline for this task

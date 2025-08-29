@@ -1,73 +1,74 @@
 {
-  "version": "1.0.0",
-  "exportedAt": "2025-01-15T10:30:00.000Z",
-  "boards": [
+  "version": "2.0.0",
+  "exportedAt": "2025-08-29T20:50:00.000Z",
+  "data": {
+    "boards": [
     {
       "id": "default-board",
-      "name": "Personal Tasks",
-      "description": "My personal task management board",
+      "name": "🚀 Product Launch",
+      "description": "Q4 2024 product launch planning and execution",
       "color": "#3b82f6",
       "isDefault": true,
-      "createdAt": "2025-01-01T00:00:00.000Z",
-      "updatedAt": "2025-01-01T00:00:00.000Z"
+      "order": 0,
+      "createdAt": "2024-08-15T09:00:00.000Z",
+      "updatedAt": "2024-08-29T15:30:00.000Z"
     },
     {
       "id": "work-project-alpha",
-      "name": "Project Alpha",
-      "description": "Frontend redesign project with new React components",
+      "name": "💼 Client Projects",
+      "description": "Active client work and deliverables",
       "color": "#ef4444",
       "isDefault": false,
-      "createdAt": "2025-01-02T09:00:00.000Z",
-      "updatedAt": "2025-01-10T14:30:00.000Z"
+      "order": 1,
+      "createdAt": "2024-08-25T16:20:00.000Z",
+      "updatedAt": "2024-08-29T12:00:00.000Z"
     },
     {
       "id": "marketing-campaign",
-      "name": "Marketing Campaign",
-      "description": "Q1 marketing campaign planning and execution",
+      "name": "🏠 Home Renovation",
+      "description": "Kitchen remodel and living room updates",
       "color": "#10b981",
       "isDefault": false,
-      "createdAt": "2025-01-03T11:15:00.000Z",
-      "updatedAt": "2025-01-12T16:45:00.000Z"
+      "order": 2,
+      "createdAt": "2024-08-20T14:00:00.000Z",
+      "updatedAt": "2024-08-28T10:15:00.000Z"
     },
     {
       "id": "home-improvement",
-      "name": "Home Improvement",
-      "description": "Kitchen renovation and landscaping projects",
+      "name": "📚 Learning Goals",
+      "description": "Personal development and skill building",
       "color": "#f59e0b",
       "isDefault": false,
-      "createdAt": "2025-01-04T13:20:00.000Z",
-      "updatedAt": "2025-01-11T09:15:00.000Z"
+      "order": 3,
+      "createdAt": "2024-08-22T11:30:00.000Z",
+      "updatedAt": "2024-08-29T08:45:00.000Z"
     },
     {
       "id": "learning-goals",
-      "name": "Learning & Development",
-      "description": "Personal skill development and course completion",
+      "name": "🌱 Side Projects",
+      "description": "Personal experiments and hobby projects",
       "color": "#8b5cf6",
       "isDefault": false,
-      "createdAt": "2025-01-05T08:45:00.000Z",
-      "updatedAt": "2025-01-13T12:00:00.000Z"
-    },
-    {
-      "id": "side-project",
-      "name": "Side Project: TaskFlow",
-      "description": "Building a productivity app with modern tech stack",
-      "color": "#06b6d4",
-      "isDefault": false,
-      "createdAt": "2025-01-06T15:30:00.000Z",
-      "updatedAt": "2025-01-14T18:20:00.000Z"
+      "order": 4,
+      "createdAt": "2024-08-27T13:10:00.000Z",
+      "updatedAt": "2024-08-29T16:22:00.000Z"
     }
+    ]
   ],
   "tasks": [
     {
       "id": "task-personal-1",
-      "title": "Plan weekend trip to the mountains",
-      "description": "Research hiking trails, book accommodation, and prepare gear list",
-      "status": "todo",
+      "title": "Finalize product requirements document",
+      "description": "Complete the PRD with all stakeholder feedback incorporated. Include user stories, acceptance criteria, and technical specifications.",
+      "status": "done",
       "boardId": "default-board",
-      "priority": "medium",
-      "tags": ["travel", "planning"],
-      "createdAt": "2025-01-10T09:00:00.000Z",
-      "updatedAt": "2025-01-10T09:00:00.000Z"
+      "priority": "high",
+      "tags": ["documentation", "stakeholders", "requirements"],
+      "createdAt": "2024-08-15T09:15:00.000Z",
+      "updatedAt": "2024-08-28T14:30:00.000Z",
+      "completedAt": "2024-08-28T14:30:00.000Z",
+      "dueDate": "2024-08-30T17:00:00.000Z",
+      "progress": 100
     },
     {
       "id": "task-personal-2",
@@ -519,16 +520,18 @@
       "updatedAt": "2025-01-13T14:25:00.000Z"
     }
   ],
-  "settings": {
-    "theme": "system",
-    "autoArchiveDays": 30,
-    "enableNotifications": true,
-    "enableKeyboardShortcuts": true,
-    "enableDebugMode": false,
-    "accessibility": {
-      "highContrast": false,
-      "reduceMotion": false,
-      "fontSize": "medium"
+    "settings": {
+      "theme": "system",
+      "autoArchiveDays": 30,
+      "enableNotifications": true,
+      "enableKeyboardShortcuts": true,
+      "enableDebugMode": false,
+      "currentBoardId": "default-board",
+      "accessibility": {
+        "highContrast": false,
+        "reduceMotion": false,
+        "fontSize": "medium"
+      }
     }
   }
 }

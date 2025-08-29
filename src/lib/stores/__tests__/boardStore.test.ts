@@ -39,7 +39,8 @@ describe('boardStore', () => {
       name: 'Test Board',
       color: '#3b82f6',
       description: 'Test description',
-      isDefault: false
+      isDefault: false,
+      order: 0
     })
     
     const { boards } = useBoardStore.getState()

@@ -198,3 +198,4 @@ Full keyboard navigation system with global hotkeys:
 - Cross-platform modifier key support (Ctrl on Windows/Linux, Cmd on Mac)
 - Lazy-loaded components for optimal performance
 - Custom event system for dialog triggers
+- Remember the attachment functionality is in a seperate branch and we don't want to merge at the moment
