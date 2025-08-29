@@ -1,0 +1,33 @@
+# Dependencies
+node_modules
+
+# Build outputs
+.next
+out
+dist
+
+# Logs and cache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-store
+.turbo
+
+# VCS
+.git
+.gitignore
+
+# Editor
+.vscode
+.idea
+
+# Tests and reports
+coverage
+playwright-report
+test-results
+e2e/*.spec.ts
+
+# Misc
+Dockerfile
+docker-compose.yml
+*.local.*

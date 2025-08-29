@@ -1,49 +1,32 @@
-# Use official Node.js LTS image for best security and compatibility
+# Multi-stage build: build static export, serve with nginx (non-root)
+
+# 1) Builder: install deps and build static site to /app/out
 FROM node:20-bookworm-slim AS builder
-
-# Set working directory
 WORKDIR /app
+ENV NODE_ENV=production
 
-# Install dependencies as non-root for security
-COPY package.json package-lock.json* yarn.lock* pnpm-lock.yaml* bun.lockb* ./
-RUN npm ci --ignore-scripts
+# Install dependencies using lockfile
+COPY package.json package-lock.json* ./
+RUN npm ci --no-audit --no-fund
 
-# Copy source code
+# Copy source and build
 COPY . .
-
-# Build Next.js app (production)
 RUN npm run build
 
-# Use a minimal image for serving static files
-FROM node:20-bookworm-slim AS runner
+# 2) Runner: nginx to serve static assets
+FROM nginx:alpine AS runner
 
-WORKDIR /app
+# Copy exported site
+COPY --from=builder /app/out /usr/share/nginx/html
 
-# Copy built assets and necessary files from builder
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/next.config.ts ./next.config.ts
-COPY --from=builder /app/next-env.d.ts ./next-env.d.ts
-COPY --from=builder /app/tsconfig.json ./tsconfig.json
-COPY --from=builder /app/src ./src
+# Provide nginx config (cache static assets, single-page routing)
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 
-# Install only production dependencies
-RUN npm ci --only=production --ignore-scripts
+# Run as non-root on high port
+USER nginx
+EXPOSE 8080
 
-# Set environment variables for security and performance
-ENV NODE_ENV=production
-ENV PORT=3000
+# Healthcheck (busybox wget is available in alpine)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD wget -q -O /dev/null http://127.0.0.1:8080/ || exit 1
 
-# Use non-root user for security
-RUN addgroup -g 1001 -S nodegroup && adduser -S nodeuser -u 1001 -G nodegroup
-USER nodeuser
-
-# Expose port
-EXPOSE 3000
-
-# Healthcheck for container
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD wget --spider -q http://localhost:3000 || exit 1
-
-# Start Next.js app
-CMD ["npm", "start"]
+# Use default nginx entrypoint/cmd

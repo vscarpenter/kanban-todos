@@ -28,55 +28,23 @@ A modern, privacy-first kanban board task management system built with Next.js, 
 
 ## 🚀 Getting Started
 
-### Prerequisites
-
-1. Clone the repository:
-
-2. Install dependencies:
-```bash
-npm install
-# or
-yarn install
-# or
-
-3. Run the development server:
-```bash
-npm run dev
-# or
-yarn dev
-# or
-
-### Installation (Local Development)
-
-1. Clone the repository:
-```bash
-```
-
-```
-
-2. Install dependencies:
-```bash
-4. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
-
+- Prerequisites: Node.js 20+ and npm 10+.
+- Install dependencies: `npm install`
+- Start dev server: `npm run dev` then open `http://localhost:3000`
+- Build for production: `npm run build`
+- Run production build: `npm start`
 
 ## 🛠️ Tech Stack
 
-### Frontend
-- **Framework**: Next.js 15.4.6 (App Router)
-```
-
-3. Run the development server:
-```bash
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS with custom design system
-- **UI Components**: shadcn/ui
-- **Icons**: Lucide React
-- **Fonts**: Geist (body), Geist Mono (code) with enhanced OpenType features
-
-### State Management & Storage
-```
-
-4. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
+- Framework: Next.js 15 (App Router), React 19
+- Language: TypeScript
+- Styling: Tailwind CSS v4
+- UI: shadcn/ui, Lucide icons
+- State: Zustand stores
+- Persistence: IndexedDB via `taskDB` with JSON export/import
+- Theme: `next-themes` for dark/light mode
+- Testing: Vitest + Testing Library (jsdom), Playwright for E2E
+- Tooling: ESLint (Next.js config), TypeScript, Dockerfile for containerization
 
 ### Docker Deployment
 
@@ -150,14 +118,7 @@ spec:
 ```bash
 kubectl apply -f <manifest.yaml>
 ```
-- **State**: Zustand stores
-- **Persistence**: Local Storage with JSON export/import
-- **Theme**: next-themes for dark/light mode
 
-### Development Tools
-- **Linting**: ESLint with Next.js configuration
-- **Animations**: Tailwind CSS animations with tw-animate-css
-- **Notifications**: Sonner for toast notifications
 
 ## 📁 Project Structure
 
@@ -175,9 +136,19 @@ src/
 │   └── ...               # Other feature components
 └── lib/                  # Utilities and stores
     ├── stores/           # Zustand state stores
-    ├── types.ts          # TypeScript type definitions
-    └── utils.ts          # Utility functions
+    ├── types/            # TypeScript type definitions
+    ├── utils/            # Utility modules (database, export/import, keyboard, etc.)
+    └── utils.ts          # Base helpers (e.g., cn)
 ```
+
+## 🧭 Architecture Overview
+
+- Rendering: Next.js App Router in `src/app` renders the shell (`layout.tsx`) and the board UI (`page.tsx`). UI is composed from `src/components` with Tailwind CSS and shadcn/ui primitives. Drag-and-drop uses `@dnd-kit`.
+- State: Lightweight stores in `src/lib/stores` using Zustand. Components subscribe via selectors and dispatch store actions (e.g., board create/update, task moves).
+- Persistence: `src/lib/utils/database.ts` wraps IndexedDB for tasks, boards, settings, and archive. Stores call `taskDB` to read/write; settings (e.g., current board) persist across sessions. Export/import flows use JSON helpers in `src/lib/utils/exportImport.ts`.
+- Types & Utilities: Shared types in `src/lib/types`, helpers in `src/lib/utils` (keyboard, validation, notifications, conflict resolution, memory optimization).
+- Testing: Unit tests (Vitest + Testing Library, jsdom) live next to code or under `__tests__`; E2E tests (Playwright) live in `e2e/`. Global test setup is `src/test/setup.ts`.
+- Data Flow: User action → component event → store action → optional `taskDB` mutation → store state update → subscribed components re-render. Import/export and archive travel the same path through store APIs.
 
 ## 🎯 Usage
 
