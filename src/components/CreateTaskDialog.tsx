@@ -7,8 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { useTaskStore } from "@/lib/stores/taskStore";
 import { Task } from "@/lib/types";
+import { AttachmentUploader } from "./AttachmentUploader";
+import { toast } from "sonner";
 
 interface CreateTaskDialogProps {
   open: boolean;
@@ -17,8 +21,9 @@ interface CreateTaskDialogProps {
 }
 
 export function CreateTaskDialog({ open, onOpenChange, boardId }: CreateTaskDialogProps) {
-  const { addTask } = useTaskStore();
+  const { addTask, addAttachmentToTask } = useTaskStore();
   const [isLoading, setIsLoading] = useState(false);
+  const [pendingAttachments, setPendingAttachments] = useState<File[]>([]);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -40,15 +45,42 @@ export function CreateTaskDialog({ open, onOpenChange, boardId }: CreateTaskDial
         .map(tag => tag.trim())
         .filter(tag => tag.length > 0);
 
-      await addTask({
+      // Create the task first
+      const newTaskData = {
         title: formData.title.trim(),
         description: formData.description.trim() || undefined,
         priority: formData.priority,
         tags,
-        status: 'todo',
+        status: 'todo' as const,
         boardId,
         dueDate: formData.dueDate ? new Date(formData.dueDate) : undefined,
-      });
+      };
+
+      const createdTask = await addTask(newTaskData);
+
+      // Add any pending attachments to the created task
+      if (pendingAttachments.length > 0) {
+        let successCount = 0;
+        for (const file of pendingAttachments) {
+          try {
+            await addAttachmentToTask(createdTask.id, file);
+            successCount++;
+          } catch (error) {
+            console.error('Failed to attach file:', file.name, error);
+            toast.error(`Failed to attach ${file.name}`);
+          }
+        }
+        
+        if (successCount === pendingAttachments.length) {
+          toast.success(`Task created successfully with ${successCount} attachment${successCount !== 1 ? 's' : ''}!`);
+        } else if (successCount > 0) {
+          toast.success(`Task created with ${successCount}/${pendingAttachments.length} attachments`);
+        } else {
+          toast.success('Task created successfully (attachments failed)');
+        }
+      } else {
+        toast.success('Task created successfully!');
+      }
 
       // Reset form and close dialog
       setFormData({
@@ -58,9 +90,11 @@ export function CreateTaskDialog({ open, onOpenChange, boardId }: CreateTaskDial
         tags: "",
         dueDate: "",
       });
+      setPendingAttachments([]);
       onOpenChange(false);
     } catch (error) {
       console.error('Failed to create task:', error);
+      toast.error('Failed to create task');
     } finally {
       setIsLoading(false);
     }
@@ -70,9 +104,34 @@ export function CreateTaskDialog({ open, onOpenChange, boardId }: CreateTaskDial
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleFileAdd = async (file: File) => {
+    // For create dialog, we'll store files temporarily and add them after task creation
+    setPendingAttachments(prev => [...prev, file]);
+    toast.success(`${file.name} ready to attach`);
+  };
+
+  const handleRemovePendingAttachment = (fileName: string) => {
+    setPendingAttachments(prev => prev.filter(file => file.name !== fileName));
+  };
+
+  const handleDialogOpenChange = (open: boolean) => {
+    if (!open) {
+      // Reset form when closing
+      setFormData({
+        title: "",
+        description: "",
+        priority: "medium",
+        tags: "",
+        dueDate: "",
+      });
+      setPendingAttachments([]);
+    }
+    onOpenChange(open);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+    <Dialog open={open} onOpenChange={handleDialogOpenChange}>
+      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Task</DialogTitle>
         </DialogHeader>
@@ -133,17 +192,9 @@ export function CreateTaskDialog({ open, onOpenChange, boardId }: CreateTaskDial
           {/* Due Date */}
           <div className="space-y-2">
             <Label htmlFor="dueDate">Due Date</Label>
-            <Input
-              id="dueDate"
-              type="datetime-local"
+            <DateTimePicker
               value={formData.dueDate}
-              onChange={(e) => handleInputChange('dueDate', e.target.value)}
-              onFocus={(e) => {
-                // Prevent the input from closing immediately on focus
-                e.target.showPicker?.();
-              }}
-              min={new Date().toISOString().slice(0, 16)}
-              className="cursor-pointer"
+              onChange={(value) => handleInputChange('dueDate', value)}
               placeholder="Select due date and time"
             />
             <div className="text-xs text-muted-foreground">
@@ -162,6 +213,56 @@ export function CreateTaskDialog({ open, onOpenChange, boardId }: CreateTaskDial
             />
             <div className="text-xs text-muted-foreground">
               Separate multiple tags with commas
+            </div>
+          </div>
+
+          {/* Attachments Section */}
+          <div className="space-y-3">
+            <Separator />
+            <div>
+              <Label>Attachments</Label>
+              <div className="text-xs text-muted-foreground mb-3">
+                Add files to your task (max 10MB per file, 25MB total)
+              </div>
+              
+              {/* Show pending attachments if any */}
+              {pendingAttachments.length > 0 && (
+                <div className="mb-3 space-y-2">
+                  <div className="text-sm font-medium">Files ready to attach:</div>
+                  {pendingAttachments.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded">
+                      <div className="text-sm">
+                        <div className="font-medium">{file.name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {(file.size / 1024 / 1024).toFixed(2)} MB
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemovePendingAttachment(file.name)}
+                        className="h-8 w-8 p-0"
+                      >
+                        ×
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* Attachment Uploader */}
+              <AttachmentUploader
+                onFileAdd={handleFileAdd}
+                disabled={isLoading}
+                maxFiles={5}
+              />
+              
+              {pendingAttachments.length > 0 && (
+                <div className="text-xs text-blue-600 dark:text-blue-400 mt-2">
+                  ✅ {pendingAttachments.length} file{pendingAttachments.length !== 1 ? 's' : ''} ready to attach
+                </div>
+              )}
             </div>
           </div>
 

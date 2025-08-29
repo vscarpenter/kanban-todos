@@ -1,6 +1,7 @@
 // Centralized icon exports for better tree-shaking
 export {
   ChevronLeft,
+  ChevronRight,
   ChevronUp,
   ChevronDown,
   Plus,
@@ -76,7 +77,9 @@ export {
   Repeat,
   Shuffle,
   Maximize,
+  Maximize2,
   Minimize,
+  Minimize2,
   RefreshCw,
   RotateCcw,
   RotateCw,
@@ -104,4 +107,5 @@ export {
   Octagon,
   Pentagon,
   Diamond,
+  Paperclip,
 } from "lucide-react";

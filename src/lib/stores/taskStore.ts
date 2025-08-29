@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { Task, TaskFilters } from '@/lib/types';
+import { Task, TaskFilters, TaskAttachment } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
 import { exportTasks, ExportData } from '@/lib/utils/exportImport';
+import { attachmentManager, validateAttachmentFile, generateThumbnail, extractMetadata } from '@/lib/utils/attachments';
 
 interface TaskState {
   tasks: Task[];
@@ -22,13 +23,19 @@ interface TaskActions {
   setError: (error: string | null) => void;
   
   // Task operations
-  addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Task>;
   updateTask: (taskId: string, updates: Partial<Task>) => Promise<void>;
   deleteTask: (taskId: string) => Promise<void>;
   moveTask: (taskId: string, newStatus: Task['status']) => Promise<void>;
   moveTaskToBoard: (taskId: string, targetBoardId: string) => Promise<void>;
   archiveTask: (taskId: string) => Promise<void>;
   unarchiveTask: (taskId: string) => Promise<void>;
+  
+  // Attachment operations
+  addAttachmentToTask: (taskId: string, file: File) => Promise<TaskAttachment>;
+  removeAttachmentFromTask: (taskId: string, attachmentId: string) => Promise<void>;
+  getTaskAttachments: (taskId: string) => Promise<TaskAttachment[]>;
+  downloadAttachment: (attachmentId: string) => Promise<Blob>;
   
   // Filtering and search
   applyFilters: () => void;
@@ -142,11 +149,14 @@ export const useTaskStore = create<TaskState & TaskActions>()(
               filteredTasks: filteredTasks,
               isLoading: false,
             });
+            
+            return newTask;
           } catch (error) {
             set({ 
               error: error instanceof Error ? error.message : 'Failed to add task',
               isLoading: false 
             });
+            throw error;
           }
         },
 
@@ -430,9 +440,29 @@ export const useTaskStore = create<TaskState & TaskActions>()(
               archivedAt: task.archivedAt ? new Date(task.archivedAt) : undefined,
             }));
             
+            // Load attachments for each task
+            const tasksWithAttachments = await Promise.all(
+              processedTasks.map(async (task) => {
+                try {
+                  const attachments = await taskDB.getTaskAttachments(task.id);
+                  return {
+                    ...task,
+                    attachments: attachments.map(att => ({
+                      ...att,
+                      uploadedAt: new Date(att.uploadedAt)
+                    })),
+                    attachmentCount: attachments.length
+                  };
+                } catch (error) {
+                  console.warn(`Failed to load attachments for task ${task.id}:`, error);
+                  return task;
+                }
+              })
+            );
+            
             set({ 
-              tasks: processedTasks,
-              filteredTasks: processedTasks,
+              tasks: tasksWithAttachments,
+              filteredTasks: tasksWithAttachments,
               isLoading: false 
             });
           } catch (error) {
@@ -440,6 +470,130 @@ export const useTaskStore = create<TaskState & TaskActions>()(
               error: error instanceof Error ? error.message : 'Failed to initialize store',
               isLoading: false 
             });
+          }
+        },
+
+        // Attachment operations
+        addAttachmentToTask: async (taskId: string, file: File) => {
+          try {
+            set({ isLoading: true, error: null });
+            
+            // Validate file
+            const validation = await validateAttachmentFile(file, taskId);
+            if (!validation.valid) {
+              throw new Error(validation.error);
+            }
+            
+            // Create attachment metadata
+            const attachmentBase = attachmentManager.createAttachmentMetadata(file, taskId);
+            const thumbnail = await generateThumbnail(file);
+            const metadata = await extractMetadata(file);
+            
+            const attachment: TaskAttachment = {
+              ...attachmentBase,
+              thumbnail,
+              metadata
+            };
+            
+            // Store file data
+            const fileData = await file.arrayBuffer();
+            await taskDB.addAttachment(attachment, fileData);
+            
+            // Update task in store
+            const { tasks } = get();
+            const updatedTasks = tasks.map(task => {
+              if (task.id === taskId) {
+                const updatedAttachments = [...(task.attachments || []), attachment];
+                return {
+                  ...task,
+                  attachments: updatedAttachments,
+                  attachmentCount: updatedAttachments.length,
+                  updatedAt: new Date()
+                };
+              }
+              return task;
+            });
+            
+            // Update task in database
+            const updatedTask = updatedTasks.find(t => t.id === taskId)!;
+            await taskDB.updateTask(updatedTask);
+            
+            set({ tasks: updatedTasks, isLoading: false });
+            get().applyFilters();
+            
+            return attachment;
+          } catch (error) {
+            set({ 
+              error: error instanceof Error ? error.message : 'Failed to add attachment',
+              isLoading: false 
+            });
+            throw error;
+          }
+        },
+
+        removeAttachmentFromTask: async (taskId: string, attachmentId: string) => {
+          try {
+            set({ isLoading: true, error: null });
+            
+            // Remove from database
+            await taskDB.deleteAttachment(attachmentId);
+            
+            // Update task in store
+            const { tasks } = get();
+            const updatedTasks = tasks.map(task => {
+              if (task.id === taskId) {
+                const updatedAttachments = (task.attachments || []).filter(a => a.id !== attachmentId);
+                return {
+                  ...task,
+                  attachments: updatedAttachments,
+                  attachmentCount: updatedAttachments.length,
+                  updatedAt: new Date()
+                };
+              }
+              return task;
+            });
+            
+            // Update task in database
+            const updatedTask = updatedTasks.find(t => t.id === taskId)!;
+            await taskDB.updateTask(updatedTask);
+            
+            set({ tasks: updatedTasks, isLoading: false });
+            get().applyFilters();
+          } catch (error) {
+            set({ 
+              error: error instanceof Error ? error.message : 'Failed to remove attachment',
+              isLoading: false 
+            });
+            throw error;
+          }
+        },
+
+        getTaskAttachments: async (taskId: string) => {
+          try {
+            const attachments = await taskDB.getTaskAttachments(taskId);
+            return attachments.map(att => ({
+              ...att,
+              uploadedAt: new Date(att.uploadedAt)
+            }));
+          } catch (error) {
+            console.error('Failed to get task attachments:', error);
+            return [];
+          }
+        },
+
+        downloadAttachment: async (attachmentId: string) => {
+          try {
+            const attachment = await taskDB.getAttachment(attachmentId);
+            const fileData = await taskDB.getAttachmentFile(attachmentId);
+            
+            if (!attachment || !fileData) {
+              throw new Error('Attachment not found');
+            }
+            
+            return new Blob([fileData], { type: attachment.fileType });
+          } catch (error) {
+            console.error('Failed to download attachment:', error);
+            throw error;
           }
         },
       })

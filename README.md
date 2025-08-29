@@ -30,7 +30,16 @@ A modern, privacy-first kanban board task management system built with Next.js, 
 
 ### Prerequisites
 
+- Node.js 18+ 
+- npm, yarn, or pnpm package manager
+
+### Installation (Local Development)
+
 1. Clone the repository:
+```bash
+git clone <repository-url>
+cd kanban-todos
+```
 
 2. Install dependencies:
 ```bash
@@ -38,6 +47,8 @@ npm install
 # or
 yarn install
 # or
+pnpm install
+```
 
 3. Run the development server:
 ```bash
@@ -45,28 +56,15 @@ npm run dev
 # or
 yarn dev
 # or
-
-### Installation (Local Development)
-
-1. Clone the repository:
-```bash
+pnpm dev
 ```
 
-```
-
-2. Install dependencies:
-```bash
 4. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
-
 
 ## 🛠️ Tech Stack
 
 ### Frontend
 - **Framework**: Next.js 15.4.6 (App Router)
-```
-
-3. Run the development server:
-```bash
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS with custom design system
 - **UI Components**: shadcn/ui
@@ -74,11 +72,16 @@ yarn dev
 - **Fonts**: Geist (body), Geist Mono (code) with enhanced OpenType features
 
 ### State Management & Storage
-```
+- **State**: Zustand stores
+- **Persistence**: IndexedDB with JSON export/import
+- **Theme**: next-themes for dark/light mode
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
+### Development Tools
+- **Linting**: ESLint with Next.js configuration
+- **Animations**: Tailwind CSS animations with tw-animate-css
+- **Notifications**: Sonner for toast notifications
 
-### Docker Deployment
+## 🐳 Docker Deployment
 
 #### Build and Run Locally
 
@@ -150,14 +153,6 @@ spec:
 ```bash
 kubectl apply -f <manifest.yaml>
 ```
-- **State**: Zustand stores
-- **Persistence**: Local Storage with JSON export/import
-- **Theme**: next-themes for dark/light mode
-
-### Development Tools
-- **Linting**: ESLint with Next.js configuration
-- **Animations**: Tailwind CSS animations with tw-animate-css
-- **Notifications**: Sonner for toast notifications
 
 ## 📁 Project Structure
 

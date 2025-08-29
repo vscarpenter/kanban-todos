@@ -1,3 +1,20 @@
+export interface TaskAttachment {
+  id: string;
+  fileName: string;          // sanitized filename for storage
+  originalName: string;      // user's original filename
+  fileType: string;          // MIME type
+  fileSize: number;          // bytes
+  uploadedAt: Date;
+  taskId: string;
+  thumbnail?: string;        // base64 thumbnail for images (max 10KB)
+  metadata?: {
+    width?: number;          // for images
+    height?: number;         // for images
+    pageCount?: number;      // for PDFs
+    description?: string;    // user-provided description
+  };
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -12,6 +29,8 @@ export interface Task {
   priority: 'low' | 'medium' | 'high';
   tags: string[];
   progress?: number; // Progress percentage (0-100), only for 'in-progress' tasks
+  attachments?: TaskAttachment[];
+  attachmentCount?: number;  // denormalized for performance
 }
 
 export interface Board {
@@ -57,4 +76,17 @@ export interface ArchiveEntry {
   archivedAt: Date;
   archivedBy: 'manual' | 'auto';
   reason?: string;
+}
+
+export interface StorageQuota {
+  used: number;
+  available: number;
+  percentage: number;
+  attachmentSize: number;
+}
+
+export interface FileValidation {
+  valid: boolean;
+  error?: string;
+  warnings?: string[];
 }

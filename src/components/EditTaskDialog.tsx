@@ -8,8 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import { Separator } from "@/components/ui/separator";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { useTaskStore } from "@/lib/stores/taskStore";
-import { Task } from "@/lib/types";
+import { Task, TaskAttachment } from "@/lib/types";
+import { AttachmentUploader } from "./AttachmentUploader";
+import { AttachmentList } from "./AttachmentList";
+import { toast } from "sonner";
 
 interface EditTaskDialogProps {
   open: boolean;
@@ -18,8 +23,9 @@ interface EditTaskDialogProps {
 }
 
 export function EditTaskDialog({ open, onOpenChange, task }: EditTaskDialogProps) {
-  const { updateTask } = useTaskStore();
+  const { updateTask, addAttachmentToTask, removeAttachmentFromTask } = useTaskStore();
   const [isLoading, setIsLoading] = useState(false);
+  const [attachments, setAttachments] = useState<TaskAttachment[]>([]);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -40,6 +46,8 @@ export function EditTaskDialog({ open, onOpenChange, task }: EditTaskDialogProps
         progress: task.progress || 0,
         dueDate: task.dueDate ? task.dueDate.toISOString().slice(0, 16) : "",
       });
+      // Load attachments
+      setAttachments(task.attachments || []);
     }
   }, [task]);
 
@@ -83,9 +91,29 @@ export function EditTaskDialog({ open, onOpenChange, task }: EditTaskDialogProps
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleFileAdd = async (file: File) => {
+    try {
+      const attachment = await addAttachmentToTask(task.id, file);
+      setAttachments(prev => [...prev, attachment]);
+      toast.success(`${file.name} attached successfully`);
+    } catch (error) {
+      console.error('Failed to attach file:', error);
+      toast.error(`Failed to attach ${file.name}`);
+    }
+  };
+
+  const handleAttachmentRemove = async (attachmentId: string) => {
+    try {
+      await removeAttachmentFromTask(task.id, attachmentId);
+      setAttachments(prev => prev.filter(a => a.id !== attachmentId));
+    } catch {
+      toast.error('Failed to remove attachment');
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Task</DialogTitle>
         </DialogHeader>
@@ -174,17 +202,9 @@ export function EditTaskDialog({ open, onOpenChange, task }: EditTaskDialogProps
           {/* Due Date */}
           <div className="space-y-2">
             <Label htmlFor="dueDate">Due Date</Label>
-            <Input
-              id="dueDate"
-              type="datetime-local"
+            <DateTimePicker
               value={formData.dueDate}
-              onChange={(e) => handleInputChange('dueDate', e.target.value)}
-              onFocus={(e) => {
-                // Prevent the input from closing immediately on focus
-                e.target.showPicker?.();
-              }}
-              min={new Date().toISOString().slice(0, 16)}
-              className="cursor-pointer"
+              onChange={(value) => handleInputChange('dueDate', value)}
               placeholder="Select due date and time"
             />
             <div className="text-xs text-muted-foreground">
@@ -203,6 +223,36 @@ export function EditTaskDialog({ open, onOpenChange, task }: EditTaskDialogProps
             />
             <div className="text-xs text-muted-foreground">
               Separate multiple tags with commas
+            </div>
+          </div>
+
+          {/* Attachments Section */}
+          <div className="space-y-3">
+            <Separator />
+            <div>
+              <Label>Attachments</Label>
+              <div className="text-xs text-muted-foreground mb-3">
+                Add files to your task (max 10MB per file, 25MB total)
+              </div>
+              
+              {/* Existing Attachments */}
+              {attachments.length > 0 && (
+                <div className="mb-4">
+                  <AttachmentList
+                    taskId={task.id}
+                    attachments={attachments}
+                    onAttachmentRemove={handleAttachmentRemove}
+                  />
+                </div>
+              )}
+              
+              {/* Attachment Uploader */}
+              <AttachmentUploader
+                onFileAdd={handleFileAdd}
+                taskId={task.id}
+                disabled={isLoading}
+                maxFiles={5}
+              />
             </div>
           </div>
 

@@ -17,6 +17,33 @@ export interface ValidationSchema {
   maximum?: number;
 }
 
+// Task attachment validation schema
+export const taskAttachmentSchema: ValidationSchema = {
+  type: 'object',
+  properties: {
+    id: { type: 'string', minLength: 1 },
+    fileName: { type: 'string', minLength: 1 },
+    originalName: { type: 'string', minLength: 1 },
+    fileType: { type: 'string', minLength: 1 },
+    fileSize: { type: 'number', minimum: 0 },
+    uploadedAt: { type: 'string', format: 'date-time' },
+    taskId: { type: 'string', minLength: 1 },
+    thumbnail: { type: ['string', 'undefined'] },
+    metadata: {
+      type: ['object', 'undefined'],
+      properties: {
+        width: { type: ['number', 'undefined'], minimum: 0 },
+        height: { type: ['number', 'undefined'], minimum: 0 },
+        pageCount: { type: ['number', 'undefined'], minimum: 0 },
+        description: { type: ['string', 'undefined'], maxLength: 500 }
+      },
+      additionalProperties: false
+    }
+  },
+  required: ['id', 'fileName', 'originalName', 'fileType', 'fileSize', 'uploadedAt', 'taskId'],
+  additionalProperties: false
+};
+
 // Task validation schema
 export const taskSchema: ValidationSchema = {
   type: 'object',
@@ -37,7 +64,13 @@ export const taskSchema: ValidationSchema = {
       items: { type: 'string', maxLength: 50 },
       maxItems: 20
     },
-    progress: { type: ['number', 'undefined'], minimum: 0, maximum: 100 }
+    progress: { type: ['number', 'undefined'], minimum: 0, maximum: 100 },
+    attachments: {
+      type: ['array', 'undefined'],
+      items: taskAttachmentSchema,
+      maxItems: 50
+    },
+    attachmentCount: { type: ['number', 'undefined'], minimum: 0 }
   },
   required: ['id', 'title', 'status', 'boardId', 'createdAt', 'updatedAt', 'priority', 'tags'],
   additionalProperties: false
@@ -71,6 +104,7 @@ export const settingsSchema: ValidationSchema = {
     enableNotifications: { type: 'boolean' },
     enableKeyboardShortcuts: { type: 'boolean' },
     enableDebugMode: { type: 'boolean' },
+    currentBoardId: { type: ['string', 'undefined'] },
     accessibility: {
       type: 'object',
       properties: {
@@ -381,6 +415,27 @@ export function sanitizeData(
           sanitized[requiredProp] = getDefaultValue(propSchema);
           changes.push(`Set default value for missing property: ${requiredProp}`);
         }
+      }
+    }
+
+    // Handle special cases for export data
+    if (schema === exportDataSchema && sanitized && 'boards' in sanitized && Array.isArray((sanitized as Record<string, unknown>).boards)) {
+      // Fix multiple default boards issue
+      const boards = (sanitized as Record<string, unknown>).boards as Record<string, unknown>[];
+      const defaultBoards = boards.filter((board) => board.isDefault);
+      if (defaultBoards.length > 1) {
+        // Keep only the first default board, make others non-default
+        let foundDefault = false;
+        (sanitized as Record<string, unknown>).boards = boards.map((board) => {
+          if (board.isDefault) {
+            if (foundDefault) {
+              changes.push(`Removed default flag from board: ${board.name as string}`);
+              return { ...board, isDefault: false };
+            }
+            foundDefault = true;
+          }
+          return board;
+        });
       }
     }
 

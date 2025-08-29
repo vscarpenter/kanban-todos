@@ -18,7 +18,8 @@ import {
   Trash2,
   Share,
   Move,
-  AlertTriangle
+  AlertTriangle,
+  Paperclip
 } from "@/lib/icons";
 import { 
   DropdownMenu, 
@@ -42,6 +43,7 @@ export function TaskCard({ task }: TaskCardProps) {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showMoveDialog, setShowMoveDialog] = useState(false);
+  
   const { deleteTask, archiveTask } = useTaskStore();
   
   const {
@@ -227,6 +229,20 @@ export function TaskCard({ task }: TaskCardProps) {
                 </div>
               )}
 
+              {/* Attachment count badge */}
+              {task.attachmentCount && task.attachmentCount > 0 && (
+                <div className="flex items-center gap-2">
+                  <Badge 
+                    variant="secondary" 
+                    className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                    title={`${task.attachmentCount} attachment${task.attachmentCount !== 1 ? 's' : ''}`}
+                  >
+                    <Paperclip className="w-3 h-3 mr-1" />
+                    {task.attachmentCount}
+                  </Badge>
+                </div>
+              )}
+
               {/* Progress Bar - Only show for in-progress tasks */}
               {task.status === 'in-progress' && task.progress !== undefined && (
                 <div className="space-y-1">
@@ -312,14 +328,19 @@ export default memo(TaskCard, (prevProps, nextProps) => {
   const prevTask = prevProps.task;
   const nextTask = nextProps.task;
   
-  return (
+  const shouldSkipRender = (
     prevTask.id === nextTask.id &&
     prevTask.title === nextTask.title &&
     prevTask.description === nextTask.description &&
     prevTask.status === nextTask.status &&
     prevTask.priority === nextTask.priority &&
     prevTask.progress === nextTask.progress &&
-    prevTask.updatedAt.getTime() === nextTask.updatedAt.getTime() &&
+    prevTask.attachmentCount === nextTask.attachmentCount &&
+    prevTask.dueDate?.getTime() === nextTask.dueDate?.getTime() &&
+    prevTask.completedAt?.getTime() === nextTask.completedAt?.getTime() &&
     JSON.stringify(prevTask.tags) === JSON.stringify(nextTask.tags)
   );
+  
+  // Don't re-render if only updatedAt or attachments changed (these are handled internally by EditTaskDialog)
+  return shouldSkipRender;
 });

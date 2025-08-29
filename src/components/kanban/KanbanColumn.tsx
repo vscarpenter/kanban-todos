@@ -83,14 +83,22 @@ export default memo(KanbanColumn, (prevProps, nextProps) => {
     );
   }
   
-  // Check if any task has been updated by comparing timestamps
+  // Check if any task has meaningful changes (excluding updatedAt and attachment changes)
   for (let i = 0; i < prevProps.tasks.length; i++) {
     const prevTask = prevProps.tasks[i];
     const nextTask = nextProps.tasks[i];
     
     if (
       prevTask.id !== nextTask.id ||
-      prevTask.updatedAt.getTime() !== nextTask.updatedAt.getTime()
+      prevTask.title !== nextTask.title ||
+      prevTask.description !== nextTask.description ||
+      prevTask.status !== nextTask.status ||
+      prevTask.priority !== nextTask.priority ||
+      prevTask.progress !== nextTask.progress ||
+      prevTask.attachmentCount !== nextTask.attachmentCount ||
+      prevTask.dueDate?.getTime() !== nextTask.dueDate?.getTime() ||
+      prevTask.completedAt?.getTime() !== nextTask.completedAt?.getTime() ||
+      JSON.stringify(prevTask.tags) !== JSON.stringify(nextTask.tags)
     ) {
       return false;
     }

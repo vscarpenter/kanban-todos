@@ -11,6 +11,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint with Next.js configuration
 
+### Testing
+- `npm test` - Run Vitest unit tests
+- `npm run test:watch` - Run tests in watch mode
+- `npm run test:e2e` - Run Playwright end-to-end tests
+
 ### Deployment
 - `npm run deploy` - Single environment deployment (todos.vinny.dev) via `./scripts/deploy.sh`
 - `npm run deploy:multi` - Interactive multi-environment deployment script
@@ -29,15 +34,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Tech Stack
 - **Framework**: Next.js 15.4.6 with App Router and static export configuration
-- **Language**: TypeScript with strict configuration
+- **Language**: TypeScript 5+ with strict configuration
 - **UI Library**: shadcn/ui components with Radix UI primitives
-- **Styling**: Tailwind CSS v4 with custom design system
-- **State Management**: Zustand stores with persistence
+- **Styling**: Tailwind CSS v4 with custom design system and tw-animate-css
+- **State Management**: Zustand stores with IndexedDB persistence
 - **Database**: IndexedDB for client-side storage via custom TaskDatabase class
 - **Drag & Drop**: @dnd-kit for accessible kanban interactions (lazy loaded)
 - **Icons**: Lucide React (centralized exports for tree-shaking)
-- **Notifications**: Sonner for toast messages
+- **Notifications**: Sonner for toast messages + native browser notifications
+- **Date Handling**: date-fns for date manipulation and formatting
 - **Performance**: Bundle analyzer, dynamic imports, React.memo optimizations
+- **Testing**: Vitest for unit tests, Playwright for e2e tests
 - **Fonts**: Geist and Geist Mono (optimized weights)
 
 ### Project Structure
@@ -45,25 +52,40 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 src/
 ├── app/                 # Next.js App Router
 │   ├── layout.tsx      # Root layout with Geist fonts (optimized weights)
-│   └── page.tsx        # Main application entry point
+│   ├── page.tsx        # Main application entry point
+│   └── privacy/        # Privacy policy page
 ├── components/         # React components
-│   ├── ui/            # shadcn/ui base components
+│   ├── ui/            # shadcn/ui base components (22 components)
 │   ├── kanban/        # Kanban-specific components (memoized)
 │   │   ├── KanbanColumn.tsx # Memoized column component
 │   │   └── TaskCard.tsx     # Memoized task card with useCallback
 │   ├── DragDropProvider.tsx # Lazy-loaded drag-and-drop wrapper
 │   ├── KanbanBoard.tsx # Main board orchestrator
 │   ├── Sidebar.tsx    # Navigation with lazy-loaded dialogs
-│   └── *Dialog.tsx    # Feature dialogs (dynamically imported)
-└── lib/
-    ├── stores/        # Zustand state management
-    ├── types/         # TypeScript type definitions
-    ├── utils/         # Utility functions and database layer
-    │   ├── database.ts         # IndexedDB wrapper
-    │   ├── memoryOptimization.ts # Performance utilities
-    │   └── resetApp.ts         # App reset functionality
-    ├── utils.ts       # Common utilities (cn function)
-    └── icons.ts       # Centralized icon exports
+│   ├── GlobalHotkeys.tsx # Global keyboard shortcut system
+│   ├── BoardView.tsx  # Main board display component
+│   ├── SearchBar.tsx  # Task search functionality
+│   └── *Dialog.tsx    # Feature dialogs (15 total, dynamically imported)
+├── lib/
+│   ├── stores/        # Zustand state management
+│   │   ├── taskStore.ts       # Task CRUD and filtering
+│   │   ├── boardStore.ts      # Board management
+│   │   └── settingsStore.ts   # User preferences
+│   ├── types/         # TypeScript type definitions
+│   ├── utils/         # Utility functions and database layer
+│   │   ├── database.ts         # IndexedDB wrapper
+│   │   ├── notifications.ts    # Browser notification system
+│   │   ├── keyboard.ts         # Keyboard shortcut manager
+│   │   ├── exportImport.ts     # Data import/export
+│   │   ├── validation.ts       # Input validation
+│   │   ├── conflictResolution.ts # Data conflict handling
+│   │   ├── shareTask.ts        # Task sharing utilities
+│   │   ├── fileHandling.ts     # File upload/download
+│   │   ├── memoryOptimization.ts # Performance utilities
+│   │   └── resetApp.ts         # App reset functionality
+│   ├── utils.ts       # Common utilities (cn function)
+│   └── icons.ts       # Centralized icon exports
+└── test/              # Test configuration and setup
 ```
 
 ### State Management Architecture
@@ -119,12 +141,18 @@ Custom IndexedDB wrapper in `src/lib/utils/database.ts`:
 6. Lazy-loaded components render on demand to reduce initial bundle size
 
 ### Key Features
-- **Multi-Board System**: Unlimited boards with color coding
-- **Task Management**: Full CRUD with drag-and-drop between columns
+- **Multi-Board System**: Unlimited boards with color coding and reordering
+- **Task Management**: Full CRUD with drag-and-drop between columns, due dates, and progress tracking
+- **Due Date System**: Task scheduling with native browser notifications (1-hour warning, overdue alerts)
 - **Archive System**: Manual and automatic task archiving
+- **Global Keyboard Shortcuts**: Comprehensive hotkey system for power users
+- **Search & Filtering**: Advanced task search across all boards
+- **Board Reordering**: Drag boards up/down in sidebar with hover controls
 - **Privacy-First**: 100% client-side with no external data transmission
 - **Accessibility**: WCAG 2.1 AA compliance with keyboard navigation
-- **Import/Export**: JSON-based data portability
+- **Import/Export**: JSON-based data portability with conflict resolution
+- **Theme System**: Light, dark, and system themes with persistence
+- **Progressive Web App**: Installable with offline capabilities
 
 ### Development Notes
 - Static export configuration for deployment to S3/CloudFront
@@ -135,20 +163,10 @@ Custom IndexedDB wrapper in `src/lib/utils/database.ts`:
 - Theme switching preserves user preference across sessions
 
 ### Production Deployment
-
-#### Dual Environment Setup
-- **Primary**: `todos.vinny.dev` (S3: `s3://todos.vinny.dev`, CloudFront: `E2UEF9C8JAMJH5`)
-- **Secondary**: `cascade.vinny.dev` (S3: `s3://cascade.vinny.dev`, CloudFront: `E1351EA4HZ20NY`)
-- **Configuration**: `deploy-config.json` contains environment-specific settings
-- **Cache Strategy**: 1-year cache for static assets, no cache for HTML, 5-min cache for dynamic files
-- **Deployment**: Multi-environment support via `./scripts/deploy-multi.sh`
-
-#### Security Configuration (Both Environments)
-- **CloudFront Response Headers Policy ID**: `784dc706-262d-418a-9003-238d40a70c6a`
-- **Content Security Policy**: `default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'`
-- **Security Headers**: HSTS (1 year), X-Frame-Options (DENY), X-Content-Type-Options (nosniff), Referrer-Policy (strict-origin-when-cross-origin)
-- **Permissions-Policy**: `camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()`
-- **Testing**: Security headers validation included in deployment verification
+- **Environments**: Dual-environment setup (todos.vinny.dev, cascade.vinny.dev)
+- **Infrastructure**: AWS S3 + CloudFront with security headers
+- **Deployment**: Multi-environment scripts with automated invalidation
+- **Full details**: See DEPLOYMENT.md for comprehensive deployment guide
 
 ### Performance Optimizations
 - **Bundle Size**: ~388kB First Load JS with optimized vendor chunks
@@ -176,25 +194,14 @@ Custom IndexedDB wrapper in `src/lib/utils/database.ts`:
 - **Component Lifecycle**: Proper cleanup of subscriptions and timers
 - **Memory Monitoring**: Browser memory usage tracking utilities
 
+### Notification System
+- **Native browser notifications** for task due dates (1-hour warnings)
+- **Smart deduplication** and auto-cleanup for completed tasks  
+- **Implementation**: NotificationManager in `src/lib/utils/notifications.ts`
+- **Configuration**: Controllable via Settings dialog
+
 ### Keyboard Shortcuts
-Full keyboard navigation system with global hotkeys:
-
-#### Task Management
-- **`N`** - Create new task (opens quick task dialog)
-- **`Ctrl/Cmd + K`** - Alternative quick task creation
-
-#### Board Navigation  
-- **`Ctrl/Cmd + 1-9`** - Switch between first 9 boards
-- **Up/Down arrows** - Reorder boards in sidebar (on hover)
-
-#### Help & Settings
-- **`H`** - Show keyboard shortcuts dialog
-- **`F1`** - Show user guide/help
-- **`Ctrl/Cmd + ,`** - Open settings dialog
-
-#### Implementation Notes
-- Keyboard manager (`src/lib/utils/keyboard.ts`) handles shortcut registration and event handling
-- Smart input detection prevents shortcuts when typing in form fields
-- Cross-platform modifier key support (Ctrl on Windows/Linux, Cmd on Mac)
-- Lazy-loaded components for optimal performance
-- Custom event system for dialog triggers
+- **Task Management**: `N` (new task), `Ctrl/Cmd + K` (quick create)
+- **Board Navigation**: `Ctrl/Cmd + 1-9` (switch boards), arrows (reorder)  
+- **Help & Settings**: `H` (shortcuts), `F1` (guide), `Ctrl/Cmd + ,` (settings)
+- **Implementation**: GlobalHotkeys component with smart input detection in `src/lib/utils/keyboard.ts`
