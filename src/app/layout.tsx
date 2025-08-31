@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import PwaUpdater from "@/components/PwaUpdater";
 
 const geist = Geist({ 
   subsets: ["latin"],
@@ -85,6 +86,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <PwaUpdater />
           <Toaster />
         </ThemeProvider>
       </body>
