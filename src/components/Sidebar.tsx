@@ -348,25 +348,25 @@ function BoardItem({ board, isActive, taskCount, onSelect, onReorder, canMoveUp,
             )}
           </div>
           <div className="flex items-center gap-1">
-            {/* Reorder buttons */}
-            <div className="flex flex-col opacity-0 group-hover:opacity-100 transition-opacity">
+            {/* Reorder buttons - Always visible on mobile/touch devices */}
+            <div className="flex flex-col opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-4 w-4 p-0"
+                className="h-6 w-6 p-0 sm:h-4 sm:w-4 touch:h-6 touch:w-6"
                 onClick={(e) => handleReorder('up', e)}
                 disabled={!canMoveUp}
               >
-                <ChevronUp className="h-3 w-3" />
+                <ChevronUp className="h-4 w-4 sm:h-3 sm:w-3" />
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-4 w-4 p-0"
+                className="h-6 w-6 p-0 sm:h-4 sm:w-4 touch:h-6 touch:w-6"
                 onClick={(e) => handleReorder('down', e)}
                 disabled={!canMoveDown}
               >
-                <ChevronDown className="h-3 w-3" />
+                <ChevronDown className="h-4 w-4 sm:h-3 sm:w-3" />
               </Button>
             </div>
             <Badge variant="secondary" className="text-xs">
