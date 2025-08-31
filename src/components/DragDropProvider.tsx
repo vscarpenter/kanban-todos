@@ -8,6 +8,7 @@ import {
   DragOverlay,
   DragStartEvent,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
@@ -31,11 +32,17 @@ export function DragDropProvider({
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const { tasks, moveTask } = useTaskStore();
   
-  // Configure drag sensors
+  // Configure drag sensors for both mouse and touch
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 8,
       },
     })
   );
@@ -45,6 +52,10 @@ export function DragDropProvider({
     const task = tasks.find((t: Task) => t.id === active.id);
     if (task) {
       setActiveTask(task);
+      // Add haptic feedback for mobile devices
+      if ('vibrate' in navigator) {
+        navigator.vibrate(50);
+      }
     }
     onDragStart?.(event);
   };
