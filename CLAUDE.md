@@ -28,17 +28,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Architecture Overview
 
 ### Tech Stack
-- **Framework**: Next.js 15.4.6 with App Router and static export configuration
-- **Language**: TypeScript with strict configuration
-- **UI Library**: shadcn/ui components with Radix UI primitives
-- **Styling**: Tailwind CSS v4 with custom design system
-- **State Management**: Zustand stores with persistence
-- **Database**: IndexedDB for client-side storage via custom TaskDatabase class
-- **Drag & Drop**: @dnd-kit for accessible kanban interactions (lazy loaded)
-- **Icons**: Lucide React (centralized exports for tree-shaking)
-- **Notifications**: Sonner for toast messages
-- **Performance**: Bundle analyzer, dynamic imports, React.memo optimizations
-- **Fonts**: Geist and Geist Mono (optimized weights)
+- **Framework**: Next.js 15.4.6 with App Router, static export
+- **Language**: TypeScript (strict), shadcn/ui, Tailwind CSS v4
+- **State**: Zustand stores + IndexedDB (custom TaskDatabase class)
+- **Performance**: @dnd-kit lazy loaded, React.memo, dynamic imports
 
 ### Project Structure
 ```
@@ -66,136 +59,50 @@ src/
     └── icons.ts       # Centralized icon exports
 ```
 
-### State Management Architecture
-Three main Zustand stores using IndexedDB for persistence (no Zustand persistence middleware to avoid conflicts):
-
-1. **useBoardStore** (`src/lib/stores/boardStore.ts`)
-   - Manages board CRUD operations
-   - Handles board selection and navigation
-   - Supports import/export functionality
-   - Default board protection
-
-2. **useTaskStore** (`src/lib/stores/taskStore.ts`) 
-   - Task lifecycle management (create, update, delete, archive)
-   - Status transitions with progress tracking
-   - Filtering and search capabilities
-   - Batch operations for import/export
-   - Uses IndexedDB directly via taskDB, no Zustand persistence to prevent state conflicts
-
-3. **useSettingsStore** (`src/lib/stores/settingsStore.ts`)
-   - Theme management (light/dark/system)
-   - Auto-archive configuration
-   - Accessibility preferences
-   - Debug mode toggle
+### State Management
+Three main Zustand stores with IndexedDB persistence:
+1. **useBoardStore**: Board CRUD, selection, import/export
+2. **useTaskStore**: Task lifecycle, search, filtering, archive
+3. **useSettingsStore**: Theme, auto-archive, accessibility, debug mode
 
 ### Database Layer
-Custom IndexedDB wrapper in `src/lib/utils/database.ts`:
-- **TaskDatabase class** with async/await API
+- IndexedDB wrapper with TaskDatabase class (async/await API)
 - Object stores: tasks, boards, settings, archive
-- Indexing on boardId, status, archivedAt for efficient queries
-- Data validation and error handling
 - Export/import with version control
-
-### Component Architecture
-- **shadcn/ui configuration**: New York style with neutral base color
-- **Drag & Drop**: @dnd-kit with keyboard accessibility (lazy loaded in DragDropProvider)
-- **Theme System**: next-themes with CSS custom properties
-- **Typography**: Geist for body text, Geist Mono for code (optimized font weights)
-- **Responsive Design**: Mobile-first with sidebar toggle
-- **Client-Side Rendering**: ClientOnly wrapper for hydration safety
-- **Performance Optimizations**:
-  - React.memo for TaskCard and KanbanColumn components
-  - useCallback for event handlers to prevent unnecessary re-renders
-  - Dynamic imports for dialog components (CreateBoard, Settings, etc.)
-  - Lazy loading for drag-and-drop functionality
-  - Sequential store initialization for faster app startup
-
-### Data Flow
-1. App initialization loads stores sequentially (settings → boards → tasks) for optimal performance
-2. Board selection triggers task filtering by boardId
-3. Task operations update both Zustand state and IndexedDB
-4. Real-time UI updates via Zustand subscriptions with memoized components
-5. Export/import preserves complete application state
-6. Lazy-loaded components render on demand to reduce initial bundle size
 
 ### Key Features
 - **Multi-Board System**: Unlimited boards with color coding
-- **Task Management**: Full CRUD with drag-and-drop between columns
-- **Archive System**: Manual and automatic task archiving
-- **Privacy-First**: 100% client-side with no external data transmission
-- **Accessibility**: WCAG 2.1 AA compliance with keyboard navigation
-- **Import/Export**: JSON-based data portability
+- **Task Management**: Full CRUD with drag-and-drop
+- **Archive System**: Manual and automatic archiving
+- **Privacy-First**: 100% client-side operation
+- **Accessibility**: WCAG 2.1 AA compliance
 
-### Development Notes
-- Static export configuration for deployment to S3/CloudFront
-- TypeScript strict mode with path aliases (@/* -> src/*)
-- ESLint extends Next.js and TypeScript configurations
-- All database operations are async and handle browser compatibility
-- Zustand stores use IndexedDB directly (no persistence middleware to avoid conflicts)
-- Theme switching preserves user preference across sessions
+## Archive
+
+Implementation history documentation is archived in `archive/` directory:
+- Accessibility improvements and WCAG compliance implementation
+- Code quality reviews and build error resolution
+- Bug fixes and technical solutions
+
+Reference `archive/README.md` for complete index.
 
 ### Production Deployment
+- **Primary**: `todos.vinny.dev` (S3 + CloudFront)
+- **Secondary**: `cascade.vinny.dev` (S3 + CloudFront)  
+- **Security**: CSP, HSTS, security headers policy
+- **Cache**: 1-year static assets, no HTML cache, 5-min dynamic
+- **Deploy**: `npm run deploy` or `./scripts/deploy-multi.sh`
 
-#### Dual Environment Setup
-- **Primary**: `todos.vinny.dev` (S3: `s3://todos.vinny.dev`, CloudFront: `E2UEF9C8JAMJH5`)
-- **Secondary**: `cascade.vinny.dev` (S3: `s3://cascade.vinny.dev`, CloudFront: `E1351EA4HZ20NY`)
-- **Configuration**: `deploy-config.json` contains environment-specific settings
-- **Cache Strategy**: 1-year cache for static assets, no cache for HTML, 5-min cache for dynamic files
-- **Deployment**: Multi-environment support via `./scripts/deploy-multi.sh`
-
-#### Security Configuration (Both Environments)
-- **CloudFront Response Headers Policy ID**: `784dc706-262d-418a-9003-238d40a70c6a`
-- **Content Security Policy**: `default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'`
-- **Security Headers**: HSTS (1 year), X-Frame-Options (DENY), X-Content-Type-Options (nosniff), Referrer-Policy (strict-origin-when-cross-origin)
-- **Permissions-Policy**: `camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()`
-- **Testing**: Security headers validation included in deployment verification
-
-### Performance Optimizations
-- **Bundle Size**: ~388kB First Load JS with optimized vendor chunks
-- **Font Loading**: Reduced from 5 weights to 2 (60-80KB savings)
-- **Dynamic Imports**: Dialog components lazy loaded (15-25KB savings)
-- **Drag & Drop**: Lazy loaded @dnd-kit functionality (35-45KB savings)
-- **Tree Shaking**: Centralized icon exports via `src/lib/icons.ts`
-- **React Optimizations**: 
-  - React.memo for TaskCard and KanbanColumn
-  - useCallback for event handlers
-  - Sequential Zustand store initialization
-- **Bundle Analysis**: Available via `npm run build:analyze`
-- **Webpack Configuration**: 
-  - Advanced chunk splitting for vendors (dnd-kit, radix-ui, lucide)
-  - Tree shaking optimizations enabled
-  - Console removal in production builds
-
-### Memory Management
-- **Utilities**: `src/lib/utils/memoryOptimization.ts` provides:
-  - Debounce and throttle functions
-  - Cleanup manager for timers and event listeners  
-  - WeakMap-based caching system
-  - Optimized array update functions
-  - Virtual scrolling helpers for large lists
-- **Component Lifecycle**: Proper cleanup of subscriptions and timers
-- **Memory Monitoring**: Browser memory usage tracking utilities
+### Performance
+- Bundle: ~388kB with lazy loading, tree shaking, React.memo
+- Memory: `src/lib/utils/memoryOptimization.ts` utilities
+- Analysis: `npm run build:analyze`
 
 ### Keyboard Shortcuts
-Full keyboard navigation system with global hotkeys:
+- **`N`** / **`Ctrl/Cmd + K`** - Create task
+- **`Ctrl/Cmd + 1-9`** - Switch boards
+- **`H`** - Keyboard shortcuts help
+- **`F1`** - User guide
+- **`Ctrl/Cmd + ,`** - Settings
 
-#### Task Management
-- **`N`** - Create new task (opens quick task dialog)
-- **`Ctrl/Cmd + K`** - Alternative quick task creation
-
-#### Board Navigation  
-- **`Ctrl/Cmd + 1-9`** - Switch between first 9 boards
-- **Up/Down arrows** - Reorder boards in sidebar (on hover)
-
-#### Help & Settings
-- **`H`** - Show keyboard shortcuts dialog
-- **`F1`** - Show user guide/help
-- **`Ctrl/Cmd + ,`** - Open settings dialog
-
-#### Implementation Notes
-- Keyboard manager (`src/lib/utils/keyboard.ts`) handles shortcut registration and event handling
-- Smart input detection prevents shortcuts when typing in form fields
-- Cross-platform modifier key support (Ctrl on Windows/Linux, Cmd on Mac)
-- Lazy-loaded components for optimal performance
-- Custom event system for dialog triggers
-- Remember the attachment functionality is in a seperate branch and we don't want to merge at the moment
+Implementation: `src/lib/utils/keyboard.ts` with cross-platform support.
