@@ -69,6 +69,10 @@ export const useBoardStore = create<BoardState & BoardActions>((set, get) => ({
               enableNotifications: false,
               enableKeyboardShortcuts: true,
               enableDebugMode: false,
+              searchPreferences: {
+                defaultScope: 'current-board' as const,
+                rememberScope: true,
+              },
               accessibility: {
                 highContrast: false,
                 reduceMotion: false,

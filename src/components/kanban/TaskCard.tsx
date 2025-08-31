@@ -3,10 +3,11 @@
 import { useState, memo, useCallback } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { Task } from "@/lib/types";
+import { Task, Board } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { BoardIndicator } from "../BoardIndicator";
 import { 
   MoreHorizontal, 
   Calendar, 
@@ -35,9 +36,19 @@ import { MoveTaskDialog } from "../MoveTaskDialog";
 
 interface TaskCardProps {
   task: Task;
+  showBoardIndicator?: boolean;
+  board?: Board;
+  isCurrentBoard?: boolean;
+  onNavigateToBoard?: (boardId: string, taskId: string) => void;
 }
 
-export function TaskCard({ task }: TaskCardProps) {
+export function TaskCard({ 
+  task, 
+  showBoardIndicator = false, 
+  board, 
+  isCurrentBoard = true,
+  onNavigateToBoard 
+}: TaskCardProps) {
   
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
@@ -71,6 +82,27 @@ export function TaskCard({ task }: TaskCardProps) {
   const handleArchive = useCallback(async () => {
     await archiveTask(task.id);
   }, [archiveTask, task.id]);
+
+  const handleCardClick = useCallback((e: React.MouseEvent) => {
+    // Only navigate if we have a board and navigation handler, and it's not the current board
+    if (showBoardIndicator && board && !isCurrentBoard && onNavigateToBoard) {
+      // Prevent navigation if clicking on interactive elements
+      const target = e.target as HTMLElement;
+      if (target.closest('button') || target.closest('[role="menuitem"]')) {
+        return;
+      }
+      onNavigateToBoard(board.id, task.id);
+    }
+  }, [showBoardIndicator, board, isCurrentBoard, onNavigateToBoard, task.id]);
+
+  const handleCardKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (showBoardIndicator && board && !isCurrentBoard && onNavigateToBoard) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onNavigateToBoard(board.id, task.id);
+      }
+    }
+  }, [showBoardIndicator, board, isCurrentBoard, onNavigateToBoard, task.id]);
 
   const getPriorityColor = (priority: Task['priority']) => {
     switch (priority) {
@@ -145,20 +177,55 @@ export function TaskCard({ task }: TaskCardProps) {
         style={style}
         {...attributes}
         {...listeners}
-        className="cursor-grab active:cursor-grabbing"
+        className={`cursor-grab active:cursor-grabbing ${
+          showBoardIndicator && !isCurrentBoard ? 'cursor-pointer' : ''
+        }`}
+        onClick={handleCardClick}
+        onKeyDown={handleCardKeyDown}
+        tabIndex={showBoardIndicator && !isCurrentBoard ? 0 : -1}
+        role={showBoardIndicator && !isCurrentBoard ? 'button' : undefined}
+        aria-label={showBoardIndicator && !isCurrentBoard && board ? `Navigate to task "${task.title}" on board "${board.name}"` : undefined}
+        data-task-id={task.id}
       >
-        <Card className="hover:shadow-md transition-shadow">
+        <Card 
+          className={`hover:shadow-md transition-all duration-200 ${
+            showBoardIndicator && !isCurrentBoard ? 'hover:bg-accent/50 hover:border-accent-foreground/30' : ''
+          } focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2`}
+          role="article"
+          aria-labelledby={`task-title-${task.id}`}
+          aria-describedby={`task-meta-${task.id}`}
+        >
           <CardContent className="p-4">
+            {/* Board Indicator - Top Right */}
+            {showBoardIndicator && board && (
+              <div className="flex justify-end mb-2">
+                <BoardIndicator 
+                  board={board} 
+                  isCurrentBoard={isCurrentBoard}
+                  size="sm"
+                  showName={true}
+                />
+              </div>
+            )}
+
             {/* Task Header */}
             <div className="flex items-start justify-between gap-2 mb-3">
-              <h3 className="font-medium text-foreground text-sm leading-tight flex-1">
+              <h3 
+                id={`task-title-${task.id}`}
+                className="font-medium text-foreground text-sm leading-tight flex-1"
+              >
                 {task.title}
               </h3>
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                    <MoreHorizontal className="h-4 w-4" />
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-6 w-6 p-0 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    aria-label={`Task options for ${task.title}`}
+                  >
+                    <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -198,13 +265,14 @@ export function TaskCard({ task }: TaskCardProps) {
             )}
 
             {/* Task Metadata */}
-            <div className="space-y-2">
+            <div id={`task-meta-${task.id}`} className="space-y-2">
               {/* Priority */}
               <div className="flex items-center gap-2">
-                {getPriorityIcon(task.priority)}
+                <span aria-hidden="true">{getPriorityIcon(task.priority)}</span>
                 <Badge 
                   variant="secondary" 
                   className={`text-xs ${getPriorityColor(task.priority)}`}
+                  aria-label={`Priority: ${task.priority}`}
                 >
                   {task.priority}
                 </Badge>
@@ -212,15 +280,15 @@ export function TaskCard({ task }: TaskCardProps) {
 
               {/* Tags */}
               {task.tags.length > 0 && (
-                <div className="flex items-center gap-1 flex-wrap">
-                  <Tag className="h-3 w-3 text-muted-foreground" />
+                <div className="flex items-center gap-1 flex-wrap" role="list" aria-label="Task tags">
+                  <Tag className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
                   {task.tags.slice(0, 3).map((tag, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
+                    <Badge key={index} variant="outline" className="text-xs" role="listitem">
                       {tag}
                     </Badge>
                   ))}
                   {task.tags.length > 3 && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground" role="listitem">
                       +{task.tags.length - 3} more
                     </span>
                   )}
@@ -234,7 +302,14 @@ export function TaskCard({ task }: TaskCardProps) {
                     <span className="text-muted-foreground">Progress</span>
                     <span className="font-medium text-foreground">{task.progress}%</span>
                   </div>
-                  <div className="w-full bg-secondary rounded-full h-2">
+                  <div 
+                    className="w-full bg-secondary rounded-full h-2"
+                    role="progressbar"
+                    aria-valuenow={task.progress}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={`Task progress: ${task.progress}% complete`}
+                  >
                     <div 
                       className="bg-primary h-2 rounded-full transition-all duration-300 ease-in-out" 
                       style={{ width: `${task.progress}%` }}
@@ -251,17 +326,21 @@ export function TaskCard({ task }: TaskCardProps) {
                 const { isOverdue, isDueSoon, dueDate } = dueDateStatus;
                 
                 return (
-                  <div className={`flex items-center gap-1 text-xs ${
-                    isOverdue 
-                      ? 'text-red-600 dark:text-red-400' 
-                      : isDueSoon 
-                      ? 'text-orange-600 dark:text-orange-400'
-                      : 'text-muted-foreground'
-                  }`}>
+                  <div 
+                    className={`flex items-center gap-1 text-xs ${
+                      isOverdue 
+                        ? 'text-red-600 dark:text-red-400' 
+                        : isDueSoon 
+                        ? 'text-orange-600 dark:text-orange-400'
+                        : 'text-muted-foreground'
+                    }`}
+                    role={isOverdue ? 'alert' : undefined}
+                    aria-label={`Due date: ${formatDueDate(dueDate)}${isOverdue ? ' (Overdue)' : isDueSoon ? ' (Due soon)' : ''}`}
+                  >
                     {isOverdue ? (
-                      <AlertTriangle className="h-3 w-3" />
+                      <AlertTriangle className="h-3 w-3" aria-hidden="true" />
                     ) : (
-                      <Clock className="h-3 w-3" />
+                      <Clock className="h-3 w-3" aria-hidden="true" />
                     )}
                     <span>{formatDueDate(dueDate)}</span>
                     {isOverdue && <span className="font-medium">(Overdue)</span>}
@@ -271,7 +350,7 @@ export function TaskCard({ task }: TaskCardProps) {
 
               {/* Created Date */}
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Calendar className="h-3 w-3" />
+                <Calendar className="h-3 w-3" aria-hidden="true" />
                 <span>
                   {task.completedAt 
                     ? `Completed ${formatDistanceToNow(new Date(task.completedAt))} ago`
@@ -320,6 +399,11 @@ export default memo(TaskCard, (prevProps, nextProps) => {
     prevTask.priority === nextTask.priority &&
     prevTask.progress === nextTask.progress &&
     prevTask.updatedAt.getTime() === nextTask.updatedAt.getTime() &&
-    JSON.stringify(prevTask.tags) === JSON.stringify(nextTask.tags)
+    JSON.stringify(prevTask.tags) === JSON.stringify(nextTask.tags) &&
+    prevProps.showBoardIndicator === nextProps.showBoardIndicator &&
+    prevProps.isCurrentBoard === nextProps.isCurrentBoard &&
+    prevProps.board?.id === nextProps.board?.id &&
+    prevProps.board?.name === nextProps.board?.name &&
+    prevProps.board?.color === nextProps.board?.color
   );
 });

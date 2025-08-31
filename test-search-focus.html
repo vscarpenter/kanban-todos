@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Focus Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .search-container { margin: 20px 0; }
+        input { padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 4px; }
+        .status { margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Search Focus Test</h1>
+    <p>This test simulates the search focus issue and demonstrates the fix.</p>
+    
+    <div class="search-container">
+        <h3>Problematic Version (loses focus):</h3>
+        <input type="text" id="problematic-search" placeholder="Type here - will lose focus">
+        <div class="status" id="problematic-status">Status: Ready</div>
+    </div>
+    
+    <div class="search-container">
+        <h3>Fixed Version (maintains focus):</h3>
+        <input type="text" id="fixed-search" placeholder="Type here - maintains focus">
+        <div class="status" id="fixed-status">Status: Ready</div>
+    </div>
+
+    <script>
+        // Simulate the problematic behavior
+        let problematicValue = '';
+        let isUserTypingProblematic = false;
+        
+        const problematicInput = document.getElementById('problematic-search');
+        const problematicStatus = document.getElementById('problematic-status');
+        
+        problematicInput.addEventListener('input', (e) => {
+            problematicValue = e.target.value;
+            problematicStatus.textContent = `Status: Searching for "${problematicValue}"`;
+            
+            // Simulate the problematic re-render that causes focus loss
+            setTimeout(() => {
+                // This simulates the useEffect that updates the input value from store
+                if (problematicInput.value !== problematicValue) {
+                    problematicInput.value = problematicValue; // This causes focus loss
+                }
+                problematicStatus.textContent = `Status: Found results for "${problematicValue}"`;
+            }, 100);
+        });
+        
+        // Simulate the fixed behavior
+        let fixedValue = '';
+        let isUserTypingFixed = false;
+        
+        const fixedInput = document.getElementById('fixed-search');
+        const fixedStatus = document.getElementById('fixed-status');
+        
+        fixedInput.addEventListener('input', (e) => {
+            isUserTypingFixed = true;
+            fixedValue = e.target.value;
+            fixedStatus.textContent = `Status: Searching for "${fixedValue}"`;
+            
+            // Reset typing flag after a short delay
+            setTimeout(() => {
+                isUserTypingFixed = false;
+            }, 100);
+            
+            // Simulate the fixed re-render that preserves focus
+            setTimeout(() => {
+                // Only update input value if user is not actively typing
+                if (!isUserTypingFixed && fixedInput.value !== fixedValue) {
+                    fixedInput.value = fixedValue; // This won't cause focus loss
+                }
+                fixedStatus.textContent = `Status: Found results for "${fixedValue}"`;
+            }, 100);
+        });
+        
+        fixedInput.addEventListener('blur', () => {
+            isUserTypingFixed = false;
+        });
+    </script>
+</body>
+</html>

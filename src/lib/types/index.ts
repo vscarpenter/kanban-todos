@@ -33,6 +33,10 @@ export interface Settings {
   enableKeyboardShortcuts: boolean;
   enableDebugMode: boolean;
   currentBoardId?: string; // Persist current board selection
+  searchPreferences: {
+    defaultScope: SearchScope;
+    rememberScope: boolean;
+  };
   accessibility: {
     highContrast: boolean;
     reduceMotion: boolean;
@@ -46,6 +50,7 @@ export interface TaskFilters {
   priority?: Task['priority'];
   tags: string[];
   boardId?: string; // Filter by board
+  crossBoardSearch: boolean; // Enable cross-board search
   dateRange?: {
     start: Date;
     end: Date;
@@ -57,4 +62,11 @@ export interface ArchiveEntry {
   archivedAt: Date;
   archivedBy: 'manual' | 'auto';
   reason?: string;
+}
+
+export type SearchScope = 'current-board' | 'all-boards';
+
+export interface SearchState {
+  scope: SearchScope;
+  highlightedTaskId?: string; // For task highlighting after navigation
 }

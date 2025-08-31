@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import { Settings } from '@/lib/types';
+import { Settings, SearchScope } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
 import { exportSettings, ExportData } from '@/lib/utils/exportImport';
 
@@ -20,6 +20,11 @@ interface SettingsActions {
   updateSettings: (updates: Partial<Settings>) => Promise<void>;
   resetSettings: () => Promise<void>;
   
+  // Search preference operations
+  updateSearchPreferences: (preferences: Partial<Settings['searchPreferences']>) => Promise<void>;
+  setDefaultSearchScope: (scope: SearchScope) => Promise<void>;
+  setRememberScope: (remember: boolean) => Promise<void>;
+  
   // Import/Export operations
   exportSettings: () => ExportData;
   importSettings: (settings: Settings) => Promise<void>;
@@ -34,6 +39,10 @@ const defaultSettings: Settings = {
   enableNotifications: true,
   enableKeyboardShortcuts: true,
   enableDebugMode: false,
+  searchPreferences: {
+    defaultScope: 'current-board',
+    rememberScope: true,
+  },
   accessibility: {
     highContrast: false,
     reduceMotion: false,
@@ -47,13 +56,35 @@ const initialState: SettingsState = {
   error: null,
 };
 
+// Helper function to ensure settings have proper structure
+const ensureSettingsStructure = (settings: unknown): Settings => {
+  if (!settings || typeof settings !== 'object') {
+    return defaultSettings;
+  }
+  
+  const settingsObj = settings as Partial<Settings>;
+  
+  return {
+    ...defaultSettings,
+    ...settingsObj,
+    searchPreferences: {
+      ...defaultSettings.searchPreferences,
+      ...(settingsObj.searchPreferences || {}),
+    },
+    accessibility: {
+      ...defaultSettings.accessibility,
+      ...(settingsObj.accessibility || {}),
+    },
+  };
+};
+
 export const useSettingsStore = create<SettingsState & SettingsActions>()(
   devtools(
     persist(
       (set, get) => ({
         ...initialState,
 
-        setSettings: (settings) => set({ settings }),
+        setSettings: (settings) => set({ settings: ensureSettingsStructure(settings) }),
         setLoading: (isLoading) => set({ isLoading }),
         setError: (error) => set({ error }),
 
@@ -131,6 +162,34 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
           }
         },
 
+        // Search preference operations
+        updateSearchPreferences: async (preferences) => {
+          try {
+            const currentSettings = get().settings;
+            const updatedSettings = {
+              ...currentSettings,
+              searchPreferences: {
+                ...currentSettings.searchPreferences,
+                ...preferences,
+              },
+            };
+            
+            await get().updateSettings(updatedSettings);
+          } catch (error) {
+            set({ 
+              error: error instanceof Error ? error.message : 'Failed to update search preferences'
+            });
+          }
+        },
+
+        setDefaultSearchScope: async (scope) => {
+          await get().updateSearchPreferences({ defaultScope: scope });
+        },
+
+        setRememberScope: async (remember) => {
+          await get().updateSearchPreferences({ rememberScope: remember });
+        },
+
         initializeSettings: async () => {
           try {
             set({ isLoading: true, error: null });
@@ -144,7 +203,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
             await taskDB.init();
             const storedSettings = await taskDB.getSettings();
             
-            const settings = storedSettings || defaultSettings;
+            const settings = ensureSettingsStructure(storedSettings || defaultSettings);
             
             set({ 
               settings,
@@ -165,6 +224,11 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
         partialize: (state) => ({ 
           settings: state.settings 
         }),
+        onRehydrateStorage: () => (state) => {
+          if (state) {
+            state.settings = ensureSettingsStructure(state.settings);
+          }
+        },
       }
     )
   )

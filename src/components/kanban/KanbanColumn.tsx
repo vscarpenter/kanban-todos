@@ -6,6 +6,8 @@ import { Task } from "@/lib/types";
 import TaskCard from "./TaskCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useBoardStore } from "@/lib/stores/boardStore";
+import { useTaskStore } from "@/lib/stores/taskStore";
 
 interface KanbanColumnProps {
   title: string;
@@ -13,9 +15,12 @@ interface KanbanColumnProps {
   status: Task['status'];
   color: string;
   borderColor: string;
+  onNavigateToBoard?: (boardId: string, taskId: string) => void;
 }
 
-export function KanbanColumn({ title, tasks, status, color, borderColor }: KanbanColumnProps) {
+export function KanbanColumn({ title, tasks, status, color, borderColor, onNavigateToBoard }: KanbanColumnProps) {
+  const { boards, currentBoardId } = useBoardStore();
+  const { filters, searchState } = useTaskStore();
 
   const {
     setNodeRef,
@@ -27,6 +32,10 @@ export function KanbanColumn({ title, tasks, status, color, borderColor }: Kanba
       status,
     },
   });
+
+  // Check if we're in cross-board search mode
+  const isSearchActive = filters.search.length > 0;
+  const isCrossBoardSearch = filters.crossBoardSearch && isSearchActive;
 
   return (
     <div
@@ -56,9 +65,26 @@ export function KanbanColumn({ title, tasks, status, color, borderColor }: Kanba
                 <p className="text-xs">Drag tasks here or create new ones</p>
               </div>
             ) : (
-              tasks.map((task) => (
-                <TaskCard key={task.id} task={task} />
-              ))
+              tasks.map((task) => {
+                const taskBoard = boards.find(b => b.id === task.boardId);
+                const isCurrentBoard = task.boardId === currentBoardId;
+                const isHighlighted = searchState.highlightedTaskId === task.id;
+                
+                return (
+                  <div 
+                    key={task.id}
+                    className={isHighlighted ? 'ring-2 ring-primary ring-offset-2 rounded-lg transition-all duration-300' : ''}
+                  >
+                    <TaskCard 
+                      task={task}
+                      showBoardIndicator={isCrossBoardSearch}
+                      board={taskBoard}
+                      isCurrentBoard={isCurrentBoard}
+                      onNavigateToBoard={onNavigateToBoard}
+                    />
+                  </div>
+                );
+              })
             )}
           </div>
         </CardContent>
