@@ -18,6 +18,10 @@
     "deploy:all": "./scripts/deploy-multi.sh all",
     "deploy:s3": "aws s3 sync ./out s3://todos.vinny.dev --delete --cache-control 'max-age=31536000,public' --exclude '*.html' && aws s3 sync ./out s3://todos.vinny.dev --delete --cache-control 'max-age=0,no-cache,no-store,must-revalidate' --include '*.html'",
     "deploy:invalidate": "aws cloudfront create-invalidation --distribution-id E2UEF9C8JAMJH5 --paths '/*'",
+    "deploy:invalidate:cascade": "aws cloudfront create-invalidation --distribution-id E1351EA4HZ20NY --paths '/*'",
+    "invalidate": "./scripts/invalidate.sh",
+    "invalidate:cascade": "./scripts/invalidate.sh cascade",
+    "invalidate:todos": "./scripts/invalidate.sh todos",
     "deploy:check": "curl -I https://todos.vinny.dev",
     "deploy:check:cascade": "curl -I https://cascade.vinny.dev"
   },

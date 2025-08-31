@@ -89,7 +89,9 @@ deploy_to_s3() {
         --cache-control "max-age=31536000,public" \
         --exclude "*.html" \
         --exclude "*.json" \
-        --exclude "*.txt"
+        --exclude "*.txt" \
+        --exclude "sw.js" \
+        --exclude "manifest.json"
     
     # Sync HTML files with no cache
     info "Uploading HTML files..."
@@ -105,6 +107,21 @@ deploy_to_s3() {
         --cache-control "max-age=300,public" \
         --include "*.json" \
         --include "*.txt"
+
+    # Ensure service worker and manifest are never cached
+    if [ -f "out/sw.js" ]; then
+        info "Uploading service worker with no-cache..."
+        aws s3 cp ./out/sw.js $S3_BUCKET/sw.js \
+            --cache-control "max-age=0,no-cache,no-store,must-revalidate" \
+            --content-type "application/javascript"
+    fi
+
+    if [ -f "out/manifest.json" ]; then
+        info "Uploading manifest with short/no-cache..."
+        aws s3 cp ./out/manifest.json $S3_BUCKET/manifest.json \
+            --cache-control "max-age=0,no-cache,must-revalidate" \
+            --content-type "application/manifest+json"
+    fi
     
     info "✓ S3 deployment completed"
 }
