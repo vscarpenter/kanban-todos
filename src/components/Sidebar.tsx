@@ -27,6 +27,8 @@ import { useTaskStore } from "@/lib/stores/taskStore";
 import { useSettingsStore } from "@/lib/stores/settingsStore";
 import { Board } from "@/lib/types";
 import { BoardMenu } from "./BoardMenu";
+import { getIOSTouchClasses, needsIOSTouchOptimization } from "@/lib/utils/iosDetection";
+import { VersionFooter } from "./VersionIndicator";
 
 // Lazy load dialog components to reduce initial bundle size
 const CreateBoardDialog = dynamic(() => import("./CreateBoardDialog").then(mod => ({ default: mod.CreateBoardDialog })), {
@@ -64,6 +66,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const { tasks } = useTaskStore();
   const { updateSettings } = useSettingsStore();
   const { theme, setTheme } = useTheme();
+  const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
   // Listen for keyboard shortcut events
   useEffect(() => {
@@ -173,7 +176,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
               </Button>
             </div>
 
-            <div className="space-y-1">
+            <div className={hasTouch ? 'space-y-0.5' : 'space-y-1'}>
               {boards.map((board, index) => (
                 <BoardItem
                   key={board.id}
@@ -237,7 +240,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
             <Button
               variant="ghost"
               className="w-full justify-start"
-              onClick={() => window.open('/privacy', '_blank')}
+              onClick={() => window.open('/privacy/', '_blank')}
             >
               <Shield className="h-4 w-4 mr-2" />
               Privacy Policy
@@ -260,8 +263,9 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
 
         {/* Footer */}
         <div className="p-4 border-t border-border">
-          <div className="text-xs text-muted-foreground text-center">
-            Cascade v2.0.0 | <a 
+          <VersionFooter />
+          <div className="text-xs text-muted-foreground text-center mt-2">
+            <a 
               href="https://vinny.dev/" 
               target="_blank" 
               rel="noopener noreferrer"
@@ -318,9 +322,18 @@ interface BoardItemProps {
 }
 
 function BoardItem({ board, isActive, taskCount, onSelect, onReorder, canMoveUp, canMoveDown }: BoardItemProps) {
+  const iosTouchClasses = getIOSTouchClasses();
+  const needsIOSOptimization = needsIOSTouchOptimization();
+  const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  
   const handleReorder = (direction: 'up' | 'down', e: React.MouseEvent) => {
     e.stopPropagation();
     onReorder(direction);
+    
+    // Enhanced haptic feedback for iOS devices
+    if (needsIOSOptimization && 'vibrate' in navigator) {
+      navigator.vibrate([30, 10, 15]); // Subtle feedback pattern for UI interaction
+    }
   };
 
   return (
@@ -331,8 +344,8 @@ function BoardItem({ board, isActive, taskCount, onSelect, onReorder, canMoveUp,
       `}
       onClick={onSelect}
     >
-      <CardContent className="p-2">
-        <div className="flex items-center gap-2">
+      <CardContent className={`${hasTouch ? 'p-2 py-1.5' : 'p-2'}`}>
+        <div className={`flex items-center ${hasTouch ? 'gap-1.5' : 'gap-2'}`}>
           <div 
             className="w-3 h-3 rounded-full flex-shrink-0"
             style={{ backgroundColor: board.color }}
@@ -342,31 +355,43 @@ function BoardItem({ board, isActive, taskCount, onSelect, onReorder, canMoveUp,
               {board.name}
             </div>
             {board.description && (
-              <div className="text-xs text-muted-foreground truncate leading-relaxed">
+              <div className={`text-xs text-muted-foreground truncate ${hasTouch ? 'leading-tight mt-0.5' : 'leading-relaxed'}`}>
                 {board.description}
               </div>
             )}
           </div>
           <div className="flex items-center gap-1">
-            {/* Reorder buttons - Always visible on mobile/touch devices */}
-            <div className="flex flex-col opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+            {/* Reorder buttons - Always visible on touch devices */}
+            <div className={`flex flex-col ${hasTouch ? 'gap-0.5 opacity-100' : 'gap-1 opacity-0 group-hover:opacity-100'} transition-opacity ${iosTouchClasses.join(' ')}`}>
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0 sm:h-4 sm:w-4 touch:h-6 touch:w-6"
+                className={`
+                  ${hasTouch ? 'h-8 w-8 min-h-8 min-w-8' : 'h-6 w-6'} 
+                  p-0 touch-target touch-optimized
+                  ${!canMoveUp ? 'opacity-40' : 'active:scale-95 transition-transform hover:bg-accent'}
+                `}
                 onClick={(e) => handleReorder('up', e)}
                 disabled={!canMoveUp}
+                aria-label={`Move ${board.name} up`}
+                title={`Move ${board.name} up`}
               >
-                <ChevronUp className="h-4 w-4 sm:h-3 sm:w-3" />
+                <ChevronUp className={hasTouch ? 'h-5 w-5' : 'h-4 w-4'} />
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0 sm:h-4 sm:w-4 touch:h-6 touch:w-6"
+                className={`
+                  ${hasTouch ? 'h-8 w-8 min-h-8 min-w-8' : 'h-6 w-6'} 
+                  p-0 touch-target touch-optimized
+                  ${!canMoveDown ? 'opacity-40' : 'active:scale-95 transition-transform hover:bg-accent'}
+                `}
                 onClick={(e) => handleReorder('down', e)}
                 disabled={!canMoveDown}
+                aria-label={`Move ${board.name} down`}
+                title={`Move ${board.name} down`}
               >
-                <ChevronDown className="h-4 w-4 sm:h-3 sm:w-3" />
+                <ChevronDown className={hasTouch ? 'h-5 w-5' : 'h-4 w-4'} />
               </Button>
             </div>
             <Badge variant="secondary" className="text-xs">

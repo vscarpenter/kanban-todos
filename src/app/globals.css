@@ -253,3 +253,118 @@
     font-feature-settings: "smcp" 1, "c2sc" 1;
   }
 }
+
+/* iOS Safari Touch Optimizations */
+@layer components {
+  /* Base touch optimization for all draggable elements */
+  .touch-optimized {
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  /* iOS-specific optimizations */
+  .ios-device {
+    /* Improved scrolling performance */
+    -webkit-overflow-scrolling: touch;
+    
+    /* Disable iOS bounce effect on drag elements */
+    overscroll-behavior: contain;
+  }
+  
+  .ios-device .draggable-element {
+    /* Prevent iOS Safari's default touch behaviors that interfere with drag */
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    
+    /* Optimize transform performance */
+    will-change: transform;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+  }
+  
+  .ios-device .draggable-element:active {
+    /* Prevent iOS tap highlight during drag */
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* iPad-specific optimizations */
+  .ipad-device .touch-target {
+    /* Ensure minimum 44px touch targets per iOS guidelines */
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Board reordering button optimizations for iPad */
+  .ipad-device .board-reorder-button {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 8px;
+  }
+  
+  /* Enhanced touch targets for small controls on iPad */
+  .ipad-device button.touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* iPad Pro specific optimizations for larger screens */
+  @media screen and (min-width: 1024px) and (pointer: coarse) {
+    .ipad-device button.touch-target {
+      min-height: 48px;
+      min-width: 48px;
+    }
+  }
+  
+  /* Safari-specific fixes */
+  .safari-browser .draggable-element {
+    /* Fix Safari's transform rendering issues */
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    
+    /* Ensure proper layer creation for smooth animations */
+    -webkit-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+  }
+  
+  /* iOS 18+ specific optimizations */
+  .ios-supported {
+    /* Enable modern CSS features for supported iOS versions */
+    container-type: inline-size;
+  }
+  
+  .ios-supported .draggable-element {
+    /* Use modern touch-action values */
+    touch-action: none;
+    
+    /* Enable CSS containment for better performance */
+    contain: layout style paint;
+  }
+  
+  /* Drag overlay optimizations for iOS */
+  .ios-device .drag-overlay {
+    pointer-events: none;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    
+    /* Ensure proper z-index stacking */
+    isolation: isolate;
+  }
+  
+  /* Visual feedback improvements for iOS touch */
+  .ios-device .drag-active {
+    /* Subtle scale animation for better touch feedback */
+    transform: scale(1.02) translateZ(0);
+    transition: transform 0.1s ease-out;
+  }
+  
+  .ios-device .drag-preview {
+    /* Optimize drag preview for iOS performance */
+    opacity: 0.8;
+    transform: rotate(3deg) scale(1.05) translateZ(0);
+    transition: transform 0.15s ease-out, opacity 0.15s ease-out;
+  }
+}
