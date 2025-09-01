@@ -1,17 +1,17 @@
 {
   "version": "2.0.0",
-  "exportedAt": "2025-08-29T20:50:00.000Z",
+  "exportedAt": "2025-09-29T20:50:00.000Z",
   "data": {
     "boards": [
     {
       "id": "default-board",
       "name": "🚀 Product Launch",
-      "description": "Q4 2024 product launch planning and execution",
+      "description": "Q4 2025 product launch planning and execution",
       "color": "#3b82f6",
       "isDefault": true,
       "order": 0,
-      "createdAt": "2024-08-15T09:00:00.000Z",
-      "updatedAt": "2024-08-29T15:30:00.000Z"
+      "createdAt": "2025-09-15T09:00:00.000Z",
+      "updatedAt": "2025-09-29T15:30:00.000Z"
     },
     {
       "id": "work-project-alpha",
@@ -20,8 +20,8 @@
       "color": "#ef4444",
       "isDefault": false,
       "order": 1,
-      "createdAt": "2024-08-25T16:20:00.000Z",
-      "updatedAt": "2024-08-29T12:00:00.000Z"
+      "createdAt": "2025-09-25T16:20:00.000Z",
+      "updatedAt": "2025-09-29T12:00:00.000Z"
     },
     {
       "id": "marketing-campaign",
@@ -30,8 +30,8 @@
       "color": "#10b981",
       "isDefault": false,
       "order": 2,
-      "createdAt": "2024-08-20T14:00:00.000Z",
-      "updatedAt": "2024-08-28T10:15:00.000Z"
+      "createdAt": "2025-09-20T14:00:00.000Z",
+      "updatedAt": "2025-09-28T10:15:00.000Z"
     },
     {
       "id": "home-improvement",
@@ -40,8 +40,8 @@
       "color": "#f59e0b",
       "isDefault": false,
       "order": 3,
-      "createdAt": "2024-08-22T11:30:00.000Z",
-      "updatedAt": "2024-08-29T08:45:00.000Z"
+      "createdAt": "2025-09-22T11:30:00.000Z",
+      "updatedAt": "2025-09-29T08:45:00.000Z"
     },
     {
       "id": "learning-goals",
@@ -50,8 +50,8 @@
       "color": "#8b5cf6",
       "isDefault": false,
       "order": 4,
-      "createdAt": "2024-08-27T13:10:00.000Z",
-      "updatedAt": "2024-08-29T16:22:00.000Z"
+      "createdAt": "2025-09-27T13:10:00.000Z",
+      "updatedAt": "2025-09-29T16:22:00.000Z"
     }
     ]
   ],
@@ -64,10 +64,10 @@
       "boardId": "default-board",
       "priority": "high",
       "tags": ["documentation", "stakeholders", "requirements"],
-      "createdAt": "2024-08-15T09:15:00.000Z",
-      "updatedAt": "2024-08-28T14:30:00.000Z",
-      "completedAt": "2024-08-28T14:30:00.000Z",
-      "dueDate": "2024-08-30T17:00:00.000Z",
+      "createdAt": "2025-09-15T09:15:00.000Z",
+      "updatedAt": "2025-09-28T14:30:00.000Z",
+      "completedAt": "2025-09-28T14:30:00.000Z",
+      "dueDate": "2025-09-30T17:00:00.000Z",
       "progress": 100
     },
     {
