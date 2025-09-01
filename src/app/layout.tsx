@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import PwaUpdater from "@/components/PwaUpdater";
+import { IOSClassProvider } from "@/components/IOSClassProvider";
 
 const geist = Geist({ 
   subsets: ["latin"],
@@ -54,6 +55,9 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  userScalable: false, // Prevent zoom on iOS for better touch UX
+  shrinkToFit: "no", // Prevent iOS Safari from shrinking viewport
+  viewportFit: "cover", // For iOS notch handling
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#8B5CF6" },
     { media: "(prefers-color-scheme: dark)", color: "#6D28D9" },
@@ -85,6 +89,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <IOSClassProvider />
           {children}
           <PwaUpdater />
           <Toaster />

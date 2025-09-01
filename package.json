@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "rimraf .next out && next build",
+    "build": "rimraf .next out && NEXT_PUBLIC_APP_VERSION=$(node -p \"require('./package.json').version\") NEXT_PUBLIC_BUILD_TIME=$(date -u +\"%Y-%m-%dT%H:%M:%SZ\") NEXT_PUBLIC_BUILD_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo 'dev') NEXT_PUBLIC_BUILD_TIMESTAMP=$(date +%s) next build",
     "build:analyze": "ANALYZE=true npm run build",
     "start": "next start",
     "lint": "next lint",

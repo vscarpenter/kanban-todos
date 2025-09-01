@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -15,6 +15,7 @@ import {
 import { Task } from "@/lib/types";
 import { useTaskStore } from "@/lib/stores/taskStore";
 import TaskCard from "./kanban/TaskCard";
+import { getIOSTouchSensorConfig, needsIOSTouchOptimization } from "@/lib/utils/iosDetection";
 
 interface DragDropProviderProps {
   children: React.ReactNode;
@@ -32,6 +33,10 @@ export function DragDropProvider({
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const { tasks, moveTask } = useTaskStore();
   
+  // Get iOS-optimized touch sensor configuration
+  const touchSensorConfig = useMemo(() => getIOSTouchSensorConfig(), []);
+  const needsIOSOptimization = useMemo(() => needsIOSTouchOptimization(), []);
+  
   // Configure drag sensors for both mouse and touch
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -39,12 +44,7 @@ export function DragDropProvider({
         distance: 8,
       },
     }),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: 200,
-        tolerance: 8,
-      },
-    })
+    useSensor(TouchSensor, touchSensorConfig)
   );
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -52,8 +52,13 @@ export function DragDropProvider({
     const task = tasks.find((t: Task) => t.id === active.id);
     if (task) {
       setActiveTask(task);
-      // Add haptic feedback for mobile devices
-      if ('vibrate' in navigator) {
+      
+      // Enhanced haptic feedback for iOS devices
+      if (needsIOSOptimization && 'vibrate' in navigator) {
+        // iOS-optimized haptic feedback pattern
+        navigator.vibrate([50, 10, 25]);
+      } else if ('vibrate' in navigator) {
+        // Standard haptic feedback for other devices
         navigator.vibrate(50);
       }
     }
@@ -86,7 +91,9 @@ export function DragDropProvider({
       {children}
       <DragOverlay>
         {activeTask ? (
-          <div className="opacity-80 rotate-3 scale-105">
+          <div className={`drag-overlay drag-preview opacity-80 rotate-3 scale-105 ${
+            needsIOSOptimization ? 'ios-device' : ''
+          }`}>
             <TaskCard task={activeTask} />
           </div>
         ) : null}
