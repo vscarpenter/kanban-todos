@@ -65,6 +65,10 @@ export interface ImportConflicts {
   duplicateBoardIds: string[];
   orphanedTasks: string[]; // Tasks referencing non-existent boards
   boardNameConflicts: string[];
+  defaultBoardConflicts: Array<{
+    importedBoard: SerializedBoard;
+    existingBoard: Board;
+  }>;
 }
 
 export interface ImportOptions {
@@ -296,10 +300,39 @@ export function detectImportConflicts(
     .filter(board => existingBoards.some(existing => existing.id === board.id))
     .map(board => board.id);
 
+  // Detect default board conflicts (imported boards that match existing default boards)
+  const defaultBoardConflicts: Array<{
+    importedBoard: SerializedBoard;
+    existingBoard: Board;
+  }> = [];
+  
+  for (const importedBoard of importData.boards) {
+    const existingDefaultBoard = existingBoards.find(existing => 
+      existing.isDefault && 
+      existing.name.toLowerCase() === importedBoard.name.toLowerCase() &&
+      existing.id !== importedBoard.id
+    );
+    
+    if (existingDefaultBoard) {
+      defaultBoardConflicts.push({
+        importedBoard,
+        existingBoard: existingDefaultBoard
+      });
+    }
+  }
+
+  // Regular board name conflicts (excluding default board conflicts)
   const boardNameConflicts = importData.boards
-    .filter(board => existingBoards.some(existing => 
-      existing.name.toLowerCase() === board.name.toLowerCase() && existing.id !== board.id
-    ))
+    .filter(board => {
+      const hasNameConflict = existingBoards.some(existing => 
+        existing.name.toLowerCase() === board.name.toLowerCase() && existing.id !== board.id
+      );
+      // Exclude boards that are already handled as default board conflicts
+      const isDefaultConflict = defaultBoardConflicts.some(conflict => 
+        conflict.importedBoard.id === board.id
+      );
+      return hasNameConflict && !isDefaultConflict;
+    })
     .map(board => board.name);
 
   const existingBoardIds = new Set([
@@ -316,6 +349,7 @@ export function detectImportConflicts(
     duplicateBoardIds,
     orphanedTasks,
     boardNameConflicts,
+    defaultBoardConflicts,
   };
 }
 

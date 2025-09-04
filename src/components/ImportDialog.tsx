@@ -222,7 +222,12 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
     return conflicts.duplicateTaskIds.length > 0 ||
            conflicts.duplicateBoardIds.length > 0 ||
            conflicts.orphanedTasks.length > 0 ||
-           conflicts.boardNameConflicts.length > 0;
+           conflicts.boardNameConflicts.length > 0 ||
+           (conflicts.defaultBoardConflicts?.length ?? 0) > 0;
+  };
+
+  const hasDefaultBoardConflicts = () => {
+    return (conflicts?.defaultBoardConflicts?.length ?? 0) > 0;
   };
 
   const getStepIndex = () => {
@@ -378,8 +383,37 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
                 </div>
               </div>
 
-              {/* Conflicts Warning */}
-              {hasConflicts() && (
+              {/* Default Board Conflicts Warning */}
+              {hasDefaultBoardConflicts() && (
+                <Alert>
+                  <Info className="h-4 w-4" />
+                  <AlertDescription>
+                    Default board conflicts detected! The import contains boards that match your existing default boards (like &quot;Work Tasks&quot;). 
+                    These will be merged with your existing boards to avoid duplicates.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {/* Default Board Conflicts Details */}
+              {hasDefaultBoardConflicts() && (
+                <div className="space-y-3">
+                  <h4 className="font-medium">Default Board Merges</h4>
+                  {conflicts!.defaultBoardConflicts?.map((conflict, index) => (
+                    <div key={index} className="flex items-center justify-between bg-muted/50 p-3 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <Folder className="h-4 w-4 text-blue-500" />
+                        <span className="font-medium">{conflict.importedBoard.name}</span>
+                        <span className="text-muted-foreground">→</span>
+                        <span className="text-sm text-muted-foreground">Will merge with existing default board</span>
+                      </div>
+                      <Badge variant="outline">Auto-merge</Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Other Conflicts Warning */}
+              {(hasConflicts() && !hasDefaultBoardConflicts()) && (
                 <Alert>
                   <AlertTriangle className="h-4 w-4" />
                   <AlertDescription>
@@ -389,8 +423,22 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
                 </Alert>
               )}
 
+              {/* Mixed Conflicts Warning */}
+              {(hasConflicts() && hasDefaultBoardConflicts() && conflicts &&
+                (conflicts.duplicateTaskIds.length > 0 || conflicts.duplicateBoardIds.length > 0 || 
+                 conflicts.orphanedTasks.length > 0 || conflicts.boardNameConflicts.length > 0)) && (
+                <Alert>
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    Additional conflicts detected beyond default boards. 
+                    Please configure resolution strategies below.
+                  </AlertDescription>
+                </Alert>
+              )}
+
               {/* Conflict Resolution Options */}
-              {hasConflicts() && (
+              {(hasConflicts() && conflicts && (conflicts.duplicateTaskIds.length > 0 || conflicts.duplicateBoardIds.length > 0 || 
+                conflicts.orphanedTasks.length > 0 || conflicts.boardNameConflicts.length > 0)) && (
                 <div className="space-y-4">
                   <h4 className="font-medium">Conflict Resolution</h4>
                   

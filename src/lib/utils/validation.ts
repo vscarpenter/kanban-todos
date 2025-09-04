@@ -71,6 +71,16 @@ export const settingsSchema: ValidationSchema = {
     enableNotifications: { type: 'boolean' },
     enableKeyboardShortcuts: { type: 'boolean' },
     enableDebugMode: { type: 'boolean' },
+    currentBoardId: { type: ['string', 'undefined'] }, // Optional current board ID
+    searchPreferences: {
+      type: 'object',
+      properties: {
+        defaultScope: { type: 'string', enum: ['current-board', 'all-boards'] },
+        rememberScope: { type: 'boolean' }
+      },
+      required: ['defaultScope', 'rememberScope'],
+      additionalProperties: false
+    },
     accessibility: {
       type: 'object',
       properties: {
@@ -82,7 +92,7 @@ export const settingsSchema: ValidationSchema = {
       additionalProperties: false
     }
   },
-  required: ['theme', 'autoArchiveDays', 'enableNotifications', 'enableKeyboardShortcuts', 'enableDebugMode', 'accessibility'],
+  required: ['theme', 'autoArchiveDays', 'enableNotifications', 'enableKeyboardShortcuts', 'enableDebugMode', 'searchPreferences', 'accessibility'],
   additionalProperties: false
 };
 
@@ -574,9 +584,9 @@ export function validateDataRelationships(data: ExportData): {
   if (defaultBoards.length > 1) {
     warnings.push({
       path: 'boards',
-      message: 'Multiple boards marked as default',
+      message: 'Multiple boards marked as default - will be resolved during import',
       value: defaultBoards.length,
-      suggestion: 'Only one board should be marked as default'
+      suggestion: 'Default boards will be automatically merged with existing boards'
     });
   }
 

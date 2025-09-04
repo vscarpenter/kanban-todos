@@ -169,10 +169,42 @@ function resolveBoardConflicts(
   for (const importedBoard of importedBoards) {
     const hasIdConflict = conflicts.duplicateBoardIds.includes(importedBoard.id);
     const hasNameConflict = conflicts.boardNameConflicts.includes(importedBoard.name);
+    const defaultConflict = conflicts.defaultBoardConflicts.find(
+      conflict => conflict.importedBoard.id === importedBoard.id
+    );
 
-    if (!hasIdConflict && !hasNameConflict) {
+    if (!hasIdConflict && !hasNameConflict && !defaultConflict) {
       // No conflict, add directly
       resolved.push(importedBoard);
+      continue;
+    }
+
+    // Handle default board conflicts specially
+    if (defaultConflict) {
+      const existingDefaultBoard = defaultConflict.existingBoard;
+      
+      // For default boards, always merge to preserve the existing default board
+      const mergeResult = mergeBoards(existingDefaultBoard, importedBoard, options.mergeStrategy);
+      
+      // Ensure the merged board keeps its default status and original ID
+      const mergedBoard = {
+        ...mergeResult.merged,
+        id: existingDefaultBoard.id, // Keep original ID
+        isDefault: true, // Preserve default status
+        updatedAt: new Date(), // Update timestamp
+      };
+      
+      const index = resolved.findIndex(b => b.id === existingDefaultBoard.id);
+      resolved[index] = mergedBoard;
+      
+      resolutionLog.push({
+        type: 'merge',
+        itemType: 'board',
+        itemId: existingDefaultBoard.id,
+        originalName: importedBoard.name,
+        mergedFields: mergeResult.mergedFields,
+        reason: 'Merged imported board with existing default board'
+      });
       continue;
     }
 
@@ -577,6 +609,15 @@ function createBoardIdMapping(
   for (const action of resolutionLog) {
     if (action.itemType === 'board' && action.type === 'generate_id') {
       mapping.set(action.originalId!, action.newId!);
+    }
+    // Handle default board merges - tasks from imported board should use the existing default board ID
+    if (action.itemType === 'board' && action.type === 'merge' && 
+        action.reason === 'Merged imported board with existing default board') {
+      // Find the imported board ID that was merged
+      const importedBoard = importedBoards.find(b => b.name === action.originalName);
+      if (importedBoard) {
+        mapping.set(importedBoard.id, action.itemId); // Map imported board ID to existing default board ID
+      }
     }
   }
 

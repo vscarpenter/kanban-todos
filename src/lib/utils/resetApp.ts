@@ -10,21 +10,27 @@ import { taskDB } from './database';
  */
 export async function resetApplication(): Promise<void> {
   try {
+    console.log('Starting application reset...');
+    
     // 1. Clear IndexedDB
+    console.log('Clearing IndexedDB...');
     await taskDB.resetDatabase();
     
     // 2. Clear localStorage
     if (typeof window !== 'undefined' && window.localStorage) {
+      console.log('Clearing localStorage...');
       window.localStorage.clear();
     }
     
     // 3. Clear sessionStorage
     if (typeof window !== 'undefined' && window.sessionStorage) {
+      console.log('Clearing sessionStorage...');
       window.sessionStorage.clear();
     }
     
     // 4. Clear cookies
     if (typeof document !== 'undefined') {
+      console.log('Clearing cookies...');
       document.cookie.split(";").forEach(cookie => {
         const eqPos = cookie.indexOf("=");
         const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
@@ -38,12 +44,20 @@ export async function resetApplication(): Promise<void> {
     // 5. Clear any other IndexedDB databases that might exist
     if (typeof window !== 'undefined' && window.indexedDB) {
       try {
+        console.log('Deleting IndexedDB database...');
         // Try to delete the main database completely and recreate it
         const deleteRequest = window.indexedDB.deleteDatabase('cascade-tasks');
-        await new Promise<void>((resolve, reject) => {
-          deleteRequest.onsuccess = () => resolve();
-          deleteRequest.onerror = () => reject(deleteRequest.error);
+        await new Promise<void>((resolve) => {
+          deleteRequest.onsuccess = () => {
+            console.log('IndexedDB database deleted successfully');
+            resolve();
+          };
+          deleteRequest.onerror = () => {
+            console.warn('Error deleting IndexedDB database:', deleteRequest.error);
+            resolve(); // Continue anyway
+          };
           deleteRequest.onblocked = () => {
+            console.warn('Database deletion blocked, continuing anyway');
             // Database deletion is blocked, resolve anyway
             resolve();
           };
@@ -53,15 +67,37 @@ export async function resetApplication(): Promise<void> {
       }
     }
     
-    // 6. Reload the page to start fresh
+    console.log('Reset complete, reloading page...');
+    
+    // 6. Use a more reliable page reload method
     if (typeof window !== 'undefined') {
-      window.location.reload();
+      // Add a small delay to ensure all operations complete
+      setTimeout(() => {
+        // Try multiple reload methods for maximum compatibility
+        try {
+          window.location.href = window.location.origin + window.location.pathname;
+        } catch {
+          try {
+            // Use forced reload approach - legacy method
+            const location = window.location as Location & { reload(forcedReload?: boolean): void };
+            location.reload(true);
+          } catch {
+            window.location.reload();
+          }
+        }
+      }, 100);
     }
   } catch (error) {
     console.error('Failed to reset application:', error);
     // Even if there's an error, try to reload the page
     if (typeof window !== 'undefined') {
-      window.location.reload();
+      setTimeout(() => {
+        try {
+          window.location.href = window.location.origin + window.location.pathname;
+        } catch {
+          window.location.reload();
+        }
+      }, 100);
     }
   }
 }
