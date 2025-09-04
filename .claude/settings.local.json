@@ -48,7 +48,9 @@
       "Bash(done)",
       "Bash(aws s3 ls:*)",
       "Bash(npm run deploy:all:*)",
-      "Bash(npm run deploy:cascade:*)"
+      "Bash(npm run deploy:cascade:*)",
+      "Bash(git fetch:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

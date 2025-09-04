@@ -10,8 +10,10 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useSettingsStore } from "@/lib/stores/settingsStore";
 import { Settings } from "@/lib/types";
-import { confirmAndResetApplication } from "@/lib/utils/resetApp";
 import { Palette, Monitor, Archive, Accessibility, Trash2 } from "lucide-react";
+import { ConfirmationDialog } from "./ConfirmationDialog";
+import { AppResetDialog } from "./AppResetDialog";
+import { resetApplication } from "@/lib/utils/resetApp";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -23,6 +25,9 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const { theme, setTheme } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [localSettings, setLocalSettings] = useState<Settings>(settings);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showAppResetDialog, setShowAppResetDialog] = useState(false);
+  const [isAppResetting, setIsAppResetting] = useState(false);
 
   // Sync settings when dialog opens or settings change
   useEffect(() => {
@@ -48,20 +53,40 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     }
   };
 
-  const handleReset = async () => {
-    if (confirm('Are you sure you want to reset all settings to default?')) {
-      setIsLoading(true);
-      try {
-        await resetSettings();
-        setTheme('system'); // Reset theme in next-themes
-        setLocalSettings(settings);
-        onOpenChange(false);
-      } catch (error) {
-        console.error('Failed to reset settings:', error);
-      } finally {
-        setIsLoading(false);
-      }
+  const handleResetClick = () => {
+    setShowResetConfirm(true);
+  };
+
+  const handleResetConfirm = async () => {
+    setIsLoading(true);
+    try {
+      await resetSettings();
+      setTheme('system'); // Reset theme in next-themes
+      setLocalSettings(settings);
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Failed to reset settings:', error);
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const handleAppResetClick = () => {
+    setShowAppResetDialog(true);
+  };
+
+  const handleAppResetConfirm = async () => {
+    setIsAppResetting(true);
+    try {
+      // Note: resetApplication() will reload the page, so we don't need to close dialogs
+      // The page reload will handle everything
+      await resetApplication();
+    } catch (error) {
+      console.error('Failed to reset application:', error);
+      // Only reset loading state if we didn't reload the page
+      setIsAppResetting(false);
+    }
+    // Don't set loading to false here since the page should reload
   };
 
   const updateLocalSetting = <K extends keyof Settings>(
@@ -261,7 +286,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={confirmAndResetApplication}
+                    onClick={handleAppResetClick}
                     className="w-full"
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
@@ -279,7 +304,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           <div className="flex justify-between pt-4">
             <Button
               variant="outline"
-              onClick={handleReset}
+              onClick={handleResetClick}
               disabled={isLoading}
             >
               Reset to Default
@@ -303,6 +328,26 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           </div>
         </div>
       </DialogContent>
+
+      {/* Reset Confirmation Dialog */}
+      <ConfirmationDialog
+        open={showResetConfirm}
+        onOpenChange={setShowResetConfirm}
+        title="Reset Settings"
+        description="Are you sure you want to reset all settings to default? This will restore all preferences to their original values."
+        confirmText="Reset"
+        type="warning"
+        onConfirm={handleResetConfirm}
+        loading={isLoading}
+      />
+
+      {/* App Reset Dialog */}
+      <AppResetDialog
+        open={showAppResetDialog}
+        onOpenChange={setShowAppResetDialog}
+        onConfirm={handleAppResetConfirm}
+        loading={isAppResetting}
+      />
     </Dialog>
   );
 }

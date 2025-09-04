@@ -34,6 +34,7 @@ import { formatDistanceToNow } from "date-fns";
 import { EditTaskDialog } from "../EditTaskDialog";
 import { ShareTaskDialog } from "../ShareTaskDialog";
 import { MoveTaskDialog } from "../MoveTaskDialog";
+import { DeleteTaskDialog } from "../DeleteTaskDialog";
 
 interface TaskCardProps {
   task: Task;
@@ -54,6 +55,7 @@ export function TaskCard({
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showMoveDialog, setShowMoveDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { deleteTask, archiveTask } = useTaskStore();
   
   // Get iOS-specific CSS classes for touch optimization
@@ -77,10 +79,12 @@ export function TaskCard({
     transform: CSS.Translate.toString(transform),
   };
 
-  const handleDelete = useCallback(async () => {
-    if (confirm('Are you sure you want to delete this task?')) {
-      await deleteTask(task.id);
-    }
+  const handleDelete = useCallback(() => {
+    setShowDeleteDialog(true);
+  }, []);
+
+  const confirmDelete = useCallback(async () => {
+    await deleteTask(task.id);
   }, [deleteTask, task.id]);
 
   const handleArchive = useCallback(async () => {
@@ -386,6 +390,14 @@ export function TaskCard({
         open={showMoveDialog}
         onOpenChange={setShowMoveDialog}
         task={task}
+      />
+
+      {/* Delete Task Dialog */}
+      <DeleteTaskDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        task={task}
+        onConfirm={confirmDelete}
       />
     </>
   );

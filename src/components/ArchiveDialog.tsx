@@ -11,6 +11,7 @@ import { useTaskStore } from "@/lib/stores/taskStore";
 import { useBoardStore } from "@/lib/stores/boardStore";
 import { Task } from "@/lib/types";
 import { format } from "date-fns";
+import { DeleteTaskDialog } from "./DeleteTaskDialog";
 
 interface ArchiveDialogProps {
   open: boolean;
@@ -20,6 +21,8 @@ interface ArchiveDialogProps {
 export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
   const [archivedTasks, setArchivedTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const { tasks, unarchiveTask, deleteTask } = useTaskStore();
   const { boards } = useBoardStore();
 
@@ -49,11 +52,17 @@ export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
     setArchivedTasks(prev => prev.filter(task => task.id !== taskId));
   };
 
-  const handleDelete = async (taskId: string) => {
-    if (confirm('Are you sure you want to permanently delete this task? This action cannot be undone.')) {
-      await deleteTask(taskId);
+  const handleDelete = (task: Task) => {
+    setTaskToDelete(task);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = async () => {
+    if (taskToDelete) {
+      await deleteTask(taskToDelete.id);
       // Update local state
-      setArchivedTasks(prev => prev.filter(task => task.id !== taskId));
+      setArchivedTasks(prev => prev.filter(task => task.id !== taskToDelete.id));
+      setTaskToDelete(null);
     }
   };
 
@@ -167,7 +176,7 @@ export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleDelete(task.id)}
+                            onClick={() => handleDelete(task)}
                             className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                             title="Delete permanently"
                           >
@@ -190,6 +199,15 @@ export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
           <span>Use the trash button to permanently delete</span>
         </div>
       </DialogContent>
+
+      {/* Delete Task Dialog */}
+      <DeleteTaskDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        task={taskToDelete}
+        onConfirm={confirmDelete}
+        isPermanent={true}
+      />
     </Dialog>
   );
 }
