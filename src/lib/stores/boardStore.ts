@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Board } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
 import { exportBoards, ExportData } from '@/lib/utils/exportImport';
+import { sanitizeBoardData } from '@/lib/utils/security';
 
 interface BoardState {
   boards: Board[];
@@ -69,6 +70,7 @@ export const useBoardStore = create<BoardState & BoardActions>((set, get) => ({
               enableNotifications: false,
               enableKeyboardShortcuts: true,
               enableDebugMode: false,
+              enableDeveloperMode: false,
               searchPreferences: {
                 defaultScope: 'current-board' as const,
                 rememberScope: true,
@@ -93,12 +95,34 @@ export const useBoardStore = create<BoardState & BoardActions>((set, get) => ({
           try {
             set({ isLoading: true, error: null });
             
+            // Sanitize and validate input data
+            const sanitizedData = sanitizeBoardData({
+              name: boardData.name,
+              description: boardData.description,
+            });
+
+            // Validate required fields
+            if (!sanitizedData.name.trim()) {
+              throw new Error('Board name is required');
+            }
+
+            // Check for duplicate board names
+            const existingBoards = get().boards;
+            const isDuplicate = existingBoards.some(
+              board => board.name.toLowerCase() === sanitizedData.name.toLowerCase()
+            );
+            
+            if (isDuplicate) {
+              throw new Error('A board with this name already exists');
+            }
+            
             // Assign order if not provided
             const currentBoards = get().boards;
             const maxOrder = currentBoards.length > 0 ? Math.max(...currentBoards.map(b => b.order)) : -1;
             
             const newBoard: Board = {
               ...boardData,
+              ...sanitizedData,
               id: crypto.randomUUID(),
               order: boardData.order ?? maxOrder + 1,
               createdAt: new Date(),

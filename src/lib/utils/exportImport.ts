@@ -13,6 +13,7 @@ import {
   ConflictResolutionOptions, 
   ConflictResolutionResult
 } from './conflictResolution';
+// import { validateImportFile, validateImportJson, sanitizeTaskData, sanitizeBoardData } from './security';
 
 // Version for data format compatibility
 export const DATA_FORMAT_VERSION = '1.0.0';

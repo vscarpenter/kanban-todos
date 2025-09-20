@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Filter, X, Globe, Loader2, Clock, AlertTriangle } from "lucide-react";
+import { Search, Filter, X, Globe, Loader2, AlertTriangle } from "lucide-react";
 import { useTaskStore } from "@/lib/stores/taskStore";
 import { useSettingsStore } from "@/lib/stores/settingsStore";
 import { TaskFilters } from "@/lib/types";
@@ -16,19 +16,16 @@ export function SearchBar() {
   const { 
     filters, 
     setFilters, 
-    setSearchQuery, 
     setCrossBoardSearch, 
     clearFilters, 
     isSearching, 
     error,
-    getSearchPerformanceMetrics,
     tasks,
     filteredTasks
   } = useTaskStore();
   const { settings, updateSettings, isLoading: settingsLoading } = useSettingsStore();
   const [searchValue, setSearchValue] = useState(filters.search);
   const [localFilters, setLocalFilters] = useState<TaskFilters>(filters);
-  const [showPerformanceInfo, setShowPerformanceInfo] = useState(false);
   const [isUserTyping, setIsUserTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -57,7 +54,7 @@ export function SearchBar() {
   }, []);
 
   const handleSearch = () => {
-    setSearchQuery(searchValue);
+    setFilters({ ...localFilters, search: searchValue });
   };
 
   const handleFilterChange = (key: keyof TaskFilters, value: string | undefined) => {
@@ -93,8 +90,6 @@ export function SearchBar() {
   };
 
   const hasActiveFilters = filters.search || filters.status || filters.priority || filters.tags.length > 0;
-  const performanceMetrics = getSearchPerformanceMetrics();
-  const isSlowSearch = performanceMetrics.lastSearchDuration > 200;
   const hasLargeDataset = tasks.length > 500;
 
   return (
@@ -110,11 +105,6 @@ export function SearchBar() {
           
           {/* Right side icons */}
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
-            {isSlowSearch && !isSearching && (
-              <div title={`Last search took ${performanceMetrics.lastSearchDuration.toFixed(0)}ms`}>
-                <Clock className="h-4 w-4 text-amber-500" />
-              </div>
-            )}
             {hasLargeDataset && (
               <div title={`Large dataset (${tasks.length} tasks) - searches may be slower`}>
                 <AlertTriangle className="h-4 w-4 text-orange-500" />
@@ -204,7 +194,7 @@ export function SearchBar() {
                       onClick={() => {
                         setIsUserTyping(false);
                         setSearchValue('');
-                        setSearchQuery('');
+                        setFilters({ ...localFilters, search: '' });
                         useTaskStore.getState().recoverFromSearchError();
                       }}
                       className="h-6 px-2 text-xs border-destructive/20 text-destructive hover:bg-destructive/10"
@@ -241,11 +231,6 @@ export function SearchBar() {
             >
               Found {filteredTasks.length} task{filteredTasks.length !== 1 ? 's' : ''} 
               {filters.crossBoardSearch ? ' across all boards' : ' in current board'}
-              {performanceMetrics.lastSearchDuration > 0 && (
-                <span className="ml-2">
-                  ({performanceMetrics.lastSearchDuration.toFixed(0)}ms)
-                </span>
-              )}
             </div>
           )}
         </div>
@@ -389,39 +374,6 @@ export function SearchBar() {
                 </div>
               )}
 
-              {/* Performance Information */}
-              {(hasLargeDataset || performanceMetrics.searchCount > 0) && (
-                <div className="space-y-2 pt-2 border-t border-border">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowPerformanceInfo(!showPerformanceInfo)}
-                    className="h-6 px-2 text-xs w-full justify-between"
-                  >
-                    Performance Info
-                    <Clock className="h-3 w-3" />
-                  </Button>
-                  
-                  {showPerformanceInfo && (
-                    <div className="text-xs text-muted-foreground space-y-1 bg-muted/30 p-2 rounded">
-                      <div>Dataset: {tasks.length} tasks</div>
-                      {performanceMetrics.searchCount > 0 && (
-                        <>
-                          <div>Last search: {performanceMetrics.lastSearchDuration.toFixed(0)}ms</div>
-                          <div>Average: {performanceMetrics.averageSearchDuration.toFixed(0)}ms</div>
-                          <div>Searches: {performanceMetrics.searchCount}</div>
-                        </>
-                      )}
-                      {isSlowSearch && (
-                        <div className="text-amber-600 flex items-center gap-1">
-                          <AlertTriangle className="h-3 w-3" />
-                          Consider refining search terms
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           </PopoverContent>
         </Popover>

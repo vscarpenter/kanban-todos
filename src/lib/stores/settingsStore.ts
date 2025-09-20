@@ -39,6 +39,7 @@ const defaultSettings: Settings = {
   enableNotifications: true,
   enableKeyboardShortcuts: true,
   enableDebugMode: false,
+  enableDeveloperMode: false,
   searchPreferences: {
     defaultScope: 'current-board',
     rememberScope: true,

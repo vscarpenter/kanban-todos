@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# exclude directories and files
+.kiro/
+WARP.md
+AGENTS.md

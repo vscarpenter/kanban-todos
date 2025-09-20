@@ -3,6 +3,133 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Accessibility utilities */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* High contrast mode */
+.high-contrast {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0 0 0);
+  --primary: oklch(0 0 0);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.9 0 0);
+  --secondary-foreground: oklch(0 0 0);
+  --muted: oklch(0.95 0 0);
+  --muted-foreground: oklch(0.3 0 0);
+  --accent: oklch(0.8 0 0);
+  --accent-foreground: oklch(0 0 0);
+  --destructive: oklch(0 0.8 0);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0 0 0);
+  --input: oklch(0 0 0);
+  --ring: oklch(0 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0 0 0);
+}
+
+/* Reduced motion */
+.reduce-motion * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Font size variations */
+.font-small {
+  font-size: 0.875rem;
+}
+
+.font-medium {
+  font-size: 1rem;
+}
+
+.font-large {
+  font-size: 1.125rem;
+}
+
+/* Focus indicators */
+.focus-visible:focus-visible {
+  outline: 2px solid oklch(0.5 0.5 0);
+  outline-offset: 2px;
+}
+
+/* High contrast focus indicators */
+.high-contrast .focus-visible:focus-visible {
+  outline: 3px solid oklch(0 0 0);
+  outline-offset: 3px;
+}
+
+/* Skip links */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: oklch(0 0 0);
+  color: oklch(1 0 0);
+  padding: 8px;
+  text-decoration: none;
+  z-index: 1000;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Live regions for announcements */
+[aria-live] {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* Keyboard navigation improvements */
+.keyboard-navigation button:focus,
+.keyboard-navigation input:focus,
+.keyboard-navigation select:focus,
+.keyboard-navigation textarea:focus,
+.keyboard-navigation [tabindex]:focus {
+  outline: 2px solid oklch(0.5 0.5 0);
+  outline-offset: 2px;
+}
+
+/* High contrast keyboard navigation */
+.high-contrast .keyboard-navigation button:focus,
+.high-contrast .keyboard-navigation input:focus,
+.high-contrast .keyboard-navigation select:focus,
+.high-contrast .keyboard-navigation textarea:focus,
+.high-contrast .keyboard-navigation [tabindex]:focus {
+  outline: 3px solid oklch(0 0 0);
+  outline-offset: 3px;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

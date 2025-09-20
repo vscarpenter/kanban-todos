@@ -4,7 +4,6 @@ import { SearchBar } from '../SearchBar';
 
 // Mock the stores
 const mockSetFilters = vi.fn();
-const mockSetSearchQuery = vi.fn();
 const mockSetCrossBoardSearch = vi.fn();
 const mockClearFilters = vi.fn();
 const mockUpdateSettings = vi.fn();
@@ -19,18 +18,12 @@ const mockTaskStore = {
     priority: undefined,
   },
   setFilters: mockSetFilters,
-  setSearchQuery: mockSetSearchQuery,
   setCrossBoardSearch: mockSetCrossBoardSearch,
   clearFilters: mockClearFilters,
   isSearching: false,
   error: null,
   tasks: [],
   filteredTasks: [],
-  getSearchPerformanceMetrics: vi.fn().mockReturnValue({
-    lastSearchDuration: 0,
-    averageSearchDuration: 0,
-    searchCount: 0,
-  }),
 };
 
 const mockSettingsStore = {
@@ -95,7 +88,7 @@ describe('SearchBar - Cross-board Search', () => {
     const searchInput = screen.getByPlaceholderText('Search tasks...');
     fireEvent.change(searchInput, { target: { value: 'test query' } });
     
-    expect(mockSetSearchQuery).toHaveBeenCalledWith('test query');
+      expect(mockTaskStore.setFilters).toHaveBeenCalledWith({ search: 'test query' });
   });
 
   it('opens filter popover and shows scope toggle', async () => {

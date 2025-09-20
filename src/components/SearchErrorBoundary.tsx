@@ -69,9 +69,8 @@ class SearchErrorBoundaryClass extends React.Component<
 
   recoverSearch = () => {
     try {
-      const { recoverFromSearchError, resetPerformanceMetrics } = useTaskStore.getState();
+      const { recoverFromSearchError } = useTaskStore.getState();
       recoverFromSearchError();
-      resetPerformanceMetrics();
       this.resetError();
     } catch (error) {
       console.error('Search recovery failed:', error);
