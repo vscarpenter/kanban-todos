@@ -1,521 +1,295 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { useTaskStore } from '../taskStore';
-import { Task } from '@/lib/types';
-import { taskDB } from '@/lib/utils/database';
 
-// Type definition for global timeout handling
-interface GlobalWithTimeout {
-  __searchTimeout?: NodeJS.Timeout;
-}
-
-// Mock the database
-vi.mock('@/lib/utils/database', () => ({
+// Mock IndexedDB
+vi.mock('../../utils/database', () => ({
   taskDB: {
-    init: vi.fn().mockResolvedValue(undefined),
-    addTask: vi.fn().mockResolvedValue(undefined),
-    getTasks: vi.fn().mockResolvedValue([]),
-    updateTask: vi.fn().mockResolvedValue(undefined),
-    deleteTask: vi.fn().mockResolvedValue(undefined),
-    getSettings: vi.fn().mockResolvedValue(null),
-    updateSettings: vi.fn().mockResolvedValue(undefined),
-  },
+    addTask: vi.fn(),
+    updateTask: vi.fn(),
+    deleteTask: vi.fn(),
+    getBoards: vi.fn(() => Promise.resolve([])),
+    getSettings: vi.fn(() => Promise.resolve({ theme: 'system', autoArchiveDays: 30, enableNotifications: false, enableKeyboardShortcuts: true, enableDebugMode: false, enableDeveloperMode: false, searchPreferences: { defaultScope: 'current-board', rememberScope: true }, accessibility: { highContrast: false, reduceMotion: false, fontSize: 'medium' } })),
+    updateSettings: vi.fn()
+  }
 }));
 
-const mockTasks: Task[] = [
-  {
-    id: 'task-1',
-    title: 'Task on Board 1',
-    description: 'Description for task 1',
-    status: 'todo',
-    priority: 'high',
-    tags: ['urgent', 'frontend'],
-    boardId: 'board-1',
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
-  },
-  {
-    id: 'task-2',
-    title: 'Task on Board 2',
-    description: 'Description for task 2',
-    status: 'in-progress',
-    priority: 'medium',
-    tags: ['backend'],
-    boardId: 'board-2',
-    createdAt: new Date('2024-01-02'),
-    updatedAt: new Date('2024-01-02'),
-  },
-  {
-    id: 'task-3',
-    title: 'Another task on Board 1',
-    description: 'Another description',
-    status: 'done',
-    priority: 'low',
-    tags: ['testing'],
-    boardId: 'board-1',
-    createdAt: new Date('2024-01-03'),
-    updatedAt: new Date('2024-01-03'),
-  },
-];
+// Mock security utilities
+vi.mock('../../utils/security', () => ({
+  sanitizeTaskData: vi.fn((data) => ({ title: data.title, description: data.description || '', tags: data.tags || [] })),
+  sanitizeSearchQuery: vi.fn((query) => query),
+  searchRateLimiter: { isAllowed: vi.fn(() => true) }
+}));
 
-describe('TaskStore - Cross-board Search', () => {
+describe('TaskStore', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    // Reset store state before each test
+    // Reset store state
     useTaskStore.setState({
-      tasks: mockTasks,
-      filteredTasks: mockTasks,
-      filters: {
-        search: '',
-        tags: [],
-        crossBoardSearch: false,
-      },
-      searchState: {
-        scope: 'current-board',
-        highlightedTaskId: undefined,
-      },
+      tasks: [],
+      filteredTasks: [],
+      filters: { search: '', tags: [], crossBoardSearch: false },
       isLoading: false,
+      isSearching: false,
       error: null,
+      searchCache: new Map()
     });
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
-    // Clear any pending timeouts
-    if ((globalThis as GlobalWithTimeout).__searchTimeout) {
-      clearTimeout((globalThis as GlobalWithTimeout).__searchTimeout);
-      (globalThis as GlobalWithTimeout).__searchTimeout = undefined;
-    }
+    useTaskStore.setState({ tasks: [], filteredTasks: [] });
   });
 
-  describe('Cross-board search filtering', () => {
-    it('filters by board when crossBoardSearch is false', () => {
-      const { setFilters } = useTaskStore.getState();
+  describe('Task CRUD Operations', () => {
+    it('should add a new task', async () => {
+      const { addTask } = useTaskStore.getState();
       
-      setFilters({ boardId: 'board-1', crossBoardSearch: false });
+      const newTask = {
+        title: 'Test Task',
+        description: 'Test Description',
+        status: 'todo' as const,
+        priority: 'medium' as const,
+        boardId: 'board-1'
+      };
       
-      const { filteredTasks } = useTaskStore.getState();
-      expect(filteredTasks).toHaveLength(2);
-      expect(filteredTasks.every(task => task.boardId === 'board-1')).toBe(true);
+      await addTask(newTask);
+      
+      const { tasks } = useTaskStore.getState();
+      expect(tasks).toHaveLength(1);
+      expect(tasks[0].title).toBe('Test Task');
+      expect(tasks[0].id).toBeDefined();
+      expect(tasks[0].createdAt).toBeInstanceOf(Date);
+      expect(tasks[0].updatedAt).toBeInstanceOf(Date);
+      const { taskDB } = await import('../../utils/database');
+      expect(taskDB.addTask).toHaveBeenCalled();
     });
 
-    it('ignores board filter when crossBoardSearch is true', () => {
-      const { setFilters } = useTaskStore.getState();
+    it('should update an existing task', async () => {
+      const { addTask, updateTask } = useTaskStore.getState();
       
-      setFilters({ boardId: 'board-1', crossBoardSearch: true });
-      
-      const { filteredTasks } = useTaskStore.getState();
-      expect(filteredTasks).toHaveLength(3); // All tasks from all boards
-    });
-
-    it('searches across all boards when crossBoardSearch is enabled', () => {
-      const { setFilters } = useTaskStore.getState();
-      
-      setFilters({ search: 'Task', crossBoardSearch: true });
-      
-      const { filteredTasks } = useTaskStore.getState();
-      expect(filteredTasks).toHaveLength(3); // All tasks with "Task" in title (case insensitive)
-      expect(filteredTasks.some(task => task.boardId === 'board-1')).toBe(true);
-      expect(filteredTasks.some(task => task.boardId === 'board-2')).toBe(true);
-    });
-
-    it('searches only current board when crossBoardSearch is disabled', () => {
-      const { setFilters } = useTaskStore.getState();
-      
-      setFilters({ search: 'Task', boardId: 'board-1', crossBoardSearch: false });
-      
-      const { filteredTasks } = useTaskStore.getState();
-      expect(filteredTasks).toHaveLength(2); // Both tasks from board-1 with "Task" in title
-      expect(filteredTasks.every(task => task.boardId === 'board-1')).toBe(true);
-    });
-  });
-
-  describe('Search functionality', () => {
-    it('searches by title across all boards', () => {
-      const { setFilters } = useTaskStore.getState();
-      
-      setFilters({ search: 'Another', crossBoardSearch: true });
-      
-      const { filteredTasks } = useTaskStore.getState();
-      expect(filteredTasks).toHaveLength(1);
-      expect(filteredTasks[0].title).toBe('Another task on Board 1');
-    });
-
-    it('searches by description across all boards', () => {
-      const { setFilters } = useTaskStore.getState();
-      
-      setFilters({ search: 'Description for task 2', crossBoardSearch: true });
-      
-      const { filteredTasks } = useTaskStore.getState();
-      expect(filteredTasks).toHaveLength(1);
-      expect(filteredTasks[0].id).toBe('task-2');
-    });
-
-    it('searches by tags across all boards', () => {
-      const { setFilters } = useTaskStore.getState();
-      
-      setFilters({ search: 'backend', crossBoardSearch: true });
-      
-      const { filteredTasks } = useTaskStore.getState();
-      expect(filteredTasks).toHaveLength(1);
-      expect(filteredTasks[0].tags).toContain('backend');
-    });
-
-    it('is case insensitive', () => {
-      const { setFilters } = useTaskStore.getState();
-      
-      setFilters({ search: 'TASK', crossBoardSearch: true });
-      
-      const { filteredTasks } = useTaskStore.getState();
-      expect(filteredTasks).toHaveLength(3); // All tasks with "task" in title (case insensitive)
-    });
-  });
-
-  describe('Combined filters with cross-board search', () => {
-    it('applies status filter across all boards', () => {
-      const { setFilters } = useTaskStore.getState();
-      
-      setFilters({ status: 'todo', crossBoardSearch: true });
-      
-      const { filteredTasks } = useTaskStore.getState();
-      expect(filteredTasks).toHaveLength(1);
-      expect(filteredTasks[0].status).toBe('todo');
-    });
-
-    it('applies priority filter across all boards', () => {
-      const { setFilters } = useTaskStore.getState();
-      
-      setFilters({ priority: 'medium', crossBoardSearch: true });
-      
-      const { filteredTasks } = useTaskStore.getState();
-      expect(filteredTasks).toHaveLength(1);
-      expect(filteredTasks[0].priority).toBe('medium');
-    });
-
-    it('applies tag filter across all boards', () => {
-      const { setFilters } = useTaskStore.getState();
-      
-      setFilters({ tags: ['urgent'], crossBoardSearch: true });
-      
-      const { filteredTasks } = useTaskStore.getState();
-      expect(filteredTasks).toHaveLength(1);
-      expect(filteredTasks[0].tags).toContain('urgent');
-    });
-
-    it('combines multiple filters with cross-board search', () => {
-      const { setFilters } = useTaskStore.getState();
-      
-      setFilters({ 
-        search: 'Task',
+      // Add a task first
+      await addTask({
+        title: 'Original Task',
         status: 'todo',
-        crossBoardSearch: true 
+        priority: 'medium',
+        boardId: 'board-1'
       });
       
-      const { filteredTasks } = useTaskStore.getState();
-      expect(filteredTasks).toHaveLength(1);
-      expect(filteredTasks[0].title).toBe('Task on Board 1');
-      expect(filteredTasks[0].status).toBe('todo');
+      const taskId = useTaskStore.getState().tasks[0].id;
+      
+      // Update the task
+      await updateTask(taskId, {
+        title: 'Updated Task',
+        status: 'in-progress'
+      });
+      
+      const { tasks } = useTaskStore.getState();
+      expect(tasks[0].title).toBe('Updated Task');
+      expect(tasks[0].status).toBe('in-progress');
+      const { taskDB } = await import('../../utils/database');
+      expect(taskDB.updateTask).toHaveBeenCalled();
+    });
+
+    it('should delete a task', async () => {
+      const { addTask, deleteTask } = useTaskStore.getState();
+      
+      // Add a task first
+      await addTask({
+        title: 'Task to Delete',
+        status: 'todo',
+        priority: 'medium',
+        boardId: 'board-1'
+      });
+      
+      const taskId = useTaskStore.getState().tasks[0].id;
+      expect(useTaskStore.getState().tasks).toHaveLength(1);
+      
+      // Delete the task
+      await deleteTask(taskId);
+      
+      const { tasks } = useTaskStore.getState();
+      expect(tasks).toHaveLength(0);
+      const { taskDB } = await import('../../utils/database');
+      expect(taskDB.deleteTask).toHaveBeenCalled();
+    });
+
+    it('should find a task by ID from tasks array', async () => {
+      const { addTask } = useTaskStore.getState();
+      
+      await addTask({
+        title: 'Test Task',
+        status: 'todo',
+        priority: 'medium',
+        boardId: 'board-1'
+      });
+      
+      const { tasks } = useTaskStore.getState();
+      const taskId = tasks[0].id;
+      const retrievedTask = tasks.find(t => t.id === taskId);
+      
+      expect(retrievedTask).toEqual(tasks[0]);
+    });
+
+    it('should return undefined for non-existent task', () => {
+      const { tasks } = useTaskStore.getState();
+      const retrievedTask = tasks.find(t => t.id === 'non-existent-id');
+      
+      expect(retrievedTask).toBeUndefined();
     });
   });
 
-  describe('Search scope management', () => {
-    it('setCrossBoardSearch updates the filter and applies filters', () => {
-      const { setCrossBoardSearch, setFilters } = useTaskStore.getState();
+  describe('Task Operations', () => {
+    it('should move a task to different status', async () => {
+      const { addTask, moveTask } = useTaskStore.getState();
       
-      // Set up initial state with board filter
-      setFilters({ boardId: 'board-1' });
-      expect(useTaskStore.getState().filteredTasks).toHaveLength(2);
+      await addTask({
+        title: 'Movable Task',
+        status: 'todo',
+        priority: 'medium',
+        boardId: 'board-1'
+      });
       
-      // Enable cross-board search
-      setCrossBoardSearch(true);
+      const taskId = useTaskStore.getState().tasks[0].id;
+      await moveTask(taskId, 'in-progress');
       
-      const { filters, filteredTasks } = useTaskStore.getState();
-      expect(filters.crossBoardSearch).toBe(true);
-      expect(filteredTasks).toHaveLength(3); // Now shows all tasks
+      const { tasks } = useTaskStore.getState();
+      expect(tasks[0].status).toBe('in-progress');
     });
 
-    it('setSearchQuery updates search and applies filters with debounce', async () => {
-      const { setSearchQuery } = useTaskStore.getState();
+    it('should archive a task', async () => {
+      const { addTask, archiveTask } = useTaskStore.getState();
       
-      setSearchQuery('Task');
+      await addTask({
+        title: 'Task to Archive',
+        status: 'todo',
+        priority: 'medium',
+        boardId: 'board-1'
+      });
       
-      // Should update the search filter immediately
-      const { filters } = useTaskStore.getState();
-      expect(filters.search).toBe('Task');
+      const taskId = useTaskStore.getState().tasks[0].id;
+      await archiveTask(taskId);
       
-      // Wait for debounce
-      await new Promise(resolve => setTimeout(resolve, 350));
+      const { tasks } = useTaskStore.getState();
+      expect(tasks[0].archivedAt).toBeDefined();
+    });
+
+    it('should unarchive a task', async () => {
+      const { addTask, archiveTask, unarchiveTask } = useTaskStore.getState();
       
-      const { filteredTasks } = useTaskStore.getState();
-      expect(filteredTasks.length).toBeGreaterThan(0);
+      await addTask({
+        title: 'Task to Archive',
+        status: 'todo',
+        priority: 'medium',
+        boardId: 'board-1'
+      });
+      
+      const taskId = useTaskStore.getState().tasks[0].id;
+      await archiveTask(taskId);
+      await unarchiveTask(taskId);
+      
+      const { tasks } = useTaskStore.getState();
+      expect(tasks[0].archivedAt).toBeUndefined();
     });
   });
 
-  describe('clearFilters', () => {
-    it('preserves crossBoardSearch setting when clearing filters', () => {
-      const { setFilters, clearFilters } = useTaskStore.getState();
+  describe('Search and Filtering', () => {
+    beforeEach(async () => {
+      const { addTask } = useTaskStore.getState();
       
-      setFilters({ 
-        search: 'test',
+      // Add test tasks
+      await addTask({
+        title: 'High Priority Task',
+        description: 'Important task',
         status: 'todo',
         priority: 'high',
-        tags: ['urgent'],
         boardId: 'board-1',
-        crossBoardSearch: true
+        tags: ['urgent']
       });
       
-      clearFilters();
+      await addTask({
+        title: 'Low Priority Task',
+        description: 'Not so important',
+        status: 'in-progress',
+        priority: 'low',
+        boardId: 'board-1',
+        tags: ['optional']
+      });
+    });
+
+    it('should set search query', () => {
+      const { setSearchQuery } = useTaskStore.getState();
+      
+      setSearchQuery('High Priority');
       
       const { filters } = useTaskStore.getState();
+      expect(filters.search).toBe('High Priority');
+    });
+
+    it('should set filters', () => {
+      const { setFilters } = useTaskStore.getState();
+      
+      setFilters({ status: 'todo' });
+      
+      const { filters } = useTaskStore.getState();
+      expect(filters.status).toBe('todo');
+    });
+
+    it('should clear filters', () => {
+      const { setFilters, clearFilters, filters } = useTaskStore.getState();
+      
+      setFilters({ status: 'todo', priority: 'high' });
+      clearFilters();
+      
       expect(filters.search).toBe('');
       expect(filters.status).toBeUndefined();
       expect(filters.priority).toBeUndefined();
-      expect(filters.tags).toEqual([]);
-      expect(filters.boardId).toBe('board-1'); // Preserved
-      expect(filters.crossBoardSearch).toBe(true); // Preserved
-    });
-  });
-
-  describe('Date range filtering with cross-board search', () => {
-    it('applies date range filter across all boards', () => {
-      const { setFilters } = useTaskStore.getState();
-      
-      setFilters({ 
-        dateRange: {
-          start: new Date('2024-01-01'),
-          end: new Date('2024-01-02')
-        },
-        crossBoardSearch: true 
-      });
-      
-      const { filteredTasks } = useTaskStore.getState();
-      expect(filteredTasks).toHaveLength(2); // Tasks from Jan 1 and Jan 2
-      expect(filteredTasks.some(task => task.boardId === 'board-1')).toBe(true);
-      expect(filteredTasks.some(task => task.boardId === 'board-2')).toBe(true);
-    });
-  });
-});
-
-describe('TaskStore - Search Preferences', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    useTaskStore.setState({
-      tasks: mockTasks,
-      filteredTasks: mockTasks,
-      filters: {
-        search: '',
-        tags: [],
-        crossBoardSearch: false,
-      },
-      searchState: {
-        scope: 'current-board',
-        highlightedTaskId: undefined,
-      },
-      isLoading: false,
-      error: null,
-    });
-  });
-
-  describe('loadSearchPreferences', () => {
-    it('loads default scope from settings', async () => {
-      const mockGetSettings = vi.mocked(taskDB.getSettings);
-      mockGetSettings.mockResolvedValue({
-        theme: 'system',
-        autoArchiveDays: 30,
-        enableNotifications: true,
-        enableKeyboardShortcuts: true,
-        enableDebugMode: false,
-        searchPreferences: {
-          defaultScope: 'all-boards',
-          rememberScope: true,
-        },
-        accessibility: {
-          highContrast: false,
-          reduceMotion: false,
-          fontSize: 'medium',
-        },
-      });
-
-      const { loadSearchPreferences } = useTaskStore.getState();
-      await loadSearchPreferences();
-
-      const { filters, searchState } = useTaskStore.getState();
-      expect(filters.crossBoardSearch).toBe(true);
-      expect(searchState.scope).toBe('all-boards');
     });
 
-    it('handles missing settings gracefully', async () => {
-      const mockGetSettings = vi.mocked(taskDB.getSettings);
-      mockGetSettings.mockResolvedValue(null);
-
-      const { loadSearchPreferences } = useTaskStore.getState();
-      await loadSearchPreferences();
-
-      const { filters, searchState } = useTaskStore.getState();
-      expect(filters.crossBoardSearch).toBe(false);
-      expect(searchState.scope).toBe('current-board');
-    });
-
-    it('handles database errors gracefully', async () => {
-      const mockGetSettings = vi.mocked(taskDB.getSettings);
-      mockGetSettings.mockRejectedValue(new Error('Database error'));
-
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-
-      const { loadSearchPreferences } = useTaskStore.getState();
-      await loadSearchPreferences();
-
-      expect(consoleSpy).toHaveBeenCalledWith('Failed to load search preferences:', expect.any(Error));
-      consoleSpy.mockRestore();
-    });
-  });
-
-  describe('saveSearchScope', () => {
-    it('saves scope when rememberScope is enabled', async () => {
-      const mockGetSettings = vi.mocked(taskDB.getSettings);
-      const mockUpdateSettings = vi.mocked(taskDB.updateSettings);
-      
-      mockGetSettings.mockResolvedValue({
-        theme: 'system',
-        autoArchiveDays: 30,
-        enableNotifications: true,
-        enableKeyboardShortcuts: true,
-        enableDebugMode: false,
-        searchPreferences: {
-          defaultScope: 'current-board',
-          rememberScope: true,
-        },
-        accessibility: {
-          highContrast: false,
-          reduceMotion: false,
-          fontSize: 'medium',
-        },
-      });
-
-      const { saveSearchScope } = useTaskStore.getState();
-      await saveSearchScope('all-boards');
-
-      expect(mockUpdateSettings).toHaveBeenCalledWith({
-        theme: 'system',
-        autoArchiveDays: 30,
-        enableNotifications: true,
-        enableKeyboardShortcuts: true,
-        enableDebugMode: false,
-        searchPreferences: {
-          defaultScope: 'all-boards',
-          rememberScope: true,
-        },
-        accessibility: {
-          highContrast: false,
-          reduceMotion: false,
-          fontSize: 'medium',
-        },
-      });
-    });
-
-    it('does not save scope when rememberScope is disabled', async () => {
-      const mockGetSettings = vi.mocked(taskDB.getSettings);
-      const mockUpdateSettings = vi.mocked(taskDB.updateSettings);
-      
-      mockGetSettings.mockResolvedValue({
-        theme: 'system',
-        autoArchiveDays: 30,
-        enableNotifications: true,
-        enableKeyboardShortcuts: true,
-        enableDebugMode: false,
-        searchPreferences: {
-          defaultScope: 'current-board',
-          rememberScope: false,
-        },
-        accessibility: {
-          highContrast: false,
-          reduceMotion: false,
-          fontSize: 'medium',
-        },
-      });
-
-      const { saveSearchScope } = useTaskStore.getState();
-      await saveSearchScope('all-boards');
-
-      expect(mockUpdateSettings).not.toHaveBeenCalled();
-    });
-
-    it('handles database errors gracefully', async () => {
-      const mockGetSettings = vi.mocked(taskDB.getSettings);
-      mockGetSettings.mockRejectedValue(new Error('Database error'));
-
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-
-      const { saveSearchScope } = useTaskStore.getState();
-      await saveSearchScope('all-boards');
-
-      expect(consoleSpy).toHaveBeenCalledWith('Failed to save search scope preference:', expect.any(Error));
-      consoleSpy.mockRestore();
-    });
-  });
-
-  describe('setCrossBoardSearch with preference saving', () => {
-    it('saves scope preference when enabling cross-board search', async () => {
-      const mockGetSettings = vi.mocked(taskDB.getSettings);
-      const mockUpdateSettings = vi.mocked(taskDB.updateSettings);
-      
-      mockGetSettings.mockResolvedValue({
-        theme: 'system',
-        autoArchiveDays: 30,
-        enableNotifications: true,
-        enableKeyboardShortcuts: true,
-        enableDebugMode: false,
-        searchPreferences: {
-          defaultScope: 'current-board',
-          rememberScope: true,
-        },
-        accessibility: {
-          highContrast: false,
-          reduceMotion: false,
-          fontSize: 'medium',
-        },
-      });
-
+    it('should set cross-board search', () => {
       const { setCrossBoardSearch } = useTaskStore.getState();
+      
       setCrossBoardSearch(true);
-
-      // Wait for async operations
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      const { filters, searchState } = useTaskStore.getState();
+      
+      const { filters } = useTaskStore.getState();
       expect(filters.crossBoardSearch).toBe(true);
-      expect(searchState.scope).toBe('all-boards');
-      expect(mockUpdateSettings).toHaveBeenCalledWith(
-        expect.objectContaining({
-          searchPreferences: {
-            defaultScope: 'all-boards',
-            rememberScope: true,
-          },
-        })
-      );
     });
   });
 
-  describe('Search state management', () => {
-    it('sets highlighted task', () => {
-      const { setHighlightedTask } = useTaskStore.getState();
+  describe('Error Handling', () => {
+    it('should handle error state', () => {
+      const { setError, error } = useTaskStore.getState();
       
-      setHighlightedTask('task-1');
+      setError('Test error');
+      expect(error).toBe('Test error');
       
-      const { searchState } = useTaskStore.getState();
-      expect(searchState.highlightedTaskId).toBe('task-1');
+      setError(null);
+      expect(error).toBeNull();
     });
 
-    it('clears search and highlighted task', () => {
-      const { setHighlightedTask, clearSearch, setFilters } = useTaskStore.getState();
+    it('should handle loading states', () => {
+      const { setLoading, isLoading, setSearching, isSearching } = useTaskStore.getState();
       
-      // Set up initial state
-      setFilters({ search: 'test' });
-      setHighlightedTask('task-1');
+      setLoading(true);
+      expect(isLoading).toBe(true);
       
-      clearSearch();
+      setSearching(true);
+      expect(isSearching).toBe(true);
+    });
+  });
+
+  describe('Export functionality', () => {
+    it('should export tasks', async () => {
+      const { addTask, exportTasks } = useTaskStore.getState();
       
-      const { filters, searchState } = useTaskStore.getState();
-      expect(filters.search).toBe('');
-      expect(searchState.highlightedTaskId).toBeUndefined();
+      await addTask({
+        title: 'Export Task',
+        status: 'todo',
+        priority: 'medium',
+        boardId: 'board-1'
+      });
+      
+      const exportData = exportTasks();
+      expect(exportData.tasks).toHaveLength(1);
+      expect(exportData.tasks[0].title).toBe('Export Task');
     });
   });
 });

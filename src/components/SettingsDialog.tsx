@@ -279,6 +279,20 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 />
               </div>
 
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="developerMode">Developer mode</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Show developer tools like monitoring and production readiness dashboards
+                  </p>
+                </div>
+                <Switch
+                  id="developerMode"
+                  checked={localSettings.enableDeveloperMode}
+                  onCheckedChange={(checked) => updateLocalSetting('enableDeveloperMode', checked)}
+                />
+              </div>
+
 
               <div className="space-y-2">
                 <Label>Reset Application</Label>

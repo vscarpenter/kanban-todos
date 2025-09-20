@@ -14,7 +14,7 @@ This guide will help you get up and running with the Kanban Todos application qu
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/kanban-todos.git
+   git clone https://github.com/vscarpenter/kanban-todos.git
    cd kanban-todos
    ```
 

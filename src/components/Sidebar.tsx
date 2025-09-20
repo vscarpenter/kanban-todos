@@ -86,6 +86,18 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
     return tasks.filter(task => task.boardId === boardId && !task.archivedAt).length;
   };
 
+  const handleBoardSelect = (boardId: string) => {
+    selectBoard(boardId);
+  };
+
+  const handleExportClick = () => {
+    setShowExportDialog(true);
+  };
+
+  const handleImportClick = () => {
+    setShowImportDialog(true);
+  };
+
   const toggleTheme = () => {
     const themeOrder = ['light', 'dark', 'system'];
     const currentIndex = themeOrder.indexOf(theme || 'system');
@@ -183,7 +195,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
                   board={board}
                   isActive={board.id === currentBoardId}
                   taskCount={getTaskCount(board.id)}
-                  onSelect={() => selectBoard(board.id)}
+                  onSelect={() => handleBoardSelect(board.id)}
                   onReorder={(direction) => reorderBoard(board.id, direction)}
                   canMoveUp={index > 0}
                   canMoveDown={index < boards.length - 1}
@@ -199,7 +211,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
             <Button
               variant="ghost"
               className="w-full justify-start"
-              onClick={() => setShowExportDialog(true)}
+              onClick={handleExportClick}
             >
               <Download className="h-4 w-4 mr-2" />
               Export Data
@@ -207,7 +219,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
             <Button
               variant="ghost"
               className="w-full justify-start"
-              onClick={() => setShowImportDialog(true)}
+              onClick={handleImportClick}
             >
               <Upload className="h-4 w-4 mr-2" />
               Import Data

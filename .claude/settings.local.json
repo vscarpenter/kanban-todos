@@ -50,9 +50,21 @@
       "Bash(npm run deploy:all:*)",
       "Bash(npm run deploy:cascade:*)",
       "Bash(git fetch:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(./scripts/test-security-headers.sh:*)",
+      "Bash(aws lambda list-functions:*)",
+      "Bash(aws logs describe-log-groups:*)",
+      "Bash(git rm:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "aws-cloudcontrol-mcp-server",
+    "aws-documentation",
+    "aws-s3",
+    "aws-cloudwatch-logs",
+    "aws-core"
+  ]
 }

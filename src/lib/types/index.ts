@@ -32,6 +32,7 @@ export interface Settings {
   enableNotifications: boolean;
   enableKeyboardShortcuts: boolean;
   enableDebugMode: boolean;
+  enableDeveloperMode: boolean;
   currentBoardId?: string; // Persist current board selection
   searchPreferences: {
     defaultScope: SearchScope;

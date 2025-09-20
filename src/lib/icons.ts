@@ -104,4 +104,6 @@ export {
   Octagon,
   Pentagon,
   Diamond,
+  Rocket,
+  Accessibility,
 } from "lucide-react";

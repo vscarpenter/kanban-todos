@@ -3,6 +3,7 @@ import { devtools } from 'zustand/middleware';
 import { Task, TaskFilters, SearchState, SearchScope } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
 import { exportTasks, ExportData } from '@/lib/utils/exportImport';
+import { sanitizeTaskData, sanitizeSearchQuery, searchRateLimiter } from '@/lib/utils/security';
 
 // Type definition for global timeout handling
 interface GlobalWithTimeout {
@@ -18,11 +19,6 @@ interface TaskState {
   isSearching: boolean;
   error: string | null;
   searchCache: Map<string, { results: Task[]; timestamp: number }>;
-  searchPerformanceMetrics: {
-    lastSearchDuration: number;
-    averageSearchDuration: number;
-    searchCount: number;
-  };
 }
 
 interface TaskActions {
@@ -60,10 +56,6 @@ interface TaskActions {
   loadSearchPreferences: () => Promise<void>;
   saveSearchScope: (scope: SearchScope) => Promise<void>;
   
-  // Performance monitoring
-  getSearchPerformanceMetrics: () => TaskState['searchPerformanceMetrics'];
-  resetPerformanceMetrics: () => void;
-  
   // Error handling and validation
   validateBoardAccess: (boardId: string) => Promise<boolean>;
   handleBoardDeletion: (deletedBoardId: string) => void;
@@ -95,18 +87,12 @@ const initialState: TaskState = {
   isSearching: false,
   error: null,
   searchCache: new Map(),
-  searchPerformanceMetrics: {
-    lastSearchDuration: 0,
-    averageSearchDuration: 0,
-    searchCount: 0,
-  },
 };
 
 // Cache configuration
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 const MAX_CACHE_SIZE = 50;
 const SEARCH_DEBOUNCE_MS = 300;
-const PERFORMANCE_WARNING_THRESHOLD = 100; // ms
 
 // Generate cache key for search filters
 const generateCacheKey = (filters: TaskFilters): string => {
@@ -263,8 +249,20 @@ export const useTaskStore = create<TaskState & TaskActions>()(
           get().saveSearchScope(enabled ? 'all-boards' : 'current-board');
         },
         setSearchQuery: (query) => {
+          // Sanitize search query
+          const sanitizedQuery = sanitizeSearchQuery(query);
+          
+          // Rate limiting for search operations
+          if (sanitizedQuery.trim() && !searchRateLimiter.isAllowed('search')) {
+            set({ 
+              error: 'Search rate limit exceeded. Please wait a moment before searching again.',
+              isSearching: false 
+            });
+            return;
+          }
+
           set((state) => ({
-            filters: { ...state.filters, search: query }
+            filters: { ...state.filters, search: sanitizedQuery }
           }));
           
           // Clear any existing timeout
@@ -273,7 +271,7 @@ export const useTaskStore = create<TaskState & TaskActions>()(
           }
           
           // Show loading state for non-empty searches
-          if (query.trim()) {
+          if (sanitizedQuery.trim()) {
             set({ isSearching: true, error: null });
           } else {
             // Clear search immediately for empty queries
@@ -284,34 +282,8 @@ export const useTaskStore = create<TaskState & TaskActions>()(
           
           // Debounce the filter application for search
           const timeoutId = setTimeout(async () => {
-            const startTime = performance.now();
-            
             try {
               await get().applyFilters();
-              
-              // Track performance metrics
-              const endTime = performance.now();
-              const duration = endTime - startTime;
-              
-              set((state) => {
-                const newSearchCount = state.searchPerformanceMetrics.searchCount + 1;
-                const newAverage = (
-                  (state.searchPerformanceMetrics.averageSearchDuration * state.searchPerformanceMetrics.searchCount) + duration
-                ) / newSearchCount;
-                
-                return {
-                  searchPerformanceMetrics: {
-                    lastSearchDuration: duration,
-                    averageSearchDuration: newAverage,
-                    searchCount: newSearchCount,
-                  }
-                };
-              });
-              
-              // Warn about slow searches
-              if (duration > PERFORMANCE_WARNING_THRESHOLD) {
-                console.warn(`Slow search operation: ${duration.toFixed(2)}ms for query "${query}"`);
-              }
               
             } catch (error: unknown) {
               console.error('Search operation failed:', error);
@@ -333,8 +305,21 @@ export const useTaskStore = create<TaskState & TaskActions>()(
           try {
             set({ isLoading: true, error: null });
             
+            // Sanitize and validate input data
+            const sanitizedData = sanitizeTaskData({
+              title: taskData.title,
+              description: taskData.description,
+              tags: taskData.tags,
+            });
+
+            // Validate required fields
+            if (!sanitizedData.title.trim()) {
+              throw new Error('Task title is required');
+            }
+
             const newTask: Task = {
               ...taskData,
+              ...sanitizedData,
               id: crypto.randomUUID(),
               createdAt: new Date(),
               updatedAt: new Date(),
@@ -593,8 +578,7 @@ export const useTaskStore = create<TaskState & TaskActions>()(
               await new Promise(resolve => setTimeout(resolve, 0));
             }
             
-            // Apply filters with performance monitoring and error handling
-            const startTime = performance.now();
+            // Apply filters with error handling
             let filteredTasks: Task[] = [];
             
             try {
@@ -621,13 +605,6 @@ export const useTaskStore = create<TaskState & TaskActions>()(
               }
             }
             
-            const endTime = performance.now();
-            const duration = endTime - startTime;
-            
-            // Log performance warning for slow operations
-            if (duration > PERFORMANCE_WARNING_THRESHOLD) {
-              console.warn(`Slow filter operation: ${duration.toFixed(2)}ms for ${currentTasks.length} tasks`);
-            }
             
             // Validate filtered results
             const validFilteredTasks = filteredTasks.filter(task => get().validateTaskIntegrity(task));
@@ -798,21 +775,6 @@ export const useTaskStore = create<TaskState & TaskActions>()(
           } catch (error: unknown) {
             console.warn('Failed to save search scope preference:', error);
           }
-        },
-
-        // Performance monitoring
-        getSearchPerformanceMetrics: () => {
-          return get().searchPerformanceMetrics;
-        },
-
-        resetPerformanceMetrics: () => {
-          set({
-            searchPerformanceMetrics: {
-              lastSearchDuration: 0,
-              averageSearchDuration: 0,
-              searchCount: 0,
-            }
-          });
         },
 
         // Error handling and validation

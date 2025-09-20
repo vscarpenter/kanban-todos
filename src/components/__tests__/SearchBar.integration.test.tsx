@@ -72,10 +72,8 @@ interface MockTaskStore {
   isSearching: boolean;
   error: string | null;
   setFilters: ReturnType<typeof vi.fn>;
-  setSearchQuery: ReturnType<typeof vi.fn>;
   setCrossBoardSearch: ReturnType<typeof vi.fn>;
   clearFilters: ReturnType<typeof vi.fn>;
-  getSearchPerformanceMetrics: ReturnType<typeof vi.fn>;
   recoverFromSearchError: ReturnType<typeof vi.fn>;
   setError: ReturnType<typeof vi.fn>;
 }
@@ -103,14 +101,8 @@ describe('SearchBar Integration Tests', () => {
       isSearching: false,
       error: null,
       setFilters: vi.fn(),
-      setSearchQuery: vi.fn(),
       setCrossBoardSearch: vi.fn(),
       clearFilters: vi.fn(),
-      getSearchPerformanceMetrics: vi.fn().mockReturnValue({
-        lastSearchDuration: 0,
-        averageSearchDuration: 0,
-        searchCount: 0,
-      }),
       recoverFromSearchError: vi.fn(),
       setError: vi.fn(),
     };
@@ -162,7 +154,7 @@ describe('SearchBar Integration Tests', () => {
       const searchInput = screen.getByPlaceholderText('Search tasks...');
       fireEvent.change(searchInput, { target: { value: 'project' } });
       
-      expect(mockTaskStore.setSearchQuery).toHaveBeenCalledWith('project');
+      expect(mockTaskStore.setFilters).toHaveBeenCalledWith(expect.objectContaining({ search: 'project' }));
     });
 
     it('should show search button and handle click', async () => {
@@ -172,7 +164,7 @@ describe('SearchBar Integration Tests', () => {
       expect(searchButton).toBeInTheDocument();
       
       fireEvent.click(searchButton);
-      expect(mockTaskStore.setSearchQuery).toHaveBeenCalled();
+      expect(mockTaskStore.setFilters).toHaveBeenCalled();
     });
   });
 
@@ -334,74 +326,6 @@ describe('SearchBar Integration Tests', () => {
     });
   });
 
-  describe('Performance Information', () => {
-    it('should show performance info when dataset is large', async () => {
-      mockTaskStore.tasks = Array.from({ length: 600 }, (_, i) => ({
-        ...mockTasks[0],
-        id: `task-${i}`,
-      }));
-      
-      render(<SearchBar />);
-      
-      const filterButton = screen.getByRole('button', { name: /filters/i });
-      fireEvent.click(filterButton);
-      
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /performance info/i })).toBeInTheDocument();
-      });
-    });
-
-    it('should show performance metrics when expanded', async () => {
-      mockTaskStore.tasks = Array.from({ length: 600 }, (_, i) => ({
-        ...mockTasks[0],
-        id: `task-${i}`,
-      }));
-      mockTaskStore.getSearchPerformanceMetrics.mockReturnValue({
-        lastSearchDuration: 150,
-        averageSearchDuration: 120,
-        searchCount: 5,
-      });
-      
-      render(<SearchBar />);
-      
-      const filterButton = screen.getByRole('button', { name: /filters/i });
-      fireEvent.click(filterButton);
-      
-      await waitFor(() => {
-        const performanceButton = screen.getByRole('button', { name: /performance info/i });
-        fireEvent.click(performanceButton);
-      });
-      
-      await waitFor(() => {
-        expect(screen.getByText('Dataset: 600 tasks')).toBeInTheDocument();
-        expect(screen.getByText('Last search: 150ms')).toBeInTheDocument();
-        expect(screen.getByText('Average: 120ms')).toBeInTheDocument();
-        expect(screen.getByText('Searches: 5')).toBeInTheDocument();
-      });
-    });
-
-    it('should show performance warning for slow searches', async () => {
-      mockTaskStore.getSearchPerformanceMetrics.mockReturnValue({
-        lastSearchDuration: 250, // Slow search
-        averageSearchDuration: 200,
-        searchCount: 3,
-      });
-      
-      render(<SearchBar />);
-      
-      const filterButton = screen.getByRole('button', { name: /filters/i });
-      fireEvent.click(filterButton);
-      
-      await waitFor(() => {
-        const performanceButton = screen.getByRole('button', { name: /performance info/i });
-        fireEvent.click(performanceButton);
-      });
-      
-      await waitFor(() => {
-        expect(screen.getByText('Consider refining search terms')).toBeInTheDocument();
-      });
-    });
-  });
 
   describe('Search Results Summary', () => {
     it('should show search results summary', () => {
@@ -423,19 +347,6 @@ describe('SearchBar Integration Tests', () => {
       expect(screen.getByText('Found 3 tasks across all boards')).toBeInTheDocument();
     });
 
-    it('should show performance timing in results summary', () => {
-      mockTaskStore.filters.search = 'project';
-      mockTaskStore.filteredTasks = [mockTasks[0]];
-      mockTaskStore.getSearchPerformanceMetrics.mockReturnValue({
-        lastSearchDuration: 85,
-        averageSearchDuration: 90,
-        searchCount: 2,
-      });
-      
-      render(<SearchBar />);
-      
-      expect(screen.getByText(/\(85ms\)/)).toBeInTheDocument();
-    });
   });
 
   describe('Filter Management', () => {
@@ -531,22 +442,6 @@ describe('SearchBar Integration Tests', () => {
       expect(globeIcon).toBeInTheDocument();
     });
 
-    it('should show performance warning icons', () => {
-      mockTaskStore.getSearchPerformanceMetrics.mockReturnValue({
-        lastSearchDuration: 250, // Slow search
-        averageSearchDuration: 200,
-        searchCount: 3,
-      });
-      mockTaskStore.tasks = Array.from({ length: 600 }, (_, i) => ({
-        ...mockTasks[0],
-        id: `task-${i}`,
-      }));
-      
-      render(<SearchBar />);
-      
-      expect(screen.getByTitle(/Last search took 250ms/)).toBeInTheDocument();
-      expect(screen.getByTitle(/Large dataset.*searches may be slower/)).toBeInTheDocument();
-    });
 
     it('should apply error styling to input when there is an error', () => {
       mockTaskStore.error = 'Search failed';
