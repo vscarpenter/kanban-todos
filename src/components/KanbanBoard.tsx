@@ -12,6 +12,7 @@ import { useTaskStore } from "@/lib/stores/taskStore";
 import { useBoardStore } from "@/lib/stores/boardStore";
 import { useSettingsStore } from "@/lib/stores/settingsStore";
 import { notificationManager } from "@/lib/utils/notifications";
+import { detectTouchCapabilities } from "@/lib/utils/iosDetection";
 
 // Lazy load keyboard components
 const GlobalHotkeys = dynamic(() => import("./GlobalHotkeys").then(mod => ({ default: mod.GlobalHotkeys })), {
@@ -22,7 +23,17 @@ const KeyboardShortcutsDialog = dynamic(() => import("./KeyboardShortcutsDialog"
 });
 
 export function KanbanBoard() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  // Determine initial sidebar state based on device type
+  const getInitialSidebarState = () => {
+    // Only run on client side to avoid hydration mismatches
+    if (typeof window === 'undefined') return true;
+    
+    const touchCapabilities = detectTouchCapabilities();
+    // Start collapsed on mobile devices (phones), but open on tablets and desktop
+    return !touchCapabilities.isLikelyMobile;
+  };
+  
+  const [isSidebarOpen, setIsSidebarOpen] = useState(getInitialSidebarState);
   const [, setIsInitialized] = useState(false);
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
   const { initializeStore, setBoardFilter, tasks } = useTaskStore();
