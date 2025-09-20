@@ -205,3 +205,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - UI components from [shadcn/ui](https://ui.shadcn.com/)
 - Icons by [Lucide](https://lucide.dev/)
 - Typography powered by [Geist](https://vercel.com/font) and [Geist Mono](https://vercel.com/font)
+- Development assistance from [Claude Code](https://claude.ai/code)
