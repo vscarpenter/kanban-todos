@@ -1,0 +1,274 @@
+/* Cascade design tokens exported as CSS custom properties */
+:root {
+  /* Color primitives */
+  --color-gray-25: #fcfcfd;
+  --color-gray-50: #f8f9fb;
+  --color-gray-100: #f1f3f9;
+  --color-gray-200: #e2e6f0;
+  --color-gray-300: #d5d9e3;
+  --color-gray-400: #aeb4c0;
+  --color-gray-500: #7a808f;
+  --color-gray-600: #5b616f;
+  --color-gray-700: #444955;
+  --color-gray-800: #2f333d;
+  --color-gray-900: #1f2229;
+  --color-gray-950: #0a0c10;
+
+  --color-primary-25: #f9f6ff;
+  --color-primary-50: #f3edff;
+  --color-primary-100: #e6ddff;
+  --color-primary-200: #d2c0ff;
+  --color-primary-300: #b59aff;
+  --color-primary-400: #9b74ff;
+  --color-primary-500: #8b5cf6;
+  --color-primary-600: #7a3bed;
+  --color-primary-700: #6827d4;
+  --color-primary-800: #5421ad;
+  --color-primary-900: #421b87;
+  --color-primary-950: #2b125b;
+
+  --color-secondary-25: #f5f9ff;
+  --color-secondary-50: #edf3ff;
+  --color-secondary-100: #dbe8ff;
+  --color-secondary-200: #bcd3ff;
+  --color-secondary-300: #94b7ff;
+  --color-secondary-400: #6d98ff;
+  --color-secondary-500: #4f7ff9;
+  --color-secondary-600: #3a65dd;
+  --color-secondary-700: #2f50b5;
+  --color-secondary-800: #253e8c;
+  --color-secondary-900: #1c2f69;
+  --color-secondary-950: #132047;
+
+  --color-success-25: #f4fbf7;
+  --color-success-50: #e9f7ef;
+  --color-success-100: #d1f0dd;
+  --color-success-200: #a5e1be;
+  --color-success-300: #78d29a;
+  --color-success-400: #45c06d;
+  --color-success-500: #16a34a;
+  --color-success-600: #148039;
+  --color-success-700: #105f2c;
+  --color-success-800: #0c4520;
+  --color-success-900: #093018;
+  --color-success-950: #051d0f;
+
+  --color-warning-25: #fff9f0;
+  --color-warning-50: #fff2e0;
+  --color-warning-100: #ffe1b8;
+  --color-warning-200: #ffcc85;
+  --color-warning-300: #ffae4d;
+  --color-warning-400: #f7931e;
+  --color-warning-500: #dd7a05;
+  --color-warning-600: #b56204;
+  --color-warning-700: #8d4a03;
+  --color-warning-800: #663402;
+  --color-warning-900: #452202;
+  --color-warning-950: #2c1501;
+
+  --color-danger-25: #fff5f7;
+  --color-danger-50: #ffe8ed;
+  --color-danger-100: #ffcbd6;
+  --color-danger-200: #ff9db6;
+  --color-danger-300: #ff6a90;
+  --color-danger-400: #f43f67;
+  --color-danger-500: #e11d48;
+  --color-danger-600: #c0103a;
+  --color-danger-700: #99082c;
+  --color-danger-800: #72031f;
+  --color-danger-900: #4c0214;
+  --color-danger-950: #2d010b;
+
+  /* Typography */
+  --font-sans: "Geist", "Inter", "system-ui", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+  /* Spacing (linear 4px step) */
+  --space-none: 0rem;
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.25rem;
+  --space-lg: 1.5rem;
+  --space-xl: 1.75rem;
+  --space-2xl: 2rem;
+  --space-3xl: 2.25rem;
+  --space-4xl: 2.5rem;
+  --space-5xl: 2.75rem;
+  --space-6xl: 3rem;
+
+  /* Component sizing */
+  --size-control-sm: 2rem;
+  --size-control-md: 2.25rem;
+  --size-control-lg: 2.5rem;
+  --size-icon-sm: 1rem;
+  --size-icon-md: 1.25rem;
+  --size-icon-lg: 1.5rem;
+
+  /* Radii */
+  --radius-none: 0px;
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-pill: 9999px;
+
+  /* Shadows */
+  --shadow-none: 0 0 0 0 #0000;
+  --shadow-xs: 0 1px 2px 0 rgb(15 23 42 / 0.08);
+  --shadow-sm: 0 1px 3px 0 rgb(15 23 42 / 0.12), 0 1px 2px -1px rgb(15 23 42 / 0.1);
+  --shadow-md: 0 6px 14px -6px rgb(15 23 42 / 0.18), 0 4px 6px -4px rgb(15 23 42 / 0.12);
+  --shadow-lg: 0 14px 28px -10px rgb(15 23 42 / 0.22), 0 8px 12px -6px rgb(15 23 42 / 0.16);
+  --shadow-xl: 0 24px 40px -12px rgb(15 23 42 / 0.26);
+
+  /* Z-index scale */
+  --z-base: 0;
+  --z-header: 10;
+  --z-dropdown: 20;
+  --z-overlay: 30;
+  --z-modal: 40;
+  --z-toast: 50;
+  --z-tooltip: 60;
+
+  /* Motion */
+  --motion-duration-instant: 0ms;
+  --motion-duration-micro: 100ms;
+  --motion-duration-fast: 150ms;
+  --motion-duration-base: 200ms;
+  --motion-duration-eased: 250ms;
+  --motion-duration-deliberate: 300ms;
+  --motion-duration-linger: 500ms;
+  --motion-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-ease-emphasized: cubic-bezier(0.3, 0, 0.2, 1);
+  --motion-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --motion-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --motion-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Data visualization */
+  --viz-1: #8b5cf6;
+  --viz-2: #6366f1;
+  --viz-3: #3b82f6;
+  --viz-4: #0ea5e9;
+  --viz-5: #06b6d4;
+  --viz-6: #14b8a6;
+  --viz-7: #22c55e;
+  --viz-8: #84cc16;
+  --viz-9: #f59e0b;
+  --viz-10: #f97316;
+  --viz-11: #f43f5e;
+  --viz-12: #ec4899;
+
+  /* Semantic tokens - light mode */
+  --fg-default: var(--color-gray-900);
+  --fg-muted: var(--color-gray-600);
+  --fg-subtle: var(--color-gray-500);
+  --fg-inverted: var(--color-gray-25);
+
+  --bg-canvas: var(--color-gray-25);
+  --bg-surface: var(--color-gray-50);
+  --bg-subtle: var(--color-gray-100);
+  --bg-raised: var(--color-gray-200);
+
+  --muted-fg: var(--fg-muted);
+  --muted-bg: var(--bg-subtle);
+  --subtle-fg: var(--color-primary-600);
+  --subtle-bg: var(--color-primary-50);
+
+  --border-default: var(--color-gray-200);
+  --border-hover: var(--color-gray-300);
+  --border-strong: var(--color-gray-400);
+
+  --ring-default: var(--color-primary-300);
+  --ring-subtle: var(--color-secondary-200);
+
+  --emphasis-primary: var(--color-primary-500);
+  --emphasis-primary-hover: var(--color-primary-600);
+  --emphasis-secondary: var(--color-secondary-500);
+  --emphasis-secondary-hover: var(--color-secondary-600);
+  --emphasis-success: var(--color-success-500);
+  --emphasis-warning: var(--color-warning-500);
+  --emphasis-danger: var(--color-danger-500);
+
+  --disabled-fg: var(--color-gray-400);
+  --disabled-bg: var(--color-gray-100);
+  --disabled-border: var(--color-gray-200);
+
+  --link-default: var(--color-primary-600);
+  --link-hover: var(--color-primary-500);
+  --link-visited: var(--color-secondary-700);
+  --link-subtle: var(--color-primary-400);
+
+  --focus-ring: var(--ring-default);
+  --focus-outline: color-mix(in srgb, var(--ring-default) 45%, transparent);
+
+  --selection-bg: var(--color-primary-100);
+  --selection-fg: var(--color-primary-800);
+
+  /* Usage examples:
+     Button background -> background-color: var(--emphasis-primary);
+     Card surface -> background-color: var(--bg-surface);
+     Divider border -> border-color: var(--border-default);
+  */
+}
+
+[data-theme="dark"] {
+  --fg-default: var(--color-gray-25);
+  --fg-muted: var(--color-gray-300);
+  --fg-subtle: var(--color-gray-400);
+  --fg-inverted: var(--color-gray-950);
+
+  --bg-canvas: var(--color-gray-950);
+  --bg-surface: var(--color-gray-900);
+  --bg-subtle: var(--color-gray-800);
+  --bg-raised: var(--color-gray-700);
+
+  --muted-fg: var(--fg-subtle);
+  --muted-bg: var(--bg-subtle);
+  --subtle-fg: var(--color-primary-300);
+  --subtle-bg: var(--color-primary-950);
+
+  --border-default: color-mix(in srgb, var(--color-gray-900) 60%, transparent);
+  --border-hover: color-mix(in srgb, var(--color-gray-800) 75%, transparent);
+  --border-strong: var(--color-gray-600);
+
+  --ring-default: var(--color-primary-400);
+  --ring-subtle: var(--color-secondary-300);
+
+  --emphasis-primary: var(--color-primary-500);
+  --emphasis-primary-hover: var(--color-primary-400);
+  --emphasis-secondary: var(--color-secondary-500);
+  --emphasis-secondary-hover: var(--color-secondary-400);
+  --emphasis-success: var(--color-success-500);
+  --emphasis-warning: var(--color-warning-500);
+  --emphasis-danger: var(--color-danger-500);
+
+  --disabled-fg: color-mix(in srgb, var(--color-gray-400) 65%, var(--color-gray-900));
+  --disabled-bg: color-mix(in srgb, var(--color-gray-800) 60%, transparent);
+  --disabled-border: color-mix(in srgb, var(--color-gray-800) 50%, transparent);
+
+  --link-default: var(--color-primary-300);
+  --link-hover: var(--color-primary-200);
+  --link-visited: var(--color-secondary-300);
+  --link-subtle: var(--color-primary-400);
+
+  --focus-ring: var(--ring-default);
+  --focus-outline: color-mix(in srgb, var(--ring-default) 55%, transparent);
+
+  --selection-bg: var(--color-primary-800);
+  --selection-fg: var(--color-primary-100);
+
+  /* Example: apply dark theme by setting <body data-theme="dark"> */
+}
+
+/* Utility helpers */
+::selection {
+  background: var(--selection-bg);
+  color: var(--selection-fg);
+}
+
+[data-theme="dark"] ::selection {
+  background: var(--selection-bg);
+  color: var(--selection-fg);
+}

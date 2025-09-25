@@ -54,7 +54,10 @@
       "Bash(./scripts/test-security-headers.sh:*)",
       "Bash(aws lambda list-functions:*)",
       "Bash(aws logs describe-log-groups:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(git credential-osxkeychain:*)",
+      "Bash(security delete-internet-password:*)",
+      "Read(//Users/vinnycarpenter/**)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

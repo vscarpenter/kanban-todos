@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, memo, useCallback, useMemo } from "react";
+import { useState, memo, useCallback } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { Task, Board } from "@/lib/types";
@@ -21,7 +21,6 @@ import {
   Move,
   AlertTriangle
 } from "@/lib/icons";
-import { getIOSTouchClasses } from "@/lib/utils/iosDetection";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -58,8 +57,6 @@ export function TaskCard({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { deleteTask, archiveTask } = useTaskStore();
   
-  // Get iOS-specific CSS classes for touch optimization
-  const iosTouchClasses = useMemo(() => getIOSTouchClasses(), []);
   
   const {
     attributes,
@@ -185,7 +182,7 @@ export function TaskCard({
         style={style}
         {...attributes}
         {...listeners}
-        className={`cursor-grab active:cursor-grabbing draggable-element touch-optimized ${iosTouchClasses.join(' ')} ${
+        className={`cursor-grab active:cursor-grabbing draggable-element touch-optimized ${
           showBoardIndicator && !isCurrentBoard ? 'cursor-pointer' : ''
         }`}
         onClick={handleCardClick}

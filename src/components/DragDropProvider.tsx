@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -15,7 +15,6 @@ import {
 import { Task } from "@/lib/types";
 import { useTaskStore } from "@/lib/stores/taskStore";
 import TaskCard from "./kanban/TaskCard";
-import { getIOSTouchSensorConfig, needsIOSTouchOptimization } from "@/lib/utils/iosDetection";
 
 interface DragDropProviderProps {
   children: React.ReactNode;
@@ -33,9 +32,10 @@ export function DragDropProvider({
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const { tasks, moveTask } = useTaskStore();
   
-  // Get iOS-optimized touch sensor configuration
-  const touchSensorConfig = useMemo(() => getIOSTouchSensorConfig(), []);
-  const needsIOSOptimization = useMemo(() => needsIOSTouchOptimization(), []);
+  // Simple touch sensor configuration
+  const touchSensorConfig = 'ontouchstart' in window
+    ? { activationConstraint: { delay: 150, tolerance: 8 } }
+    : { activationConstraint: { delay: 100, tolerance: 5 } };
   
   // Configure drag sensors for both mouse and touch
   const sensors = useSensors(
@@ -53,12 +53,8 @@ export function DragDropProvider({
     if (task) {
       setActiveTask(task);
       
-      // Enhanced haptic feedback for iOS devices
-      if (needsIOSOptimization && 'vibrate' in navigator) {
-        // iOS-optimized haptic feedback pattern
-        navigator.vibrate([50, 10, 25]);
-      } else if ('vibrate' in navigator) {
-        // Standard haptic feedback for other devices
+      // Simple haptic feedback
+      if ('vibrate' in navigator) {
         navigator.vibrate(50);
       }
     }
@@ -91,9 +87,7 @@ export function DragDropProvider({
       {children}
       <DragOverlay>
         {activeTask ? (
-          <div className={`drag-overlay drag-preview opacity-80 rotate-3 scale-105 ${
-            needsIOSOptimization ? 'ios-device' : ''
-          }`}>
+          <div className="drag-overlay drag-preview opacity-80 rotate-3 scale-105">
             <TaskCard task={activeTask} />
           </div>
         ) : null}
