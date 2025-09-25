@@ -1,0 +1,348 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "generated": "2025-09-24T12:34:56.777Z",
+    "notes": "Semantic tokens map primitives to UI intents with tone-based adjustments.",
+    "tokens": "./primitives.json"
+  },
+  "algorithm": {
+    "description": "Light mode shifts base tones toward higher luminance; dark mode inverts and lightens neutrals while keeping chroma for status colors. Each semantic token references primitives using tonal steps (+/-) to maintain contrast.",
+    "steps": [
+      "Start from neutral gray ramp for canvas and text",
+      "Offset by +1 or +2 steps for raised or muted surfaces",
+      "Use brand chroma ramps (primary, secondary, status colors) at 500 for solid fills, 400/600 for hover/active",
+      "Mix disabled states by blending neutral 400 with canvas tone at 60% opacity",
+      "Focus and ring colors reuse primary 400 with alpha to meet WCAG focus visibility"
+    ]
+  },
+  "modes": {
+    "light": {
+      "fg": {
+        "default": {
+          "value": "{colors.gray.900}",
+          "algorithm": "Neutral tone 900 for primary text"
+        },
+        "muted": {
+          "value": "{colors.gray.600}",
+          "algorithm": "Neutral tone 600 for secondary text"
+        },
+        "subtle": {
+          "value": "{colors.gray.500}",
+          "algorithm": "Neutral tone 500 for tertiary text"
+        },
+        "inverted": {
+          "value": "{colors.gray.25}",
+          "algorithm": "Use on dark emphasis surfaces"
+        }
+      },
+      "bg": {
+        "canvas": {
+          "value": "{colors.gray.25}",
+          "algorithm": "Neutral base at step 25 for app background"
+        },
+        "surface": {
+          "value": "{colors.gray.50}",
+          "algorithm": "Canvas +1 step for cards"
+        },
+        "subtle": {
+          "value": "{colors.gray.100}",
+          "algorithm": "Surface +1 step for inputs"
+        },
+        "raised": {
+          "value": "{colors.gray.200}",
+          "algorithm": "Surface +2 steps for sheets/modals"
+        }
+      },
+      "muted": {
+        "fg": {
+          "value": "{colors.gray.600}",
+          "algorithm": "Shared with fg.muted"
+        },
+        "bg": {
+          "value": "{colors.gray.100}",
+          "algorithm": "Subtle surface used for badges and quiet states"
+        }
+      },
+      "subtle": {
+        "fg": {
+          "value": "{colors.primary.600}",
+          "algorithm": "Primary tone 600 for subtle highlights"
+        },
+        "bg": {
+          "value": "{colors.primary.50}",
+          "algorithm": "Primary tone 50 for gentle emphasis surfaces"
+        }
+      },
+      "border": {
+        "DEFAULT": {
+          "value": "{colors.gray.200}",
+          "algorithm": "Neutral boundary for controls"
+        },
+        "hover": {
+          "value": "{colors.gray.300}",
+          "algorithm": "Raise one tone on hover"
+        },
+        "strong": {
+          "value": "{colors.gray.400}",
+          "algorithm": "Use for dividers or emphasized outlines"
+        }
+      },
+      "ring": {
+        "DEFAULT": {
+          "value": "{colors.primary.300}",
+          "algorithm": "Primary tone 300 for focus halo"
+        },
+        "subtle": {
+          "value": "{colors.secondary.200}",
+          "algorithm": "Secondary tone for inert outlines"
+        }
+      },
+      "emphasis": {
+        "primary": {
+          "value": "{colors.primary.500}",
+          "algorithm": "Brand solid fill"
+        },
+        "primaryHover": {
+          "value": "{colors.primary.600}",
+          "algorithm": "Shift one darker tone for hover"
+        },
+        "secondary": {
+          "value": "{colors.secondary.500}",
+          "algorithm": "Secondary action fill"
+        },
+        "secondaryHover": {
+          "value": "{colors.secondary.600}",
+          "algorithm": "Secondary hover tone"
+        },
+        "success": {
+          "value": "{colors.success.500}",
+          "algorithm": "Affirming actions"
+        },
+        "warning": {
+          "value": "{colors.warning.500}",
+          "algorithm": "Caution states"
+        },
+        "danger": {
+          "value": "{colors.danger.500}",
+          "algorithm": "Critical/destructive actions"
+        }
+      },
+      "disabled": {
+        "fg": {
+          "value": "{colors.gray.400}",
+          "algorithm": "Neutral tone 400 combination for disabled text"
+        },
+        "bg": {
+          "value": "{colors.gray.100}",
+          "algorithm": "Surface desaturated by opacity 60%"
+        },
+        "border": {
+          "value": "{colors.gray.200}",
+          "algorithm": "Separate disabled outline from canvas"
+        }
+      },
+      "link": {
+        "default": {
+          "value": "{colors.primary.600}",
+          "algorithm": "Primary +1 tone for accessibility"
+        },
+        "hover": {
+          "value": "{colors.primary.500}",
+          "algorithm": "Step lighter for hover feedback"
+        },
+        "visited": {
+          "value": "{colors.secondary.700}",
+          "algorithm": "Secondary darker tone for visited"
+        },
+        "subtle": {
+          "value": "{colors.primary.400}",
+          "algorithm": "Use where text weight is lighter"
+        }
+      },
+      "focus": {
+        "ring": {
+          "value": "{colors.primary.300}",
+          "algorithm": "Same as ring.DEFAULT for consistent halo"
+        },
+        "outline": {
+          "value": "color-mix(in srgb, {colors.primary.300} 45%, transparent)",
+          "algorithm": "45% blend with transparency for outline offset"
+        }
+      },
+      "selection": {
+        "bg": {
+          "value": "{colors.primary.100}",
+          "algorithm": "Use tone 100 to keep contrast with text"
+        },
+        "fg": {
+          "value": "{colors.primary.800}",
+          "algorithm": "Ensure >4.5:1 against selection bg"
+        }
+      }
+    },
+    "dark": {
+      "fg": {
+        "default": {
+          "value": "{colors.gray.25}",
+          "algorithm": "Invert neutrals: tone 25 for primary text"
+        },
+        "muted": {
+          "value": "{colors.gray.300}",
+          "algorithm": "Light neutral for secondary text"
+        },
+        "subtle": {
+          "value": "{colors.gray.400}",
+          "algorithm": "Tone 400 for tertiary text"
+        },
+        "inverted": {
+          "value": "{colors.gray.950}",
+          "algorithm": "Use on light surfaces in dark mode"
+        }
+      },
+      "bg": {
+        "canvas": {
+          "value": "{colors.gray.950}",
+          "algorithm": "Dark base tone for app background"
+        },
+        "surface": {
+          "value": "{colors.gray.900}",
+          "algorithm": "Slightly lighter for panels"
+        },
+        "subtle": {
+          "value": "{colors.gray.800}",
+          "algorithm": "Tone 800 for inputs"
+        },
+        "raised": {
+          "value": "{colors.gray.700}",
+          "algorithm": "Tone 700 for modals/overlay surfaces"
+        }
+      },
+      "muted": {
+        "fg": {
+          "value": "{colors.gray.400}",
+          "algorithm": "Matches fg.subtle for readability"
+        },
+        "bg": {
+          "value": "{colors.gray.800}",
+          "algorithm": "Shared with bg.subtle to reduce contrast"
+        }
+      },
+      "subtle": {
+        "fg": {
+          "value": "{colors.primary.300}",
+          "algorithm": "Use lighter chroma for readability"
+        },
+        "bg": {
+          "value": "{colors.primary.950}",
+          "algorithm": "Primary tone 950 as translucent overlay"
+        }
+      },
+      "border": {
+        "DEFAULT": {
+          "value": "color-mix(in srgb, {colors.gray.900} 60%, transparent)",
+          "algorithm": "Transparent borders using mix for dark mode"
+        },
+        "hover": {
+          "value": "color-mix(in srgb, {colors.gray.800} 75%, transparent)",
+          "algorithm": "Increase opacity for hover outlines"
+        },
+        "strong": {
+          "value": "{colors.gray.600}",
+          "algorithm": "Visible dividers inside dark surfaces"
+        }
+      },
+      "ring": {
+        "DEFAULT": {
+          "value": "{colors.primary.400}",
+          "algorithm": "Lighter halo for focus to meet contrast"
+        },
+        "subtle": {
+          "value": "{colors.secondary.300}",
+          "algorithm": "Secondary low-impact outline"
+        }
+      },
+      "emphasis": {
+        "primary": {
+          "value": "{colors.primary.500}",
+          "algorithm": "Same tone as light mode for brand continuity"
+        },
+        "primaryHover": {
+          "value": "{colors.primary.400}",
+          "algorithm": "Hover lightens by one tone to avoid muddy colors"
+        },
+        "secondary": {
+          "value": "{colors.secondary.500}",
+          "algorithm": "Consistent fill tone"
+        },
+        "secondaryHover": {
+          "value": "{colors.secondary.400}",
+          "algorithm": "Lighten one tone on hover"
+        },
+        "success": {
+          "value": "{colors.success.500}",
+          "algorithm": "Reuse success tone for familiarity"
+        },
+        "warning": {
+          "value": "{colors.warning.500}",
+          "algorithm": "Ensure luminance above 0.4"
+        },
+        "danger": {
+          "value": "{colors.danger.500}",
+          "algorithm": "Critical actions remain same tone"
+        }
+      },
+      "disabled": {
+        "fg": {
+          "value": "color-mix(in srgb, {colors.gray.400} 65%, {colors.gray.900})",
+          "algorithm": "Blend to reduce contrast"
+        },
+        "bg": {
+          "value": "color-mix(in srgb, {colors.gray.800} 60%, transparent)",
+          "algorithm": "Translucent fill for disabled surfaces"
+        },
+        "border": {
+          "value": "color-mix(in srgb, {colors.gray.800} 50%, transparent)",
+          "algorithm": "Blend with background"
+        }
+      },
+      "link": {
+        "default": {
+          "value": "{colors.primary.300}",
+          "algorithm": "Raise luminance for readability"
+        },
+        "hover": {
+          "value": "{colors.primary.200}",
+          "algorithm": "Lighten on hover"
+        },
+        "visited": {
+          "value": "{colors.secondary.300}",
+          "algorithm": "Secondary palette for visited states"
+        },
+        "subtle": {
+          "value": "{colors.primary.400}",
+          "algorithm": "Use for muted links"
+        }
+      },
+      "focus": {
+        "ring": {
+          "value": "{colors.primary.400}",
+          "algorithm": "Consistent with ring.DEFAULT"
+        },
+        "outline": {
+          "value": "color-mix(in srgb, {colors.primary.400} 55%, transparent)",
+          "algorithm": "Slightly brighter halo for dark backgrounds"
+        }
+      },
+      "selection": {
+        "bg": {
+          "value": "{colors.primary.800}",
+          "algorithm": "Dark selection fill"
+        },
+        "fg": {
+          "value": "{colors.primary.100}",
+          "algorithm": "Ensure >4.5:1 on selection background"
+        }
+      }
+    }
+  }
+}
