@@ -2,7 +2,19 @@ import { create } from 'zustand';
 import { Board } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
 import { exportBoards, ExportData } from '@/lib/utils/exportImport';
-import { sanitizeBoardData } from '@/lib/utils/security';
+import {
+  validateBoardName,
+  checkDuplicateBoardName,
+  calculateNextOrder,
+  createBoardObject,
+  persistBoard,
+  reorderBoards,
+  persistBoardOrders,
+  assignMissingOrders,
+  createDefaultBoard,
+  deserializeBoardDates,
+  selectCurrentBoard,
+} from '@/lib/utils/boardHelpers';
 
 interface BoardState {
   boards: Board[];
@@ -37,15 +49,6 @@ interface BoardActions {
   // Store initialization
   initializeBoards: () => Promise<void>;
 }
-
-const defaultBoard: Omit<Board, 'id' | 'createdAt' | 'updatedAt'> = {
-  name: 'Work Tasks',
-  description: 'Default board for work-related tasks',
-  color: '#3b82f6',
-  isDefault: true,
-  order: 0,
-  archivedAt: undefined,
-};
 
 const initialState: BoardState = {
   boards: [],
@@ -94,56 +97,31 @@ export const useBoardStore = create<BoardState & BoardActions>((set, get) => ({
         addBoard: async (boardData) => {
           try {
             set({ isLoading: true, error: null });
-            
-            // Sanitize and validate input data
-            const sanitizedData = sanitizeBoardData({
-              name: boardData.name,
-              description: boardData.description,
-            });
 
-            // Validate required fields
-            if (!sanitizedData.name.trim()) {
-              throw new Error('Board name is required');
-            }
+            const boards = get().boards;
 
-            // Check for duplicate board names
-            const existingBoards = get().boards;
-            const isDuplicate = existingBoards.some(
-              board => board.name.toLowerCase() === sanitizedData.name.toLowerCase()
-            );
-            
-            if (isDuplicate) {
-              throw new Error('A board with this name already exists');
-            }
-            
-            // Assign order if not provided
-            const currentBoards = get().boards;
-            const maxOrder = currentBoards.length > 0 ? Math.max(...currentBoards.map(b => b.order)) : -1;
-            
-            const newBoard: Board = {
-              ...boardData,
-              ...sanitizedData,
-              id: crypto.randomUUID(),
-              order: boardData.order ?? maxOrder + 1,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            };
+            // Validate and check for duplicates
+            validateBoardName(boardData.name);
+            checkDuplicateBoardName(boards, boardData.name);
 
-            await taskDB.addBoard(newBoard);
-            
+            // Create and persist new board
+            const order = calculateNextOrder(boards);
+            const newBoard = createBoardObject(boardData, order);
+            await persistBoard(newBoard);
+
             set((state) => ({
               boards: [...state.boards, newBoard].sort((a, b) => a.order - b.order),
               isLoading: false,
             }));
 
-            // If this is the first board, set it as current
-            if (get().boards.length === 0) {
+            // Set as current if first board
+            if (boards.length === 0) {
               set({ currentBoardId: newBoard.id });
             }
           } catch (error) {
-            set({ 
+            set({
               error: error instanceof Error ? error.message : 'Failed to add board',
-              isLoading: false 
+              isLoading: false
             });
           }
         },
@@ -239,52 +217,27 @@ export const useBoardStore = create<BoardState & BoardActions>((set, get) => ({
         reorderBoard: async (boardId, direction) => {
           try {
             set({ isLoading: true, error: null });
-            
-            const currentBoards = get().boards.sort((a, b) => a.order - b.order);
-            const boardIndex = currentBoards.findIndex(b => b.id === boardId);
-            
-            if (boardIndex === -1) {
+
+            const updatedBoards = reorderBoards(get().boards, boardId, direction);
+
+            if (!updatedBoards) {
               set({ isLoading: false });
               return;
             }
-            
-            const targetIndex = direction === 'up' ? boardIndex - 1 : boardIndex + 1;
-            
-            // Check bounds
-            if (targetIndex < 0 || targetIndex >= currentBoards.length) {
-              set({ isLoading: false });
-              return;
-            }
-            
-            // Create a new array with the board moved to the target position
-            const reorderedBoards = [...currentBoards];
-            const [movedBoard] = reorderedBoards.splice(boardIndex, 1);
-            reorderedBoards.splice(targetIndex, 0, movedBoard);
-            
-            // Reassign sequential order values
-            const updatedBoards = reorderedBoards.map((board, index) => ({
-              ...board,
-              order: index,
-              updatedAt: new Date(),
-            }));
-            
-            // Update all boards in database with new orders
-            for (const board of updatedBoards) {
-              await taskDB.updateBoard(board);
-            }
-            
-            // Update store
+
+            await persistBoardOrders(updatedBoards);
+
             set((state) => ({
-              boards: state.boards.map(existingBoard => {
-                const updatedBoard = updatedBoards.find(b => b.id === existingBoard.id);
-                return updatedBoard || existingBoard;
+              boards: state.boards.map(board => {
+                const updated = updatedBoards.find(b => b.id === board.id);
+                return updated || board;
               }).sort((a, b) => a.order - b.order),
               isLoading: false,
             }));
           } catch (error) {
-            set({ 
+            set({
               error: error instanceof Error ? error.message : 'Failed to reorder board',
-              isLoading: false 
+              isLoading: false
             });
           }
         },
@@ -381,71 +334,44 @@ export const useBoardStore = create<BoardState & BoardActions>((set, get) => ({
         initializeBoards: async () => {
           try {
             set({ isLoading: true, error: null });
-            
-            // Only initialize if we're in a browser environment
+
             if (typeof window === 'undefined') {
               set({ isLoading: false });
               return;
             }
-            
+
             await taskDB.init();
-            const boards = await taskDB.getBoards();
-            
-            if (boards.length === 0) {
-              // Create default board if none exist
-              const defaultBoardData: Board = {
-                ...defaultBoard,
-                id: crypto.randomUUID(),
-                createdAt: new Date(),
-                updatedAt: new Date(),
-              };
-              
+            let boardsData = await taskDB.getBoards();
+
+            // Create default board if none exist
+            if (boardsData.length === 0) {
+              const defaultBoardData = createDefaultBoard();
               await taskDB.addBoard(defaultBoardData);
-              boards.push(defaultBoardData);
+              boardsData = [defaultBoardData];
             }
-            
-            // Assign order to existing boards if missing
-            let needsOrderUpdate = false;
-            const processedBoardsWithOrder = boards.map((board, index) => {
-              if (board.order === undefined || board.order === null) {
-                needsOrderUpdate = true;
-                return { ...board, order: index };
-              }
-              return board;
-            });
-            
-            // Update database if any boards needed order assignment
-            if (needsOrderUpdate) {
-              for (const board of processedBoardsWithOrder) {
-                if (boards.find(b => b.id === board.id && (b.order === undefined || b.order === null))) {
-                  await taskDB.updateBoard(board);
-                }
-              }
+
+            // Assign missing order values
+            const { boards: boardsWithOrder, needsUpdate } = assignMissingOrders(boardsData);
+            if (needsUpdate) {
+              await persistBoardOrders(boardsWithOrder);
             }
-            
-            const processedBoards = processedBoardsWithOrder.map(board => ({
-              ...board,
-              createdAt: new Date(board.createdAt),
-              updatedAt: new Date(board.updatedAt),
-              archivedAt: board.archivedAt ? new Date(board.archivedAt) : undefined,
-            }));
-            
+
+            // Deserialize dates
+            const processedBoards = boardsWithOrder.map(deserializeBoardDates);
+
             // Restore current board from settings
             const settings = await taskDB.getSettings();
-            const savedCurrentBoardId = settings?.currentBoardId;
-            const currentBoardId = savedCurrentBoardId && processedBoards.some(b => b.id === savedCurrentBoardId)
-              ? savedCurrentBoardId
-              : processedBoards[0]?.id || null;
-            
-            set({ 
+            const currentBoardId = selectCurrentBoard(processedBoards, settings?.currentBoardId);
+
+            set({
               boards: processedBoards.sort((a, b) => a.order - b.order),
               currentBoardId,
-              isLoading: false 
+              isLoading: false
             });
           } catch (error) {
-            set({ 
+            set({
               error: error instanceof Error ? error.message : 'Failed to initialize boards',
-              isLoading: false 
+              isLoading: false
             });
           }
         },

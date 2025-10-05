@@ -84,11 +84,13 @@ describe('SearchBar - Cross-board Search', () => {
 
   it('calls setSearchQuery when typing in search input', async () => {
     render(<SearchBar />);
-    
+
     const searchInput = screen.getByPlaceholderText('Search tasks...');
     fireEvent.change(searchInput, { target: { value: 'test query' } });
-    
-      expect(mockTaskStore.setFilters).toHaveBeenCalledWith({ search: 'test query' });
+
+    // The refactored SearchBar uses useSearchState which debounces input
+    // The value is stored locally until search is triggered
+    expect(searchInput).toHaveValue('test query');
   });
 
   it('opens filter popover and shows scope toggle', async () => {
@@ -210,23 +212,25 @@ describe('SearchBar - Cross-board Search', () => {
 
   it('calls handleSearch when Enter is pressed', () => {
     render(<SearchBar />);
-    
+
     const searchInput = screen.getByPlaceholderText('Search tasks...');
     fireEvent.change(searchInput, { target: { value: 'test' } });
     fireEvent.keyDown(searchInput, { key: 'Enter' });
-    
-    expect(mockSetSearchQuery).toHaveBeenCalledWith('test');
+
+    // setFilters is called with the complete filters object including the search value
+    expect(mockSetFilters).toHaveBeenCalledWith(expect.objectContaining({ search: 'test' }));
   });
 
   it('calls handleSearch when search button is clicked', () => {
     render(<SearchBar />);
-    
+
     const searchInput = screen.getByPlaceholderText('Search tasks...');
     fireEvent.change(searchInput, { target: { value: 'test' } });
-    
+
     const searchButton = screen.getByRole('button', { name: /search/i });
     fireEvent.click(searchButton);
-    
-    expect(mockSetSearchQuery).toHaveBeenCalledWith('test');
+
+    // setFilters is called with the complete filters object including the search value
+    expect(mockSetFilters).toHaveBeenCalledWith(expect.objectContaining({ search: 'test' }));
   });
 });

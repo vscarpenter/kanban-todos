@@ -4,6 +4,16 @@ import { Task, TaskFilters, SearchState, SearchScope } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
 import { exportTasks, ExportData } from '@/lib/utils/exportImport';
 import { sanitizeTaskData, sanitizeSearchQuery, searchRateLimiter } from '@/lib/utils/security';
+import {
+  validateTasks,
+  validateBoardAccess,
+  generateCacheKey,
+  checkCache,
+  cacheResults,
+  cleanupExpiredCache,
+  isComplexSearch,
+  type SearchCache
+} from '@/lib/utils/taskFiltering';
 
 // Type definition for global timeout handling
 interface GlobalWithTimeout {
@@ -18,7 +28,7 @@ interface TaskState {
   isLoading: boolean;
   isSearching: boolean;
   error: string | null;
-  searchCache: Map<string, { results: Task[]; timestamp: number }>;
+  searchCache: SearchCache;
 }
 
 interface TaskActions {
@@ -89,27 +99,63 @@ const initialState: TaskState = {
   searchCache: new Map(),
 };
 
-// Cache configuration
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-const MAX_CACHE_SIZE = 50;
+// Search configuration
 const SEARCH_DEBOUNCE_MS = 300;
 
-// Generate cache key for search filters
-const generateCacheKey = (filters: TaskFilters): string => {
-  const key = {
-    search: filters.search,
-    status: filters.status,
-    priority: filters.priority,
-    tags: [...filters.tags].sort(),
-    boardId: filters.boardId,
-    crossBoardSearch: filters.crossBoardSearch,
-    dateRange: filters.dateRange ? {
-      start: filters.dateRange.start.getTime(),
-      end: filters.dateRange.end.getTime()
-    } : null
-  };
-  return JSON.stringify(key);
-};
+// Helper functions for applyFilters
+
+/**
+ * Applies filters with error recovery fallback
+ */
+async function applyFiltersWithRecovery(
+  tasks: Task[],
+  filters: TaskFilters,
+  get: () => TaskState & TaskActions,
+  set: (state: Partial<TaskState>) => void
+): Promise<Task[]> {
+  try {
+    return applyFiltersToTasks(tasks, filters);
+  } catch (filterError: unknown) {
+    console.error('Filter operation failed:', filterError);
+
+    // Attempt recovery with simplified filters
+    const simplifiedFilters = { ...filters, search: '', tags: [] };
+    try {
+      const results = applyFiltersToTasks(tasks, simplifiedFilters);
+      set({
+        error: 'Search temporarily simplified due to an error. Please try again.',
+        filters: simplifiedFilters
+      });
+      return results;
+    } catch (recoveryError: unknown) {
+      console.error('Filter recovery failed:', recoveryError);
+      set({
+        error: 'Filter operation failed. Showing all tasks.',
+        filters: { search: '', tags: [], crossBoardSearch: filters.crossBoardSearch }
+      });
+      return tasks;
+    }
+  }
+}
+
+/**
+ * Handles filter errors with graceful recovery
+ */
+function handleFilterError(
+  get: () => TaskState & TaskActions,
+  set: (state: Partial<TaskState>) => void
+): void {
+  try {
+    get().recoverFromSearchError();
+  } catch (recoveryError: unknown) {
+    console.error('Recovery from filter error failed:', recoveryError);
+    set({
+      error: 'Search functionality is temporarily unavailable. Please refresh the page.',
+      isSearching: false,
+      filteredTasks: get().tasks
+    });
+  }
+}
 
 // Optimized search function with early returns and efficient filtering
 const searchTasks = (tasks: Task[], searchTerm: string): Task[] => {
@@ -508,168 +554,65 @@ export const useTaskStore = create<TaskState & TaskActions>()(
 
         applyFilters: async () => {
           const { tasks, filters, searchCache } = get();
-          
+
           try {
-            // Validate tasks integrity before filtering
-            const validTasks = tasks.filter(task => get().validateTaskIntegrity(task));
+            // Step 1: Validate task integrity
+            let validTasks = validateTasks(tasks, get().validateTaskIntegrity);
             if (validTasks.length !== tasks.length) {
-              console.warn(`Filtered out ${tasks.length - validTasks.length} invalid tasks`);
               set({ tasks: validTasks });
             }
-            
-            // For cross-board search, validate board access
+
+            // Step 2: Validate board access for cross-board search
             if (filters.crossBoardSearch) {
-              try {
-                const boards = await taskDB.getBoards();
-                const validBoardIds = new Set(boards.filter(b => !b.archivedAt).map(b => b.id));
-                
-                // Filter out tasks from deleted or archived boards
-                const accessibleTasks = validTasks.filter(task => validBoardIds.has(task.boardId));
-                if (accessibleTasks.length !== validTasks.length) {
-                  console.info(`Filtered out ${validTasks.length - accessibleTasks.length} tasks from inaccessible boards`);
-                  set({ tasks: accessibleTasks });
-                }
-              } catch (boardError: unknown) {
-                console.warn('Failed to validate board access, proceeding with existing tasks:', boardError);
+              validTasks = await validateBoardAccess(validTasks);
+              if (validTasks.length !== tasks.length) {
+                set({ tasks: validTasks });
               }
             }
-            
-            // Generate cache key
+
+            // Step 3: Check cache for search results
             const cacheKey = generateCacheKey(filters);
-            const now = Date.now();
-            
-            // Check cache first for search queries
-            if (filters.search && searchCache.has(cacheKey)) {
-              const cached = searchCache.get(cacheKey)!;
-              if (now - cached.timestamp < CACHE_TTL) {
-                // Validate cached results still exist in current tasks
-                const currentTaskIds = new Set(get().tasks.map(t => t.id));
-                const validCachedResults = cached.results.filter(task => currentTaskIds.has(task.id));
-                
-                if (validCachedResults.length === cached.results.length) {
-                  set({ 
-                    filteredTasks: validCachedResults,
-                    isSearching: false,
-                    error: null 
-                  });
-                  return;
-                } else {
-                  // Cache is stale, remove it
-                  searchCache.delete(cacheKey);
-                }
-              } else {
-                // Remove expired cache entry
-                searchCache.delete(cacheKey);
+            if (filters.search) {
+              const cachedResults = checkCache(cacheKey, searchCache, get().tasks);
+              if (cachedResults) {
+                set({ filteredTasks: cachedResults, isSearching: false, error: null });
+                return;
               }
             }
-            
-            // Show loading state for large datasets or complex searches
-            const currentTasks = get().tasks; // Get updated tasks after validation
-            const isComplexSearch = filters.search && (
-              currentTasks.length > 200 || 
-              filters.crossBoardSearch ||
-              (filters.tags && filters.tags.length > 0) ||
-              filters.dateRange
-            );
-            
-            if (isComplexSearch && !get().isSearching) {
+
+            // Step 4: Show loading state for complex searches
+            const currentTasks = get().tasks;
+            if (isComplexSearch(currentTasks, filters) && !get().isSearching) {
               set({ isSearching: true });
-              // Allow UI to update before heavy computation
               await new Promise(resolve => setTimeout(resolve, 0));
             }
-            
-            // Apply filters with error handling
-            let filteredTasks: Task[] = [];
-            
-            try {
-              filteredTasks = applyFiltersToTasks(currentTasks, filters);
-            } catch (filterError: unknown) {
-              console.error('Filter operation failed:', filterError);
-              
-              // Attempt recovery with simplified filters
-              const simplifiedFilters = { ...filters, search: '', tags: [] };
-              try {
-                filteredTasks = applyFiltersToTasks(currentTasks, simplifiedFilters);
-                set({ 
-                  error: 'Search temporarily simplified due to an error. Please try again.',
-                  filters: simplifiedFilters
-                });
-              } catch (recoveryError: unknown) {
-                console.error('Filter recovery failed:', recoveryError);
-                // Last resort: show all tasks
-                filteredTasks = currentTasks;
-                set({ 
-                  error: 'Filter operation failed. Showing all tasks.',
-                  filters: { search: '', tags: [], crossBoardSearch: filters.crossBoardSearch }
-                });
-              }
+
+            // Step 5: Apply filters with error recovery
+            let filteredTasks = await applyFiltersWithRecovery(currentTasks, filters, get, set);
+
+            // Step 6: Validate filtered results
+            filteredTasks = validateTasks(filteredTasks, get().validateTaskIntegrity);
+
+            // Step 7: Cache valid search results
+            if (filters.search && filteredTasks.length > 0 && filteredTasks.length < 1000) {
+              cacheResults(cacheKey, filteredTasks, searchCache);
             }
-            
-            
-            // Validate filtered results
-            const validFilteredTasks = filteredTasks.filter(task => get().validateTaskIntegrity(task));
-            if (validFilteredTasks.length !== filteredTasks.length) {
-              console.warn(`Filtered out ${filteredTasks.length - validFilteredTasks.length} invalid tasks from results`);
+
+            // Step 8: Periodic cache cleanup (10% chance)
+            if (Math.random() < 0.1) {
+              cleanupExpiredCache(searchCache);
             }
-            
-            // Cache search results if there's a search query and results are reasonable
-            if (filters.search && validFilteredTasks.length > 0 && validFilteredTasks.length < 1000) {
-              try {
-                // Clean up old cache entries if we're at max size
-                if (searchCache.size >= MAX_CACHE_SIZE) {
-                  // Remove oldest entries (FIFO)
-                  const entriesToRemove = Math.floor(MAX_CACHE_SIZE * 0.2); // Remove 20% of entries
-                  const keys = Array.from(searchCache.keys());
-                  for (let i = 0; i < entriesToRemove; i++) {
-                    searchCache.delete(keys[i]);
-                  }
-                }
-                
-                searchCache.set(cacheKey, {
-                  results: validFilteredTasks,
-                  timestamp: now
-                });
-              } catch (cacheError: unknown) {
-                console.warn('Failed to cache search results:', cacheError);
-                // Clear cache if it's corrupted
-                searchCache.clear();
-              }
-            }
-            
-            // Clean up expired cache entries periodically
-            if (Math.random() < 0.1) { // 10% chance to clean up
-              try {
-                for (const [key, value] of searchCache.entries()) {
-                  if (now - value.timestamp > CACHE_TTL) {
-                    searchCache.delete(key);
-                  }
-                }
-              } catch (cleanupError: unknown) {
-                console.warn('Cache cleanup failed:', cleanupError);
-              }
-            }
-            
-            set({ 
-              filteredTasks: validFilteredTasks,
+
+            set({
+              filteredTasks,
               isSearching: false,
-              error: get().error, // Preserve any error messages from recovery attempts
+              error: get().error,
               searchCache
             });
-            
+
           } catch (error: unknown) {
             console.error('Filter application failed:', error);
-            
-            // Attempt graceful recovery
-            try {
-              get().recoverFromSearchError();
-            } catch (recoveryError: unknown) {
-              console.error('Recovery from filter error failed:', recoveryError);
-              set({ 
-                error: 'Search functionality is temporarily unavailable. Please refresh the page.',
-                isSearching: false,
-                filteredTasks: get().tasks // Show all tasks as fallback
-              });
-            }
+            handleFilterError(get, set);
           }
         },
 
