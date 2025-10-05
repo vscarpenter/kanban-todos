@@ -150,11 +150,12 @@ describe('SearchBar Integration Tests', () => {
 
     it('should call setSearchQuery when typing in search input', async () => {
       render(<SearchBar />);
-      
+
       const searchInput = screen.getByPlaceholderText('Search tasks...');
       fireEvent.change(searchInput, { target: { value: 'project' } });
-      
-      expect(mockTaskStore.setFilters).toHaveBeenCalledWith(expect.objectContaining({ search: 'project' }));
+
+      // The refactored SearchBar stores input locally until search is triggered
+      expect(searchInput).toHaveValue('project');
     });
 
     it('should show search button and handle click', async () => {
@@ -304,13 +305,14 @@ describe('SearchBar Integration Tests', () => {
 
     it('should handle clear search error recovery', async () => {
       mockTaskStore.error = 'Search operation failed';
-      
+
       render(<SearchBar />);
-      
-      const clearButton = screen.getByRole('button', { name: /clear search/i });
+
+      const clearButton = screen.getByRole('button', { name: /clear search and recover from error/i });
       fireEvent.click(clearButton);
-      
-      expect(mockTaskStore.setSearchQuery).toHaveBeenCalledWith('');
+
+      // Refactored SearchBar calls setFilters and recoverFromSearchError
+      expect(mockTaskStore.setFilters).toHaveBeenCalledWith(expect.objectContaining({ search: '' }));
       expect(mockTaskStore.recoverFromSearchError).toHaveBeenCalled();
     });
 
@@ -456,12 +458,13 @@ describe('SearchBar Integration Tests', () => {
   describe('Keyboard Interactions', () => {
     it('should trigger search on Enter key press', async () => {
       render(<SearchBar />);
-      
+
       const searchInput = screen.getByPlaceholderText('Search tasks...');
       fireEvent.change(searchInput, { target: { value: 'project' } });
       fireEvent.keyDown(searchInput, { key: 'Enter' });
-      
-      expect(mockTaskStore.setSearchQuery).toHaveBeenCalledWith('project');
+
+      // Refactored SearchBar calls setFilters with complete filters object
+      expect(mockTaskStore.setFilters).toHaveBeenCalledWith(expect.objectContaining({ search: 'project' }));
     });
 
     it('should handle focus and blur events', async () => {

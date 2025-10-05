@@ -428,6 +428,56 @@ export function processImportData(
 }
 
 /**
+ * Sanitizes import data if validation found issues
+ */
+function sanitizeImportData(
+  importData: ExportData,
+  validationResult: DetailedValidationResult,
+  sanitizationOptions: SanitizationOptions
+): { data: ExportData; log: string[] } {
+  const sanitizedData = { ...importData };
+  const log: string[] = [];
+
+  const needsSanitization = validationResult.warnings.length > 0 ||
+    validationResult.errors.some(e => e.severity === 'error');
+
+  if (!needsSanitization) {
+    return { data: sanitizedData, log };
+  }
+
+  // Sanitize tasks
+  const taskSanitization = sanitizeData(
+    sanitizedData.tasks,
+    exportDataSchema.properties!.tasks as ValidationSchema,
+    sanitizationOptions
+  );
+  sanitizedData.tasks = taskSanitization.sanitized as SerializedTask[];
+  log.push(...taskSanitization.changes.map(c => `Tasks: ${c}`));
+
+  // Sanitize boards
+  const boardSanitization = sanitizeData(
+    importData.boards,
+    exportDataSchema.properties!.boards as ValidationSchema,
+    sanitizationOptions
+  );
+  sanitizedData.boards = boardSanitization.sanitized as SerializedBoard[];
+  log.push(...boardSanitization.changes.map(c => `Boards: ${c}`));
+
+  // Sanitize settings if present
+  if (importData.settings) {
+    const settingsSanitization = sanitizeData(
+      importData.settings,
+      exportDataSchema.properties!.settings as ValidationSchema,
+      sanitizationOptions
+    );
+    sanitizedData.settings = settingsSanitization.sanitized as Settings;
+    log.push(...settingsSanitization.changes.map(c => `Settings: ${c}`));
+  }
+
+  return { data: sanitizedData, log };
+}
+
+/**
  * Advanced import processing with validation, sanitization, and conflict resolution
  */
 export function processAdvancedImport(
@@ -451,35 +501,17 @@ export function processAdvancedImport(
 } {
   // Step 1: Validate the import data
   const validationResult = validateExportData(importData);
-  
-  // Step 2: Sanitize the data if there are warnings or recoverable errors
-  const sanitizedData = { ...importData };
-  const sanitizationLog: string[] = [];
-  
-  if (validationResult.warnings.length > 0 || 
-      validationResult.errors.some(e => e.severity === 'error')) {
-    
-    // Sanitize tasks
-    const taskSanitization = sanitizeData(sanitizedData.tasks, exportDataSchema.properties!.tasks as ValidationSchema, sanitizationOptions);
-    sanitizedData.tasks = taskSanitization.sanitized as SerializedTask[];
-    sanitizationLog.push(...taskSanitization.changes.map(c => `Tasks: ${c}`));
-    
-    // Sanitize boards
-    const boardSanitization = sanitizeData(importData.boards, exportDataSchema.properties!.boards as ValidationSchema, sanitizationOptions);
-    sanitizedData.boards = boardSanitization.sanitized as SerializedBoard[];
-    sanitizationLog.push(...boardSanitization.changes.map(c => `Boards: ${c}`));
-    
-    // Sanitize settings if present
-    if (importData.settings) {
-      const settingsSanitization = sanitizeData(importData.settings, exportDataSchema.properties!.settings as ValidationSchema, sanitizationOptions);
-      sanitizedData.settings = settingsSanitization.sanitized as Settings;
-      sanitizationLog.push(...settingsSanitization.changes.map(c => `Settings: ${c}`));
-    }
-  }
+
+  // Step 2: Sanitize the data if needed
+  const { data: sanitizedData, log: sanitizationLog } = sanitizeImportData(
+    importData,
+    validationResult,
+    sanitizationOptions
+  );
 
   // Step 3: Detect conflicts
   const conflicts = detectImportConflicts(sanitizedData, existingTasks, existingBoards);
-  
+
   // Step 4: Resolve conflicts
   const result = resolveImportConflicts(
     sanitizedData,
