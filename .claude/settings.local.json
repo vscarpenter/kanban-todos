@@ -57,7 +57,8 @@
       "Bash(git rm:*)",
       "Bash(git credential-osxkeychain:*)",
       "Bash(security delete-internet-password:*)",
-      "Read(//Users/vinnycarpenter/**)"
+      "Read(//Users/vinnycarpenter/**)",
+      "Bash(xargs -I {} sh -c 'lines=$(wc -l < \"\"\"\"{}\"\"\"\"); if [ $lines -gt 500 ]; then echo \"\"\"\"$lines {}\"\"\"\"; fi')"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
