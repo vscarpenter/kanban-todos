@@ -11,6 +11,8 @@ import {
   TouchSensor,
   useSensor,
   useSensors,
+  closestCenter,
+  rectIntersection,
 } from "@dnd-kit/core";
 import { Task } from "@/lib/types";
 import { useTaskStore } from "@/lib/stores/taskStore";
@@ -52,34 +54,52 @@ export function DragDropProvider({
     const task = tasks.find((t: Task) => t.id === active.id);
     if (task) {
       setActiveTask(task);
-      
+
       // Simple haptic feedback
       if ('vibrate' in navigator) {
         navigator.vibrate(50);
       }
     }
+
+    // Call parent's drag start handler first
     onDragStart?.(event);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    
+
     if (over && active.data.current?.type === 'task') {
       const taskId = active.id as string;
       const newStatus = over.id as Task['status'];
-      
+
       if (newStatus && ['todo', 'in-progress', 'done'].includes(newStatus)) {
         moveTask(taskId, newStatus);
       }
     }
-    
+
     setActiveTask(null);
+
+    // Call parent's drag end handler after task is moved
     onDragEnd?.(event);
+  };
+
+  // Custom collision detection for better mobile accuracy
+  const customCollisionDetection = (args: Parameters<typeof rectIntersection>[0]) => {
+    // On mobile, use center-based detection for more accurate targeting
+    const isMobile = 'ontouchstart' in window;
+
+    if (isMobile) {
+      return closestCenter(args);
+    }
+
+    // On desktop, use rectangle intersection for better accuracy
+    return rectIntersection(args);
   };
 
   return (
     <DndContext
       sensors={sensors}
+      collisionDetection={customCollisionDetection}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragOver={onDragOver}
