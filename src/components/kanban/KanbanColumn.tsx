@@ -40,8 +40,8 @@ export function KanbanColumn({ title, tasks, status, color, borderColor, onNavig
   return (
     <div
       ref={setNodeRef}
-      className={`flex flex-col min-h-0 ${color} ${borderColor} border-2 rounded-lg transition-colors ${
-        isOver ? 'opacity-75 ring-2 ring-primary' : ''
+      className={`flex flex-col min-h-0 min-w-full md:min-w-0 snap-center md:snap-align-none ${color} ${borderColor} border-2 rounded-lg transition-all duration-200 ${
+        isOver ? 'opacity-75 ring-4 ring-primary scale-105' : ''
       }`}
       style={{ height: 'calc(100vh - 280px)' }}
     >
@@ -56,8 +56,8 @@ export function KanbanColumn({ title, tasks, status, color, borderColor, onNavig
             </Badge>
           </div>
         </CardHeader>
-        
-        <CardContent className="pt-0 flex-1 overflow-y-auto">
+
+        <CardContent className="pt-0 flex-1 overflow-y-auto touch-pan-y overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
           <div className="space-y-3 min-h-[200px] pb-4">
             {tasks.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
@@ -69,13 +69,13 @@ export function KanbanColumn({ title, tasks, status, color, borderColor, onNavig
                 const taskBoard = boards.find(b => b.id === task.boardId);
                 const isCurrentBoard = task.boardId === currentBoardId;
                 const isHighlighted = searchState.highlightedTaskId === task.id;
-                
+
                 return (
-                  <div 
+                  <div
                     key={task.id}
                     className={isHighlighted ? 'ring-2 ring-primary ring-offset-2 rounded-lg transition-all duration-300' : ''}
                   >
-                    <TaskCard 
+                    <TaskCard
                       task={task}
                       showBoardIndicator={isCrossBoardSearch}
                       board={taskBoard}

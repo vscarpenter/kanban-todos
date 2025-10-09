@@ -381,6 +381,54 @@
   }
 }
 
+/* Scrollbar hiding utility */
+@layer utilities {
+  .scrollbar-hide {
+    /* Firefox */
+    scrollbar-width: none;
+    /* Safari and Chrome */
+    -ms-overflow-style: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Mobile scroll performance optimization */
+  .mobile-scroll-container {
+    /* Enable momentum scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
+    /* Prevent overscroll bounce on iOS - only horizontal */
+    overscroll-behavior-x: contain;
+    overscroll-behavior-y: auto;
+    /* Optimize scroll performance */
+    will-change: scroll-position;
+    /* Allow horizontal panning for column navigation */
+    touch-action: pan-x;
+  }
+
+  /* Smooth scroll snap for mobile columns */
+  .snap-x {
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0;
+  }
+
+  .snap-center {
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+  }
+
+  /* Vertical scroll optimization for column content */
+  .touch-pan-y {
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .overscroll-contain {
+    overscroll-behavior: contain;
+  }
+}
+
 /* iOS Safari Touch Optimizations */
 @layer components {
   /* Base touch optimization for all draggable elements */
