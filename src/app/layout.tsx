@@ -21,6 +21,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://cascade.vinny.dev"),
   title: "Cascade - Task Management",
   description: "Privacy-first, accessible kanban board task management system",
   keywords: ["kanban", "task management", "productivity", "privacy-first", "offline"],
@@ -48,6 +49,30 @@ export const metadata: Metadata = {
         media: "(device-width: 768px) and (device-height: 1024px)",
       },
     ],
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://cascade.vinny.dev",
+    siteName: "Cascade",
+    title: "Cascade - Privacy-First Task Management",
+    description: "A beautiful, accessible kanban board for managing your tasks. 100% client-side, privacy-first, and works offline.",
+    images: [
+      {
+        url: "/images/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Cascade - Privacy-First Task Management",
+        type: "image/png",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Cascade - Privacy-First Task Management",
+    description: "A beautiful, accessible kanban board for managing your tasks. 100% client-side, privacy-first, and works offline.",
+    images: ["/images/og-image.png"],
+    creator: "@cascade",
   },
 };
 
