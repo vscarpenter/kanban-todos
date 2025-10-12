@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import PwaUpdater from "@/components/PwaUpdater";
+import InstallPWA from "@/components/InstallPWA";
 import { IOSClassProvider } from "@/components/IOSClassProvider";
 
 const geist = Geist({ 
@@ -116,6 +117,7 @@ export default function RootLayout({
         >
           <IOSClassProvider />
           {children}
+          <InstallPWA />
           <PwaUpdater />
           <Toaster />
         </ThemeProvider>
