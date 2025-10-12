@@ -5,6 +5,7 @@ Welcome to the comprehensive documentation for the Kanban Todos application. Thi
 ## 📚 Table of Contents
 
 - [Getting Started](./getting-started.md) - Quick start guide and installation
+- [Installation Guide](./installation-guide.md) - PWA installation for all platforms
 - [User Guide](./user-guide.md) - Complete user manual with all features
 - [Developer Guide](./developer-guide.md) - Development setup and architecture
 - [API Reference](./api-reference.md) - Technical API documentation
@@ -25,6 +26,7 @@ Welcome to the comprehensive documentation for the Kanban Todos application. Thi
 ## 🎯 Key Features
 
 - **Modern Kanban Board**: Drag-and-drop task management
+- **Progressive Web App**: Install on any device for native app experience
 - **Real-time Performance Monitoring**: Built-in performance tracking
 - **Comprehensive Security**: Input sanitization, XSS protection, and more
 - **Accessibility First**: WCAG 2.1 AA compliant with screen reader support

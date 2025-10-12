@@ -44,3 +44,4 @@ next-env.d.ts
 .kiro/
 WARP.md
 AGENTS.md
+sync.md

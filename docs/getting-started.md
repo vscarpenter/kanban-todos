@@ -31,6 +31,35 @@ This guide will help you get up and running with the Kanban Todos application qu
 4. **Open your browser**
    Navigate to `http://localhost:3000`
 
+## 📲 Installing as a Progressive Web App (PWA)
+
+Cascade can be installed on your device for quick access and offline use:
+
+### Why Install?
+
+- **Quick Launch**: Access from your home screen, dock, or start menu
+- **Offline Access**: Use the app without an internet connection
+- **Native Experience**: Runs in its own window like a native app
+- **Better Performance**: Faster startup and optimized loading
+
+### Quick Install
+
+**Desktop (Chrome/Edge):**
+1. Look for the install icon (⬇️) in the address bar
+2. Click "Install Cascade"
+3. Launch from your applications
+
+**iOS (Safari):**
+1. Tap the Share button
+2. Select "Add to Home Screen"
+3. Tap "Add"
+
+**Android (Chrome):**
+1. Tap the install banner when it appears
+2. Or use menu (⋮) → "Install app"
+
+For detailed platform-specific instructions, see the [Installation Guide](./installation-guide.md) or visit the [/install](/install) page in the app.
+
 ## 🎯 First Steps
 
 ### 1. Create Your First Board
