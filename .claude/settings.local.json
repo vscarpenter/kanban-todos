@@ -58,7 +58,16 @@
       "Bash(git credential-osxkeychain:*)",
       "Bash(security delete-internet-password:*)",
       "Read(//Users/vinnycarpenter/**)",
-      "Bash(xargs -I {} sh -c 'lines=$(wc -l < \"\"\"\"{}\"\"\"\"); if [ $lines -gt 500 ]; then echo \"\"\"\"$lines {}\"\"\"\"; fi')"
+      "Bash(xargs -I {} sh -c 'lines=$(wc -l < \"\"\"\"{}\"\"\"\"); if [ $lines -gt 500 ]; then echo \"\"\"\"$lines {}\"\"\"\"; fi')",
+      "Bash(git log:*)",
+      "Bash(cat:*)",
+      "Bash(claude mcp:*)",
+      "mcp__aws-knowledge__aws___search_documentation",
+      "mcp__aws-knowledge__aws___read_documentation",
+      "Bash(/dev/null)",
+      "Bash(convert:*)",
+      "Bash(magick:*)",
+      "WebFetch(domain:gsd.vinny.dev)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
