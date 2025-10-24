@@ -4,6 +4,8 @@ import { Task, TaskFilters, SearchState, SearchScope } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
 import { exportTasks, ExportData } from '@/lib/utils/exportImport';
 import { sanitizeTaskData, sanitizeSearchQuery, searchRateLimiter } from '@/lib/utils/security';
+import { searchTasks } from '@/lib/utils/taskSearch';
+import { validateTaskIntegrity } from '@/lib/utils/taskValidation';
 import {
   validateTasks,
   validateBoardAccess,
@@ -156,59 +158,6 @@ function handleFilterError(
     });
   }
 }
-
-// Optimized search function with early returns and efficient filtering
-const searchTasks = (tasks: Task[], searchTerm: string): Task[] => {
-  if (!searchTerm.trim()) return tasks;
-  
-  const searchLower = searchTerm.toLowerCase().trim();
-  const searchWords = searchLower.split(/\s+/);
-  
-  // Use a more efficient filtering approach for large datasets
-  if (tasks.length > 500) {
-    const results: Task[] = [];
-    
-    for (let i = 0; i < tasks.length; i++) {
-      const task = tasks[i];
-      const titleLower = task.title.toLowerCase();
-      
-      // Quick title check first (most common match)
-      if (titleLower.includes(searchLower)) {
-        results.push(task);
-        continue;
-      }
-      
-      // Only build searchable text if title doesn't match
-      const searchableText = [
-        titleLower,
-        task.description?.toLowerCase() || '',
-        ...task.tags.map(tag => tag.toLowerCase())
-      ].join(' ');
-      
-      if (searchWords.every(word => searchableText.includes(word))) {
-        results.push(task);
-      }
-    }
-    
-    return results;
-  }
-  
-  // Use standard filter for smaller datasets
-  return tasks.filter(task => {
-    // Quick title check first (most common match)
-    const titleLower = task.title.toLowerCase();
-    if (titleLower.includes(searchLower)) return true;
-    
-    // Check if all search words are present in title, description, or tags
-    const searchableText = [
-      titleLower,
-      task.description?.toLowerCase() || '',
-      ...task.tags.map(tag => tag.toLowerCase())
-    ].join(' ');
-    
-    return searchWords.every(word => searchableText.includes(word));
-  });
-};
 
 // Helper function to apply filters to a task list with performance optimizations
 const applyFiltersToTasks = (tasks: Task[], filters: TaskFilters): Task[] => {
@@ -556,13 +505,15 @@ export const useTaskStore = create<TaskState & TaskActions>()(
           const { tasks, filters, searchCache } = get();
 
           try {
-            // Step 1: Validate task integrity
+            // Prevent runtime errors from corrupted IndexedDB data
+            // Users occasionally experience data corruption from browser crashes or storage limits
             let validTasks = validateTasks(tasks, get().validateTaskIntegrity);
             if (validTasks.length !== tasks.length) {
               set({ tasks: validTasks });
             }
 
-            // Step 2: Validate board access for cross-board search
+            // Filter out tasks from deleted/archived boards to prevent UI errors
+            // Cross-board search may reference boards that no longer exist
             if (filters.crossBoardSearch) {
               validTasks = await validateBoardAccess(validTasks);
               if (validTasks.length !== tasks.length) {
@@ -570,7 +521,8 @@ export const useTaskStore = create<TaskState & TaskActions>()(
               }
             }
 
-            // Step 3: Check cache for search results
+            // Prevent unnecessary re-filtering when users toggle between same searches
+            // Users often search for same terms repeatedly (e.g., "urgent", "bug", "login")
             const cacheKey = generateCacheKey(filters);
             if (filters.search) {
               const cachedResults = checkCache(cacheKey, searchCache, get().tasks);
@@ -580,25 +532,30 @@ export const useTaskStore = create<TaskState & TaskActions>()(
               }
             }
 
-            // Step 4: Show loading state for complex searches
+            // Provide visual feedback for searches that will block UI thread >50ms
+            // Without loading state, complex searches feel unresponsive to users
             const currentTasks = get().tasks;
             if (isComplexSearch(currentTasks, filters) && !get().isSearching) {
               set({ isSearching: true });
               await new Promise(resolve => setTimeout(resolve, 0));
             }
 
-            // Step 5: Apply filters with error recovery
+            // Gracefully degrade to simplified filters if primary filtering fails
+            // Better to show partial results than a blank screen after search errors
             let filteredTasks = await applyFiltersWithRecovery(currentTasks, filters, get, set);
 
-            // Step 6: Validate filtered results
+            // Remove any corrupted tasks that slipped through initial validation
+            // Additional validation after filtering catches edge cases
             filteredTasks = validateTasks(filteredTasks, get().validateTaskIntegrity);
 
-            // Step 7: Cache valid search results
+            // Cache results to speed up repeated searches (instant vs 50-200ms)
+            // Skip caching for huge result sets (>1000) to avoid memory bloat
             if (filters.search && filteredTasks.length > 0 && filteredTasks.length < 1000) {
               cacheResults(cacheKey, filteredTasks, searchCache);
             }
 
-            // Step 8: Periodic cache cleanup (10% chance)
+            // Prevent memory leaks from expired cache entries accumulating over time
+            // Probabilistic cleanup (10%) balances performance vs memory usage
             if (Math.random() < 0.1) {
               cleanupExpiredCache(searchCache);
             }
@@ -797,52 +754,7 @@ export const useTaskStore = create<TaskState & TaskActions>()(
           }
         },
 
-        validateTaskIntegrity: (task: Task): boolean => {
-          try {
-            // Check required fields
-            if (!task.id || !task.title || !task.boardId) {
-              console.warn('Task missing required fields:', task);
-              return false;
-            }
-            
-            // Check data types
-            if (typeof task.id !== 'string' || typeof task.title !== 'string' || typeof task.boardId !== 'string') {
-              console.warn('Task has invalid field types:', task);
-              return false;
-            }
-            
-            // Check dates
-            if (!(task.createdAt instanceof Date) || !(task.updatedAt instanceof Date)) {
-              console.warn('Task has invalid date fields:', task);
-              return false;
-            }
-            
-            // Check status and priority values
-            const validStatuses = ['todo', 'in-progress', 'done'];
-            const validPriorities = ['low', 'medium', 'high'];
-            
-            if (!validStatuses.includes(task.status)) {
-              console.warn('Task has invalid status:', task);
-              return false;
-            }
-            
-            if (task.priority && !validPriorities.includes(task.priority)) {
-              console.warn('Task has invalid priority:', task);
-              return false;
-            }
-            
-            // Check tags array
-            if (!Array.isArray(task.tags)) {
-              console.warn('Task tags is not an array:', task);
-              return false;
-            }
-            
-            return true;
-          } catch (error: unknown) {
-            console.error('Error validating task integrity:', error);
-            return false;
-          }
-        },
+        validateTaskIntegrity,
 
         // Export/Import operations
         exportTasks: (options = { includeArchived: true }) => {

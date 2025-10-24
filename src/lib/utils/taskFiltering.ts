@@ -1,5 +1,6 @@
 import { Task, TaskFilters } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
+import { validateTaskCollection } from '@/lib/utils/taskValidation';
 
 // Cache configuration
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
@@ -11,16 +12,13 @@ export type SearchCache = Map<string, CacheEntry>;
 /**
  * Validates task integrity before filtering
  * Returns only tasks with valid required fields
+ * @deprecated Use validateTaskCollection from taskValidation.ts directly
  */
 export function validateTasks(
   tasks: Task[],
   validateFn: (task: Task) => boolean
 ): Task[] {
-  const validTasks = tasks.filter(validateFn);
-  if (validTasks.length !== tasks.length) {
-    console.warn(`Filtered out ${tasks.length - validTasks.length} invalid tasks`);
-  }
-  return validTasks;
+  return validateTaskCollection(tasks, validateFn);
 }
 
 /**
