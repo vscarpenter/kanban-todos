@@ -40,6 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# claude code local settings
+.claude/settings.local.json
+
 # exclude directories and files
 .kiro/
 WARP.md
