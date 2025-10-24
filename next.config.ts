@@ -64,53 +64,20 @@ const nextConfig: NextConfig = {
   // Performance optimizations
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons', '@dnd-kit/core'],
+    turbopackUseSystemTlsCerts: true, // Fix font fetching in some environments
   },
-  
+
   // Compiler optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
-  
+
   // Enable gzip compression
   compress: true,
-  
-  // Webpack optimizations
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      // Optimize bundle splitting
-      config.optimization.splitChunks = {
-        chunks: 'all',
-        cacheGroups: {
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            priority: 10,
-            reuseExistingChunk: true,
-          },
-          dndkit: {
-            test: /[\\/]node_modules[\\/]@dnd-kit[\\/]/,
-            name: 'dnd-kit',
-            priority: 20,
-            reuseExistingChunk: true,
-          },
-          radix: {
-            test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
-            name: 'radix-ui',
-            priority: 20,
-            reuseExistingChunk: true,
-          },
-          lucide: {
-            test: /[\\/]node_modules[\\/]lucide-react[\\/]/,
-            name: 'lucide',
-            priority: 20,
-            reuseExistingChunk: true,
-          },
-        },
-      };
-    }
-    
-    return config;
-  },
+
+  // Turbopack configuration (Next.js 16+ uses Turbopack by default)
+  // Empty config allows Turbopack to use its optimized defaults
+  turbopack: {},
 };
 
 export default withBundleAnalyzer(nextConfig);
