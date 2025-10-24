@@ -8,7 +8,7 @@ A modern, privacy-first kanban board task management system built with Next.js, 
 - **Multi-Board Management**: Create and manage multiple kanban boards
 - **Task Organization**: Drag-and-drop tasks between columns (Todo, In Progress, Done)
 - **Board Customization**: Custom colors and descriptions for each board
-- **Data Persistence**: Local storage with export/import capabilities
+- **Data Persistence**: Stored locally with IndexedDB with export/import capabilities
 - **Archive System**: Archive completed tasks and boards
 - **Theme Support**: Light and dark mode with system preference detection
 
