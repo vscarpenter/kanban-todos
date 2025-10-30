@@ -129,6 +129,12 @@ kanban-todos/
 4. **Accessibility**: Ensure WCAG 2.1 AA compliance
 5. **Security**: Implement defense-in-depth security
 6. **Testing**: Maintain high test coverage
+7. **Code Quality** (v3.0+):
+   - Functions under 30 lines for readability
+   - Single Responsibility Principle
+   - YAGNI (You Aren't Gonna Need It)
+   - DRY (Don't Repeat Yourself)
+   - Modular architecture with focused modules
 
 ### Data Flow
 
@@ -200,50 +206,115 @@ export function utilityFunction(): ReturnType {
 
 ### Zustand Stores
 
-**Task Store** (`src/lib/stores/taskStore.ts`)
-- Manages task CRUD operations
-- Handles task filtering and searching
-- Implements performance optimizations (caching, debouncing)
-- Includes error handling
+The application uses a modular Zustand store architecture (v3.0+) for improved maintainability:
+
+**Task Store** (Modular Architecture)
+- **Main Store** (`src/lib/stores/taskStore.ts`) - Composition layer (190 lines)
+  - Combines all task-related functionality
+  - Provides unified API for components
+  - Maintains backward compatibility
+
+- **Actions Module** (`src/lib/stores/taskStoreActions.ts`)
+  - Task CRUD operations (create, read, update, delete)
+  - Task movement between statuses
+  - Board assignment operations
+  - Archive/unarchive functionality
+
+- **Filters Module** (`src/lib/stores/taskStoreFilters.ts`)
+  - Search query handling with debouncing
+  - Filter application logic
+  - Search result caching
+  - Rate limiting for search operations
+
+- **Search Module** (`src/lib/stores/taskStoreSearch.ts`)
+  - Search navigation
+  - Task highlighting
+  - Search preferences management
+  - Board navigation validation
+
+- **Import/Export Module** (`src/lib/stores/taskStoreImportExport.ts`)
+  - Bulk task operations
+  - Data export functionality
+  - Import conflict handling
+  - Batch processing
+
+- **Validation Module** (`src/lib/stores/taskStoreValidation.ts`)
+  - Board access validation
+  - Error recovery mechanisms
+  - Data integrity checks
+  - Store initialization
+
+- **Helpers Module** (`src/lib/stores/taskStoreHelpers.ts`)
+  - Filter application utilities
+  - Error recovery helpers
+  - Common helper functions
 
 **Board Store** (`src/lib/stores/boardStore.ts`)
 - Manages board operations
 - Handles board switching
 - Implements data validation
+- Board initialization and defaults
 
 **Settings Store** (`src/lib/stores/settingsStore.ts`)
 - Manages user preferences
 - Handles theme and language settings
 - Implements data persistence
+- Auto-archive configuration
 
 ### Store Patterns
 
-**Action Pattern:**
+**Modular Store Pattern (v3.0+):**
 ```typescript
-const useStore = create((set, get) => ({
-  // State
-  items: [],
-  
-  // Actions
-  addItem: (item) => set((state) => ({
-    items: [...state.items, item]
-  })),
-  
-  // Async actions
-  fetchItems: async () => {
-    const items = await api.getItems();
-    set({ items });
-  }
-}));
+// Main store composition
+import { createAddTask, createUpdateTask } from './taskStoreActions';
+import { createApplyFilters } from './taskStoreFilters';
+
+export const useTaskStore = create<TaskState & TaskActions>()(
+  devtools((set, get) => ({
+    ...initialState,
+
+    // Composed from modules
+    addTask: createAddTask(get, set),
+    updateTask: createUpdateTask(get, set),
+    applyFilters: createApplyFilters(get, set),
+  }))
+);
+```
+
+**Action Creator Pattern:**
+```typescript
+// In module file (e.g., taskStoreActions.ts)
+export function createAddTask(get, set) {
+  return async (taskData) => {
+    try {
+      set({ isLoading: true, error: null });
+      const newTask = { ...taskData, id: crypto.randomUUID() };
+      await taskDB.addTask(newTask);
+
+      const { tasks, filters } = get();
+      set({
+        tasks: [...tasks, newTask],
+        isLoading: false,
+      });
+    } catch (error) {
+      set({ error: error.message, isLoading: false });
+    }
+  };
+}
 ```
 
 **Selector Pattern:**
 ```typescript
 // Select specific state
-const items = useStore(state => state.items);
+const tasks = useTaskStore(state => state.tasks);
 
 // Select with transformation
-const itemCount = useStore(state => state.items.length);
+const taskCount = useTaskStore(state => state.tasks.length);
+
+// Derived state
+const activeTasks = useTaskStore(state =>
+  state.tasks.filter(task => !task.archivedAt)
+);
 ```
 
 ## 🧩 Component Guidelines

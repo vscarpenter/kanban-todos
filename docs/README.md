@@ -4,16 +4,24 @@ Welcome to the comprehensive documentation for the Kanban Todos application. Thi
 
 ## 📚 Table of Contents
 
+### User Documentation
 - [Getting Started](./getting-started.md) - Quick start guide and installation
 - [Installation Guide](./installation-guide.md) - PWA installation for all platforms
 - [User Guide](./user-guide.md) - Complete user manual with all features
+
+### Developer Documentation
 - [Developer Guide](./developer-guide.md) - Development setup and architecture
 - [API Reference](./api-reference.md) - Technical API documentation
+- [Refactoring Guide v3.0](./REFACTORING-V3.md) - Version 3.0 architecture improvements ⭐ NEW
+
+### Operational Documentation
 - [Security Guide](./security-guide.md) - Security features and best practices
 - [Performance Guide](./performance-guide.md) - Performance optimization and monitoring
 - [Accessibility Guide](./accessibility-guide.md) - Accessibility features and compliance
 - [Deployment Guide](./deployment-guide.md) - Production deployment instructions
 - [Troubleshooting](./troubleshooting.md) - Common issues and solutions
+
+### Contributing
 - [Contributing](./contributing.md) - How to contribute to the project
 
 ## 🚀 Quick Start
@@ -22,6 +30,8 @@ Welcome to the comprehensive documentation for the Kanban Todos application. Thi
 2. **Development**: Run `npm run dev` to start the development server
 3. **Build**: Run `npm run build` to create a production build
 4. **Test**: Run `npm test` to execute the test suite
+
+> **Version 3.0.1** includes major internal refactoring for improved code quality. See [Refactoring Guide](./REFACTORING-V3.md) for details.
 
 ## 🎯 Key Features
 
@@ -36,9 +46,9 @@ Welcome to the comprehensive documentation for the Kanban Todos application. Thi
 
 ## 🛠️ Technology Stack
 
-- **Frontend**: Next.js 15, React 19, TypeScript
+- **Frontend**: Next.js 16, React 19, TypeScript 5.9
 - **Styling**: Tailwind CSS v4, shadcn/ui
-- **State Management**: Zustand
+- **State Management**: Zustand (modular architecture v3.0+)
 - **Data Storage**: IndexedDB
 - **Testing**: Vitest, Testing Library, Playwright
 - **Deployment**: Static export to S3/CloudFront
@@ -71,4 +81,16 @@ If you need help or have questions:
 
 ---
 
-*Last updated: December 2024*
+## 🎉 What's New in v3.0.1
+
+- **Modular Store Architecture**: Task store refactored into 7 focused modules
+- **Improved Code Quality**: Functions reduced to under 30 lines
+- **Better Performance**: Removed 724 lines of unused code
+- **Enhanced Maintainability**: Following SOLID principles throughout
+- **100% Backward Compatible**: No breaking changes to public API
+
+See [CHANGELOG](../CHANGELOG.md) for complete version history.
+
+---
+
+*Last updated: January 2025 (v3.0.1)*

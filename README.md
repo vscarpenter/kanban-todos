@@ -1,6 +1,13 @@
 # Cascade - Task Management System
 
+[![Version](https://img.shields.io/badge/version-3.0.1-blue.svg)](https://github.com/vscarpenter/kanban-todos)
+[![Build](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
+
 A modern, privacy-first kanban board task management system built with Next.js, TypeScript, and Tailwind CSS. Features a clean, accessible interface with advanced typography and responsive design.
+
+> **Version 3.0.1** includes major internal refactoring for improved code quality and maintainability while maintaining 100% backward compatibility.
 
 ## ✨ Features
 
@@ -130,25 +137,67 @@ src/
 │   └── page.tsx           # Main application page
 ├── components/            # React components
 │   ├── ui/               # shadcn/ui base components
-│   ├── Sidebar.tsx       # Navigation sidebar
-│   ├── KanbanBoard.tsx   # Main board interface
-│   ├── TaskCard.tsx      # Individual task cards
-│   └── ...               # Other feature components
+│   ├── kanban/           # Kanban-specific components
+│   ├── board/            # Board management components
+│   ├── sidebar/          # Sidebar components
+│   ├── accessibility/    # WCAG-compliant components
+│   └── ...               # Feature components and dialogs
 └── lib/                  # Utilities and stores
-    ├── stores/           # Zustand state stores
+    ├── stores/           # Zustand state stores (modular architecture)
+    │   ├── taskStore.ts            # Main task store (composition layer)
+    │   ├── taskStoreActions.ts     # CRUD operations
+    │   ├── taskStoreFilters.ts     # Filter and search operations
+    │   ├── taskStoreSearch.ts      # Search navigation
+    │   ├── taskStoreImportExport.ts # Import/export operations
+    │   ├── taskStoreValidation.ts  # Validation and error handling
+    │   ├── taskStoreHelpers.ts     # Helper functions
+    │   ├── boardStore.ts           # Board management
+    │   └── settingsStore.ts        # Application settings
     ├── types/            # TypeScript type definitions
-    ├── utils/            # Utility modules (database, export/import, keyboard, etc.)
+    ├── utils/            # Utility modules
+    │   ├── database.ts            # IndexedDB wrapper
+    │   ├── exportImport.ts        # Export/import logic
+    │   ├── exportImportHelpers.ts # Import/export helpers
+    │   ├── validation.ts          # Data validation
+    │   ├── security.ts            # Input sanitization
+    │   ├── taskFiltering.ts       # Task filtering utilities
+    │   └── ...                    # Other utilities
     └── utils.ts          # Base helpers (e.g., cn)
 ```
 
 ## 🧭 Architecture Overview
 
-- Rendering: Next.js App Router in `src/app` renders the shell (`layout.tsx`) and the board UI (`page.tsx`). UI is composed from `src/components` with Tailwind CSS and shadcn/ui primitives. Drag-and-drop uses `@dnd-kit`.
-- State: Lightweight stores in `src/lib/stores` using Zustand. Components subscribe via selectors and dispatch store actions (e.g., board create/update, task moves).
-- Persistence: `src/lib/utils/database.ts` wraps IndexedDB for tasks, boards, settings, and archive. Stores call `taskDB` to read/write; settings (e.g., current board) persist across sessions. Export/import flows use JSON helpers in `src/lib/utils/exportImport.ts`.
-- Types & Utilities: Shared types in `src/lib/types`, helpers in `src/lib/utils` (keyboard, validation, notifications, conflict resolution, memory optimization).
-- Testing: Unit tests (Vitest + Testing Library, jsdom) live next to code or under `__tests__`; E2E tests (Playwright) live in `e2e/`. Global test setup is `src/test/setup.ts`.
-- Data Flow: User action → component event → store action → optional `taskDB` mutation → store state update → subscribed components re-render. Import/export and archive travel the same path through store APIs.
+### Modular Store Architecture (v3.0+)
+Version 3.0 introduces a modular store architecture for improved maintainability and code organization:
+
+- **Rendering**: Next.js App Router in `src/app` renders the shell (`layout.tsx`) and the board UI (`page.tsx`). UI is composed from `src/components` with Tailwind CSS and shadcn/ui primitives. Drag-and-drop uses `@dnd-kit`.
+
+- **State Management**: Modular Zustand stores in `src/lib/stores`:
+  - Main `taskStore.ts` acts as a composition layer (190 lines, down from 879)
+  - Separated concerns into focused modules:
+    - **Actions**: CRUD operations for tasks
+    - **Filters**: Search and filtering logic with caching
+    - **Search**: Navigation and search preferences
+    - **Import/Export**: Bulk data operations
+    - **Validation**: Error handling and data integrity
+    - **Helpers**: Shared utility functions
+  - Components subscribe via selectors and dispatch store actions
+
+- **Persistence**: `src/lib/utils/database.ts` wraps IndexedDB for tasks, boards, settings, and archive. Stores call `taskDB` to read/write; settings persist across sessions. Export/import uses modular helpers in `exportImport.ts` and `exportImportHelpers.ts`.
+
+- **Types & Utilities**: Shared types in `src/lib/types`, utilities in `src/lib/utils` organized by concern (keyboard, validation, notifications, security, filtering, memory optimization).
+
+- **Testing**: Unit tests (Vitest + Testing Library, jsdom) live next to code or under `__tests__`; E2E tests (Playwright) live in `e2e/`. Global test setup is `src/test/setup.ts`.
+
+- **Data Flow**: User action → component event → store action → optional `taskDB` mutation → store state update → subscribed components re-render. Import/export and archive operations follow the same pattern through store APIs.
+
+### Code Quality Standards
+The codebase follows strict quality guidelines:
+- Functions kept under 30 lines for readability
+- Single Responsibility Principle applied throughout
+- YAGNI (You Aren't Gonna Need It) - unused code removed
+- DRY (Don't Repeat Yourself) - common patterns extracted
+- Comprehensive TypeScript types for safety
 
 ## 🎯 Usage
 
