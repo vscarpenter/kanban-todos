@@ -8,11 +8,22 @@ import {
   exportDataSchema,
   ValidationSchema
 } from './validation';
-import { 
-  resolveImportConflicts, 
-  ConflictResolutionOptions, 
+import {
+  resolveImportConflicts,
+  ConflictResolutionOptions,
   ConflictResolutionResult
 } from './conflictResolution';
+import {
+  findDuplicateTaskIds,
+  findDuplicateBoardIds,
+  findDefaultBoardConflicts,
+  findBoardNameConflicts,
+  findOrphanedTasks,
+  regenerateBoardIds,
+  regenerateTaskIds,
+  filterConflictingItems,
+  removeOrphanedTasks
+} from './exportImportHelpers';
 // import { validateImportFile, validateImportJson, sanitizeTaskData, sanitizeBoardData } from './security';
 
 // Version for data format compatibility
@@ -287,63 +298,22 @@ export function validateImportData(jsonData: unknown): ImportValidationResult {
 
 /**
  * Detects conflicts in import data
+ * Simplified by extracting conflict detection logic to helper functions
  */
 export function detectImportConflicts(
   importData: ExportData,
   existingTasks: Task[],
   existingBoards: Board[]
 ): ImportConflicts {
-  const duplicateTaskIds = importData.tasks
-    .filter(task => existingTasks.some(existing => existing.id === task.id))
-    .map(task => task.id);
-
-  const duplicateBoardIds = importData.boards
-    .filter(board => existingBoards.some(existing => existing.id === board.id))
-    .map(board => board.id);
-
-  // Detect default board conflicts (imported boards that match existing default boards)
-  const defaultBoardConflicts: Array<{
-    importedBoard: SerializedBoard;
-    existingBoard: Board;
-  }> = [];
-  
-  for (const importedBoard of importData.boards) {
-    const existingDefaultBoard = existingBoards.find(existing => 
-      existing.isDefault && 
-      existing.name.toLowerCase() === importedBoard.name.toLowerCase() &&
-      existing.id !== importedBoard.id
-    );
-    
-    if (existingDefaultBoard) {
-      defaultBoardConflicts.push({
-        importedBoard,
-        existingBoard: existingDefaultBoard
-      });
-    }
-  }
-
-  // Regular board name conflicts (excluding default board conflicts)
-  const boardNameConflicts = importData.boards
-    .filter(board => {
-      const hasNameConflict = existingBoards.some(existing => 
-        existing.name.toLowerCase() === board.name.toLowerCase() && existing.id !== board.id
-      );
-      // Exclude boards that are already handled as default board conflicts
-      const isDefaultConflict = defaultBoardConflicts.some(conflict => 
-        conflict.importedBoard.id === board.id
-      );
-      return hasNameConflict && !isDefaultConflict;
-    })
-    .map(board => board.name);
-
-  const existingBoardIds = new Set([
-    ...existingBoards.map(b => b.id),
-    ...importData.boards.map(b => b.id)
-  ]);
-
-  const orphanedTasks = importData.tasks
-    .filter(task => !existingBoardIds.has(task.boardId))
-    .map(task => task.id);
+  const duplicateTaskIds = findDuplicateTaskIds(importData.tasks, existingTasks);
+  const duplicateBoardIds = findDuplicateBoardIds(importData.boards, existingBoards);
+  const defaultBoardConflicts = findDefaultBoardConflicts(importData.boards, existingBoards);
+  const boardNameConflicts = findBoardNameConflicts(
+    importData.boards,
+    existingBoards,
+    defaultBoardConflicts
+  );
+  const orphanedTasks = findOrphanedTasks(importData, existingBoards);
 
   return {
     duplicateTaskIds,
@@ -356,6 +326,7 @@ export function detectImportConflicts(
 
 /**
  * Processes import data with advanced conflict resolution and sanitization
+ * Simplified by extracting ID regeneration and filtering logic to helpers
  */
 export function processImportData(
   importData: ExportData,
@@ -365,60 +336,30 @@ export function processImportData(
   let processedTasks = importData.tasks.map(deserializeTask);
   let processedBoards = importData.boards.map(deserializeBoard);
 
-  // Handle ID conflicts
+  // Handle ID conflicts based on strategy
   if (options.generateNewIds) {
-    // Generate new IDs for conflicting items
-    const taskIdMap = new Map<string, string>();
-    const boardIdMap = new Map<string, string>();
-
-    // Generate new board IDs
-    processedBoards = processedBoards.map(board => {
-      if (conflicts.duplicateBoardIds.includes(board.id)) {
-        const newId = crypto.randomUUID();
-        boardIdMap.set(board.id, newId);
-        return { ...board, id: newId };
-      }
-      return board;
-    });
-
-    // Generate new task IDs and update board references
-    processedTasks = processedTasks.map(task => {
-      let updatedTask = task;
-
-      // Update board reference if board ID was changed
-      if (boardIdMap.has(task.boardId)) {
-        updatedTask = { ...updatedTask, boardId: boardIdMap.get(task.boardId)! };
-      }
-
-      // Generate new task ID if conflicting
-      if (conflicts.duplicateTaskIds.includes(task.id)) {
-        const newId = crypto.randomUUID();
-        taskIdMap.set(task.id, newId);
-        updatedTask = { ...updatedTask, id: newId };
-      }
-
-      return updatedTask;
-    });
+    const { boards, idMap: boardIdMap } = regenerateBoardIds(
+      processedBoards,
+      conflicts.duplicateBoardIds
+    );
+    processedBoards = boards;
+    processedTasks = regenerateTaskIds(
+      processedTasks,
+      conflicts.duplicateTaskIds,
+      boardIdMap
+    );
   } else if (options.skipConflicts) {
-    // Remove conflicting items
-    processedTasks = processedTasks.filter(task => 
-      !conflicts.duplicateTaskIds.includes(task.id)
-    );
-    processedBoards = processedBoards.filter(board => 
-      !conflicts.duplicateBoardIds.includes(board.id)
-    );
+    const filtered = filterConflictingItems(processedTasks, processedBoards, conflicts);
+    processedTasks = filtered.tasks;
+    processedBoards = filtered.boards;
   }
 
   // Handle orphaned tasks
-  if (conflicts.orphanedTasks.length > 0) {
-    if (options.skipConflicts) {
-      processedTasks = processedTasks.filter(task => 
-        !conflicts.orphanedTasks.includes(task.id)
-      );
-    }
-    // Note: If not skipping conflicts, orphaned tasks will cause import to fail
-    // This should be handled at the UI level
+  if (conflicts.orphanedTasks.length > 0 && options.skipConflicts) {
+    processedTasks = removeOrphanedTasks(processedTasks, conflicts.orphanedTasks);
   }
+  // Note: If not skipping conflicts, orphaned tasks will cause import to fail
+  // This should be handled at the UI level
 
   return {
     tasks: processedTasks,
