@@ -2,6 +2,7 @@
 
 import { memo } from "react";
 import { useDroppable } from "@dnd-kit/core";
+import isEqual from "fast-deep-equal";
 import { Task } from "@/lib/types";
 import TaskCard from "./TaskCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -93,40 +94,6 @@ export function KanbanColumn({ title, tasks, status, color, borderColor, onNavig
   );
 }
 
-export default memo(KanbanColumn, (prevProps, nextProps) => {
-  // Always re-render if task array length changes
-  if (prevProps.tasks.length !== nextProps.tasks.length) {
-    return false;
-  }
-  
-  // If tasks array is empty, only check other props
-  if (prevProps.tasks.length === 0) {
-    return (
-      prevProps.title === nextProps.title &&
-      prevProps.status === nextProps.status &&
-      prevProps.color === nextProps.color &&
-      prevProps.borderColor === nextProps.borderColor
-    );
-  }
-  
-  // Check if any task has been updated by comparing timestamps
-  for (let i = 0; i < prevProps.tasks.length; i++) {
-    const prevTask = prevProps.tasks[i];
-    const nextTask = nextProps.tasks[i];
-    
-    if (
-      prevTask.id !== nextTask.id ||
-      prevTask.updatedAt.getTime() !== nextTask.updatedAt.getTime()
-    ) {
-      return false;
-    }
-  }
-  
-  // Compare other props
-  return (
-    prevProps.title === nextProps.title &&
-    prevProps.status === nextProps.status &&
-    prevProps.color === nextProps.color &&
-    prevProps.borderColor === nextProps.borderColor
-  );
-});
+// Use fast-deep-equal for efficient memo comparison
+// Replaces 36-line manual comparison with battle-tested implementation
+export default memo(KanbanColumn, isEqual);

@@ -3,6 +3,7 @@
 import { memo, useCallback } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
+import isEqual from "fast-deep-equal";
 import { Task, Board } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { BoardIndicator } from "../BoardIndicator";
@@ -135,23 +136,6 @@ export function TaskCard({
   );
 }
 
-export default memo(TaskCard, (prevProps, nextProps) => {
-  const prevTask = prevProps.task;
-  const nextTask = nextProps.task;
-
-  return (
-    prevTask.id === nextTask.id &&
-    prevTask.title === nextTask.title &&
-    prevTask.description === nextTask.description &&
-    prevTask.status === nextTask.status &&
-    prevTask.priority === nextTask.priority &&
-    prevTask.progress === nextTask.progress &&
-    prevTask.updatedAt.getTime() === nextTask.updatedAt.getTime() &&
-    JSON.stringify(prevTask.tags) === JSON.stringify(nextTask.tags) &&
-    prevProps.showBoardIndicator === nextProps.showBoardIndicator &&
-    prevProps.isCurrentBoard === nextProps.isCurrentBoard &&
-    prevProps.board?.id === nextProps.board?.id &&
-    prevProps.board?.name === nextProps.board?.name &&
-    prevProps.board?.color === nextProps.board?.color
-  );
-});
+// Use fast-deep-equal for efficient memo comparison
+// Replaces 19-line manual comparison with battle-tested implementation
+export default memo(TaskCard, isEqual);

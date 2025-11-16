@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { useBoardStore } from "@/lib/stores/boardStore";
 import { useTaskStore } from "@/lib/stores/taskStore";
 import { Board, Task } from "@/lib/types";
-import { CreateTaskDialog } from "./CreateTaskDialog";
+import { TaskDialog } from "./TaskDialog";
 import { EmptyState } from "./board/EmptyState";
 import { BoardHeader } from "./board/BoardHeader";
 import { BoardStats } from "./board/BoardStats";
@@ -154,7 +154,8 @@ export function BoardView() {
       </div>
 
       {/* Create Task Dialog */}
-      <CreateTaskDialog
+      <TaskDialog
+        mode="create"
         open={showCreateTask}
         onOpenChange={setShowCreateTask}
         boardId={currentBoardId!}
