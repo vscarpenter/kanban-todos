@@ -1,11 +1,18 @@
 /**
- * Validation and error recovery operations for task store
- * Handles board validation, data integrity, and error recovery
+ * Task store validation and error recovery operations
+ * Handles board validation, data integrity, store initialization, and error recovery
+ *
+ * This file is kept separate from actions as it's less frequently modified
+ * and focuses on data integrity and initialization concerns.
  */
 
 import { Task, TaskFilters, SearchState } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
 import { validateTaskIntegrity } from '@/lib/utils/taskValidation';
+
+// ============================================================================
+// Type Definitions
+// ============================================================================
 
 // Type for store state access
 type ValidationStoreState = {
@@ -15,10 +22,15 @@ type ValidationStoreState = {
   searchState: SearchState;
   error: string | null;
   applyFilters: () => Promise<void>;
+  loadSearchPreferences: () => Promise<void>;
 };
 
 // Type for store setter - using any to avoid complex type inference issues
 type StoreSetter = (state: any) => void;
+
+// ============================================================================
+// Validation Functions
+// ============================================================================
 
 /**
  * Validates that a board exists and is not archived
@@ -161,5 +173,9 @@ export function createInitializeStore(
   };
 }
 
-// Re-export the validation function
+// ============================================================================
+// Re-exports
+// ============================================================================
+
+// Re-export the validation function for use in the main store
 export { validateTaskIntegrity };
