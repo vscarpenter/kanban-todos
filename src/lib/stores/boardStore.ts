@@ -50,12 +50,13 @@ interface BoardActions {
   initializeBoards: () => Promise<void>;
 }
 
-const initialState: BoardState = {
+// Use satisfies operator (TS 5.0+) for type-safe initial state
+const initialState = {
   boards: [],
   currentBoardId: null,
   isLoading: false,
   error: null,
-};
+} satisfies BoardState;
 
 export const useBoardStore = create<BoardState & BoardActions>((set, get) => ({
   ...initialState,

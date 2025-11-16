@@ -1,73 +1,131 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { useTaskStore } from "@/lib/stores/taskStore";
 import { Task } from "@/lib/types";
 
-interface CreateTaskDialogProps {
+// Helper to parse comma-separated tags
+function parseTags(tagsString: string): string[] {
+  return tagsString
+    .split(',')
+    .map(tag => tag.trim())
+    .filter(tag => tag.length > 0);
+}
+
+// Helper to format tags for display
+function formatTags(tags: string[]): string {
+  return tags.join(", ");
+}
+
+interface TaskDialogProps {
+  mode: "create" | "edit";
   open: boolean;
   onOpenChange: (open: boolean) => void;
   boardId: string;
+  task?: Task; // Required for edit mode
 }
 
-export function CreateTaskDialog({ open, onOpenChange, boardId }: CreateTaskDialogProps) {
-  const { addTask } = useTaskStore();
+interface FormData {
+  title: string;
+  description: string;
+  priority: Task['priority'];
+  tags: string;
+  progress: number;
+  dueDate: Date | undefined;
+}
+
+export function TaskDialog({ mode, open, onOpenChange, boardId, task }: TaskDialogProps) {
+  const { addTask, updateTask } = useTaskStore();
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    priority: "medium" as Task['priority'],
-    tags: "",
-    dueDate: undefined as Date | undefined,
-  });
+
+  // Initialize form data based on mode
+  const getInitialFormData = (): FormData => {
+    if (mode === "edit" && task) {
+      return {
+        title: task.title,
+        description: task.description || "",
+        priority: task.priority,
+        tags: formatTags(task.tags),
+        progress: task.progress || 0,
+        dueDate: task.dueDate || undefined,
+      };
+    }
+
+    // Default for create mode
+    return {
+      title: "",
+      description: "",
+      priority: "medium",
+      tags: "",
+      progress: 0,
+      dueDate: undefined,
+    };
+  };
+
+  const [formData, setFormData] = useState<FormData>(getInitialFormData());
+
+  // Reset form data when mode or task changes
+  useEffect(() => {
+    if (open) {
+      setFormData(getInitialFormData());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, task, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.title.trim()) return;
-    
+
     setIsLoading(true);
-    
+
     try {
-      const tags = formData.tags
-        .split(',')
-        .map(tag => tag.trim())
-        .filter(tag => tag.length > 0);
+      const tags = parseTags(formData.tags);
 
-      await addTask({
-        title: formData.title.trim(),
-        description: formData.description.trim() || undefined,
-        priority: formData.priority,
-        tags,
-        status: 'todo',
-        boardId,
-        dueDate: formData.dueDate || undefined,
-      });
+      if (mode === "create") {
+        await addTask({
+          title: formData.title.trim(),
+          description: formData.description.trim() || undefined,
+          priority: formData.priority,
+          tags,
+          status: 'todo',
+          boardId,
+          dueDate: formData.dueDate || undefined,
+        });
+      } else if (mode === "edit" && task) {
+        const updates: Partial<Task> = {
+          title: formData.title.trim(),
+          description: formData.description.trim() || undefined,
+          priority: formData.priority,
+          tags,
+          dueDate: formData.dueDate || undefined,
+        };
 
-      // Reset form and close dialog
-      setFormData({
-        title: "",
-        description: "",
-        priority: "medium",
-        tags: "",
-        dueDate: undefined,
-      });
+        // Only include progress if task is in-progress
+        if (task.status === 'in-progress') {
+          updates.progress = formData.progress;
+        }
+
+        await updateTask(task.id, updates);
+      }
+
       onOpenChange(false);
     } catch (error) {
-      console.error('Failed to create task:', error);
+      console.error(`Failed to ${mode} task:`, error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleInputChange = (field: keyof typeof formData, value: string) => {
+  const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -75,13 +133,20 @@ export function CreateTaskDialog({ open, onOpenChange, boardId }: CreateTaskDial
     setFormData(prev => ({ ...prev, dueDate: date }));
   };
 
+  // Conditional rendering helpers
+  const dialogTitle = mode === "create" ? "Create New Task" : "Edit Task";
+  const submitButtonText = mode === "create"
+    ? (isLoading ? "Creating..." : "Create Task")
+    : (isLoading ? "Updating..." : "Update Task");
+  const showProgressSlider = mode === "edit" && task?.status === 'in-progress';
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Create New Task</DialogTitle>
+          <DialogTitle>{dialogTitle}</DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Title */}
           <div className="space-y-2">
@@ -120,7 +185,7 @@ export function CreateTaskDialog({ open, onOpenChange, boardId }: CreateTaskDial
             <Label htmlFor="priority">Priority</Label>
             <Select
               value={formData.priority}
-              onValueChange={(value: Task['priority']) => 
+              onValueChange={(value: Task['priority']) =>
                 setFormData(prev => ({ ...prev, priority: value }))
               }
             >
@@ -134,6 +199,34 @@ export function CreateTaskDialog({ open, onOpenChange, boardId }: CreateTaskDial
               </SelectContent>
             </Select>
           </div>
+
+          {/* Progress Slider - Only show for in-progress tasks in edit mode */}
+          {showProgressSlider && (
+            <div className="space-y-2">
+              <Label htmlFor="progress">Progress</Label>
+              <div className="px-3">
+                <Slider
+                  id="progress"
+                  min={0}
+                  max={100}
+                  step={5}
+                  value={[formData.progress]}
+                  onValueChange={(value: number[]) =>
+                    setFormData(prev => ({ ...prev, progress: value[0] }))
+                  }
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                  <span>0%</span>
+                  <span className="font-medium">{formData.progress}%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Track your progress on this task
+              </div>
+            </div>
+          )}
 
           {/* Due Date */}
           <div className="space-y-2">
@@ -174,7 +267,7 @@ export function CreateTaskDialog({ open, onOpenChange, boardId }: CreateTaskDial
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading || !formData.title.trim()}>
-              {isLoading ? "Creating..." : "Create Task"}
+              {submitButtonText}
             </Button>
           </div>
         </form>

@@ -1,6 +1,12 @@
 /**
- * Main task store - Composition of focused modules
- * Maintains backward compatibility while improving internal organization
+ * Main task store - Consolidated architecture
+ * Simplified from 7 files to 4 files for better maintainability
+ *
+ * File structure:
+ * - taskStore.ts (this file) - Main store composition
+ * - taskStore.actions.ts - CRUD, filters, and search operations
+ * - taskStore.validation.ts - Validation and error recovery
+ * - taskStore.importExport.ts - Import/export operations (unchanged)
  */
 
 import { create } from 'zustand';
@@ -9,7 +15,7 @@ import { Task, TaskFilters, SearchState, SearchScope } from '@/lib/types';
 import { ExportData } from '@/lib/utils/exportImport';
 import { type SearchCache } from '@/lib/utils/taskFiltering';
 
-// Import action creators from focused modules
+// Import action creators from consolidated modules
 import {
   createAddTask,
   createUpdateTask,
@@ -17,31 +23,19 @@ import {
   createMoveTask,
   createMoveTaskToBoard,
   createArchiveTask,
-  createUnarchiveTask
-} from './taskStoreActions';
-
-import {
+  createUnarchiveTask,
   createSetFilters,
   createSetBoardFilter,
   createSetCrossBoardSearch,
   createSetSearchQuery,
   createApplyFilters,
   createClearFilters,
-  createClearSearch
-} from './taskStoreFilters';
-
-import {
+  createClearSearch,
   createSetHighlightedTask,
   createNavigateToTaskBoard,
   createLoadSearchPreferences,
   createSaveSearchScope
-} from './taskStoreSearch';
-
-import {
-  createExportTasks,
-  createImportTasks,
-  createBulkAddTasks
-} from './taskStoreImportExport';
+} from './taskStore.actions';
 
 import {
   createValidateBoardAccess,
@@ -49,7 +43,13 @@ import {
   createRecoverFromSearchError,
   createInitializeStore,
   validateTaskIntegrity
-} from './taskStoreValidation';
+} from './taskStore.validation';
+
+import {
+  createExportTasks,
+  createImportTasks,
+  createBulkAddTasks
+} from './taskStoreImportExport';
 
 // State interface
 interface TaskState {
@@ -114,7 +114,8 @@ interface TaskActions {
   initializeStore: () => Promise<void>;
 }
 
-const initialState: TaskState = {
+// Use satisfies operator (TS 5.0+) for type-safe initial state
+const initialState = {
   tasks: [],
   filteredTasks: [],
   filters: {
@@ -123,14 +124,14 @@ const initialState: TaskState = {
     crossBoardSearch: false,
   },
   searchState: {
-    scope: 'current-board',
+    scope: 'current-board' as const,
     highlightedTaskId: undefined,
   },
   isLoading: false,
   isSearching: false,
   error: null,
   searchCache: new Map(),
-};
+} satisfies TaskState;
 
 /**
  * Main task store

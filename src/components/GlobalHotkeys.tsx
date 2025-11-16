@@ -6,8 +6,8 @@ import { keyboardManager } from "@/lib/utils/keyboard";
 import { useBoardStore } from "@/lib/stores/boardStore";
 import { useSettingsStore } from "@/lib/stores/settingsStore";
 
-// Lazy load the CreateTaskDialog to avoid initial bundle size
-const CreateTaskDialog = dynamic(() => import("./CreateTaskDialog").then(mod => ({ default: mod.CreateTaskDialog })), {
+// Lazy load the TaskDialog to avoid initial bundle size
+const TaskDialog = dynamic(() => import("./TaskDialog").then(mod => ({ default: mod.TaskDialog })), {
   loading: () => null
 });
 
@@ -142,7 +142,8 @@ export function GlobalHotkeys() {
   return (
     <>
       {showQuickAdd && currentBoardId && (
-        <CreateTaskDialog
+        <TaskDialog
+          mode="create"
           open={showQuickAdd}
           onOpenChange={setShowQuickAdd}
           boardId={currentBoardId}

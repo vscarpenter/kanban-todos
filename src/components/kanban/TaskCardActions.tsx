@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import { useTaskStore } from "@/lib/stores/taskStore";
-import { EditTaskDialog } from "../EditTaskDialog";
+import { TaskDialog } from "../TaskDialog";
 import { ShareTaskDialog } from "../ShareTaskDialog";
 import { MoveTaskDialog } from "../MoveTaskDialog";
 import { DeleteTaskDialog } from "../DeleteTaskDialog";
@@ -85,9 +85,11 @@ export function TaskCardActions({ task }: TaskCardActionsProps) {
       </DropdownMenu>
 
       {/* Dialogs */}
-      <EditTaskDialog
+      <TaskDialog
+        mode="edit"
         open={showEditDialog}
         onOpenChange={setShowEditDialog}
+        boardId={task.boardId}
         task={task}
       />
       <ShareTaskDialog
