@@ -33,7 +33,8 @@ interface SettingsActions {
   initializeSettings: () => Promise<void>;
 }
 
-const defaultSettings: Settings = {
+// Use satisfies operator (TS 5.0+) for type-safe defaults without widening
+const defaultSettings = {
   theme: 'system',
   autoArchiveDays: 30,
   enableNotifications: true,
@@ -49,13 +50,13 @@ const defaultSettings: Settings = {
     reduceMotion: false,
     fontSize: 'medium',
   },
-};
+} satisfies Settings;
 
-const initialState: SettingsState = {
+const initialState = {
   settings: defaultSettings,
   isLoading: false,
   error: null,
-};
+} satisfies SettingsState;
 
 // Helper function to ensure settings have proper structure
 const ensureSettingsStructure = (settings: unknown): Settings => {

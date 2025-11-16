@@ -114,7 +114,8 @@ interface TaskActions {
   initializeStore: () => Promise<void>;
 }
 
-const initialState: TaskState = {
+// Use satisfies operator (TS 5.0+) for type-safe initial state
+const initialState = {
   tasks: [],
   filteredTasks: [],
   filters: {
@@ -123,14 +124,14 @@ const initialState: TaskState = {
     crossBoardSearch: false,
   },
   searchState: {
-    scope: 'current-board',
+    scope: 'current-board' as const,
     highlightedTaskId: undefined,
   },
   isLoading: false,
   isSearching: false,
   error: null,
   searchCache: new Map(),
-};
+} satisfies TaskState;
 
 /**
  * Main task store
