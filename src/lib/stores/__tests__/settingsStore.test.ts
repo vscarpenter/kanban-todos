@@ -26,6 +26,7 @@ describe('SettingsStore - Search Preferences', () => {
         enableNotifications: true,
         enableKeyboardShortcuts: true,
         enableDebugMode: false,
+        enableDeveloperMode: false,
         searchPreferences: {
           defaultScope: 'current-board',
           rememberScope: true,
@@ -58,6 +59,7 @@ describe('SettingsStore - Search Preferences', () => {
       enableNotifications: true,
       enableKeyboardShortcuts: true,
       enableDebugMode: false,
+      enableDeveloperMode: false,
       searchPreferences: {
         defaultScope: 'all-boards',
         rememberScope: false,
@@ -145,6 +147,7 @@ describe('SettingsStore - Search Preferences', () => {
       enableNotifications: false,
       enableKeyboardShortcuts: false,
       enableDebugMode: true,
+      enableDeveloperMode: false,
       searchPreferences: {
         defaultScope: 'all-boards',
         rememberScope: false,
