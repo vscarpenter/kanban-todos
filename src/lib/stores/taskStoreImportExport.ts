@@ -6,7 +6,6 @@
 import { Task } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
 import { exportTasks as exportTasksUtil, ExportData } from '@/lib/utils/exportImport';
-import { applyFiltersToTasks } from './taskStoreHelpers';
 
 // Type for store state access
 type ImportExportStoreState = {
