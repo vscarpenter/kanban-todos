@@ -1,8 +1,7 @@
 {
   "version": "2.0.0",
   "exportedAt": "2025-10-29T18:30:00.000Z",
-  "data": {
-    "boards": [
+  "boards": [
     {
       "id": "default-board",
       "name": "🚀 Product Launch",
@@ -44,7 +43,7 @@
       "updatedAt": "2025-10-29T08:45:00.000Z"
     },
     {
-      "id": "learning-goals",
+      "id": "side-project",
       "name": "🌱 Side Projects",
       "description": "Personal experiments and hobby projects",
       "color": "#8b5cf6",
@@ -53,9 +52,8 @@
       "createdAt": "2025-10-10T13:10:00.000Z",
       "updatedAt": "2025-10-29T16:22:00.000Z"
     }
-    ]
-  ],
-  "tasks": [
+    ],
+    "tasks": [
     {
       "id": "task-personal-1",
       "title": "Finalize product requirements document",
@@ -371,7 +369,7 @@
       "title": "Complete React Advanced Patterns course",
       "description": "Finish all modules and build the final project",
       "status": "in-progress",
-      "boardId": "learning-goals",
+      "boardId": "home-improvement",
       "priority": "high",
       "tags": ["react", "course", "frontend"],
       "progress": 70,
@@ -384,7 +382,7 @@
       "title": "Read 'Clean Architecture' book",
       "description": "Study software design principles and patterns",
       "status": "in-progress",
-      "boardId": "learning-goals",
+      "boardId": "home-improvement",
       "priority": "medium",
       "tags": ["reading", "architecture", "software-design"],
       "progress": 45,
@@ -397,7 +395,7 @@
       "title": "Practice TypeScript advanced features",
       "description": "Master generics, utility types, and conditional types",
       "status": "todo",
-      "boardId": "learning-goals",
+      "boardId": "home-improvement",
       "priority": "high",
       "tags": ["typescript", "programming", "practice"],
       "createdAt": "2025-10-15T18:45:00.000Z",
@@ -409,7 +407,7 @@
       "title": "Attend GraphQL workshop",
       "description": "Learn advanced GraphQL patterns and best practices",
       "status": "done",
-      "boardId": "learning-goals",
+      "boardId": "home-improvement",
       "priority": "medium",
       "tags": ["graphql", "workshop", "api"],
       "createdAt": "2025-10-18T10:20:00.000Z",
@@ -421,7 +419,7 @@
       "title": "Build CLI tool with Node.js",
       "description": "Create a command-line utility for personal productivity",
       "status": "todo",
-      "boardId": "learning-goals",
+      "boardId": "home-improvement",
       "priority": "low",
       "tags": ["nodejs", "cli", "project"],
       "createdAt": "2025-10-20T17:10:00.000Z",
@@ -433,7 +431,7 @@
       "title": "Learn Docker containerization",
       "description": "Master container creation, orchestration, and deployment",
       "status": "todo",
-      "boardId": "learning-goals",
+      "boardId": "home-improvement",
       "priority": "medium",
       "tags": ["docker", "devops", "containers"],
       "createdAt": "2025-10-22T14:55:00.000Z",
@@ -445,7 +443,7 @@
       "title": "Complete AWS certification prep",
       "description": "Study for AWS Solutions Architect Associate exam",
       "status": "in-progress",
-      "boardId": "learning-goals",
+      "boardId": "home-improvement",
       "priority": "high",
       "tags": ["aws", "certification", "cloud"],
       "progress": 30,
@@ -552,18 +550,21 @@
       "dueDate": "2025-12-10T17:00:00.000Z"
     }
   ],
-    "settings": {
-      "theme": "system",
-      "autoArchiveDays": 30,
-      "enableNotifications": true,
-      "enableKeyboardShortcuts": true,
-      "enableDebugMode": false,
-      "currentBoardId": "default-board",
-      "accessibility": {
-        "highContrast": false,
-        "reduceMotion": false,
-        "fontSize": "medium"
-      }
+  "settings": {
+    "theme": "system",
+    "autoArchiveDays": 30,
+    "enableNotifications": true,
+    "enableKeyboardShortcuts": true,
+    "enableDebugMode": false,
+    "currentBoardId": "default-board",
+    "searchPreferences": {
+      "defaultScope": "current-board",
+      "rememberScope": true
+    },
+    "accessibility": {
+      "highContrast": false,
+      "reduceMotion": false,
+      "fontSize": "medium"
     }
   }
 }
