@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "exportedAt": "2025-10-29T18:30:00.000Z",
+  "exportedAt": "2025-11-29T18:30:00.000Z",
   "boards": [
     {
       "id": "default-board",
@@ -10,7 +10,7 @@
       "isDefault": true,
       "order": 0,
       "createdAt": "2025-09-15T09:00:00.000Z",
-      "updatedAt": "2025-10-29T15:30:00.000Z"
+      "updatedAt": "2025-11-29T15:30:00.000Z"
     },
     {
       "id": "work-project-alpha",
@@ -19,8 +19,8 @@
       "color": "#ef4444",
       "isDefault": false,
       "order": 1,
-      "createdAt": "2025-10-01T16:20:00.000Z",
-      "updatedAt": "2025-10-29T12:00:00.000Z"
+      "createdAt": "2025-11-01T16:20:00.000Z",
+      "updatedAt": "2025-11-29T12:00:00.000Z"
     },
     {
       "id": "marketing-campaign",
@@ -30,7 +30,7 @@
       "isDefault": false,
       "order": 2,
       "createdAt": "2025-09-20T14:00:00.000Z",
-      "updatedAt": "2025-10-28T10:15:00.000Z"
+      "updatedAt": "2025-11-28T10:15:00.000Z"
     },
     {
       "id": "home-improvement",
@@ -39,8 +39,8 @@
       "color": "#f59e0b",
       "isDefault": false,
       "order": 3,
-      "createdAt": "2025-10-05T11:30:00.000Z",
-      "updatedAt": "2025-10-29T08:45:00.000Z"
+      "createdAt": "2025-11-05T11:30:00.000Z",
+      "updatedAt": "2025-11-29T08:45:00.000Z"
     },
     {
       "id": "side-project",
@@ -49,8 +49,8 @@
       "color": "#8b5cf6",
       "isDefault": false,
       "order": 4,
-      "createdAt": "2025-10-10T13:10:00.000Z",
-      "updatedAt": "2025-10-29T16:22:00.000Z"
+      "createdAt": "2025-11-10T13:10:00.000Z",
+      "updatedAt": "2025-11-29T16:22:00.000Z"
     }
     ],
     "tasks": [
@@ -62,10 +62,10 @@
       "boardId": "default-board",
       "priority": "high",
       "tags": ["documentation", "stakeholders", "requirements"],
-      "createdAt": "2025-10-15T09:15:00.000Z",
-      "updatedAt": "2025-10-28T14:30:00.000Z",
-      "completedAt": "2025-10-28T14:30:00.000Z",
-      "dueDate": "2025-10-30T17:00:00.000Z",
+      "createdAt": "2025-11-15T09:15:00.000Z",
+      "updatedAt": "2025-11-28T14:30:00.000Z",
+      "completedAt": "2025-11-28T14:30:00.000Z",
+      "dueDate": "2025-11-30T17:00:00.000Z",
       "progress": 100
     },
     {
@@ -77,8 +77,8 @@
       "priority": "low",
       "tags": ["organization", "photos"],
       "progress": 35,
-      "createdAt": "2025-10-08T14:30:00.000Z",
-      "updatedAt": "2025-10-29T10:15:00.000Z",
+      "createdAt": "2025-11-08T14:30:00.000Z",
+      "updatedAt": "2025-11-29T10:15:00.000Z",
       "dueDate": "2025-11-15T17:00:00.000Z"
     },
     {
@@ -89,9 +89,9 @@
       "boardId": "default-board",
       "priority": "high",
       "tags": ["health", "appointments"],
-      "createdAt": "2025-10-05T11:00:00.000Z",
-      "updatedAt": "2025-10-25T16:45:00.000Z",
-      "completedAt": "2025-10-25T16:45:00.000Z"
+      "createdAt": "2025-11-05T11:00:00.000Z",
+      "updatedAt": "2025-11-25T16:45:00.000Z",
+      "completedAt": "2025-11-25T16:45:00.000Z"
     },
     {
       "id": "task-personal-4",
@@ -102,8 +102,8 @@
       "priority": "medium",
       "tags": ["learning", "language"],
       "progress": 60,
-      "createdAt": "2025-10-07T19:20:00.000Z",
-      "updatedAt": "2025-10-28T20:30:00.000Z",
+      "createdAt": "2025-11-07T19:20:00.000Z",
+      "updatedAt": "2025-11-28T20:30:00.000Z",
       "dueDate": "2025-11-10T17:00:00.000Z"
     },
     {
@@ -114,8 +114,8 @@
       "boardId": "default-board",
       "priority": "high",
       "tags": ["insurance", "paperwork"],
-      "createdAt": "2025-10-20T13:15:00.000Z",
-      "updatedAt": "2025-10-20T13:15:00.000Z",
+      "createdAt": "2025-11-20T13:15:00.000Z",
+      "updatedAt": "2025-11-20T13:15:00.000Z",
       "dueDate": "2025-11-05T17:00:00.000Z"
     },
     {
@@ -126,8 +126,8 @@
       "boardId": "default-board",
       "priority": "low",
       "tags": ["cleaning", "donation"],
-      "createdAt": "2025-10-22T08:45:00.000Z",
-      "updatedAt": "2025-10-22T08:45:00.000Z",
+      "createdAt": "2025-11-22T08:45:00.000Z",
+      "updatedAt": "2025-11-22T08:45:00.000Z",
       "dueDate": "2025-11-20T17:00:00.000Z"
     },
     {
@@ -138,9 +138,9 @@
       "boardId": "work-project-alpha",
       "priority": "high",
       "tags": ["design", "architecture", "react"],
-      "createdAt": "2025-10-02T09:30:00.000Z",
-      "updatedAt": "2025-10-15T17:00:00.000Z",
-      "completedAt": "2025-10-15T17:00:00.000Z"
+      "createdAt": "2025-11-02T09:30:00.000Z",
+      "updatedAt": "2025-11-15T17:00:00.000Z",
+      "completedAt": "2025-11-15T17:00:00.000Z"
     },
     {
       "id": "task-alpha-2",
@@ -151,8 +151,8 @@
       "priority": "high",
       "tags": ["authentication", "security", "backend"],
       "progress": 75,
-      "createdAt": "2025-10-06T10:00:00.000Z",
-      "updatedAt": "2025-10-29T15:30:00.000Z",
+      "createdAt": "2025-11-06T10:00:00.000Z",
+      "updatedAt": "2025-11-29T15:30:00.000Z",
       "dueDate": "2025-11-08T17:00:00.000Z"
     },
     {
@@ -164,8 +164,8 @@
       "priority": "medium",
       "tags": ["frontend", "responsive", "css"],
       "progress": 40,
-      "createdAt": "2025-10-10T11:15:00.000Z",
-      "updatedAt": "2025-10-28T09:20:00.000Z",
+      "createdAt": "2025-11-10T11:15:00.000Z",
+      "updatedAt": "2025-11-28T09:20:00.000Z",
       "dueDate": "2025-11-12T17:00:00.000Z"
     },
     {
@@ -176,8 +176,8 @@
       "boardId": "work-project-alpha",
       "priority": "medium",
       "tags": ["devops", "ci-cd", "github"],
-      "createdAt": "2025-10-18T14:45:00.000Z",
-      "updatedAt": "2025-10-18T14:45:00.000Z",
+      "createdAt": "2025-11-18T14:45:00.000Z",
+      "updatedAt": "2025-11-18T14:45:00.000Z",
       "dueDate": "2025-11-15T17:00:00.000Z"
     },
     {
@@ -188,8 +188,8 @@
       "boardId": "work-project-alpha",
       "priority": "high",
       "tags": ["testing", "api", "backend"],
-      "createdAt": "2025-10-20T16:00:00.000Z",
-      "updatedAt": "2025-10-20T16:00:00.000Z",
+      "createdAt": "2025-11-20T16:00:00.000Z",
+      "updatedAt": "2025-11-20T16:00:00.000Z",
       "dueDate": "2025-11-10T17:00:00.000Z"
     },
     {
@@ -200,8 +200,8 @@
       "boardId": "work-project-alpha",
       "priority": "low",
       "tags": ["performance", "images", "optimization"],
-      "createdAt": "2025-10-22T12:30:00.000Z",
-      "updatedAt": "2025-10-22T12:30:00.000Z",
+      "createdAt": "2025-11-22T12:30:00.000Z",
+      "updatedAt": "2025-11-22T12:30:00.000Z",
       "dueDate": "2025-11-25T17:00:00.000Z"
     },
     {
@@ -212,8 +212,8 @@
       "boardId": "work-project-alpha",
       "priority": "medium",
       "tags": ["documentation", "api"],
-      "createdAt": "2025-10-24T09:45:00.000Z",
-      "updatedAt": "2025-10-24T09:45:00.000Z",
+      "createdAt": "2025-11-24T09:45:00.000Z",
+      "updatedAt": "2025-11-24T09:45:00.000Z",
       "dueDate": "2025-11-18T17:00:00.000Z"
     },
     {
@@ -224,9 +224,9 @@
       "boardId": "marketing-campaign",
       "priority": "high",
       "tags": ["branding", "strategy", "messaging"],
-      "createdAt": "2025-10-03T11:30:00.000Z",
-      "updatedAt": "2025-10-18T14:20:00.000Z",
-      "completedAt": "2025-10-18T14:20:00.000Z"
+      "createdAt": "2025-11-03T11:30:00.000Z",
+      "updatedAt": "2025-11-18T14:20:00.000Z",
+      "completedAt": "2025-11-18T14:20:00.000Z"
     },
     {
       "id": "task-marketing-2",
@@ -237,8 +237,8 @@
       "priority": "medium",
       "tags": ["design", "social-media", "templates"],
       "progress": 65,
-      "createdAt": "2025-10-08T13:00:00.000Z",
-      "updatedAt": "2025-10-29T11:30:00.000Z",
+      "createdAt": "2025-11-08T13:00:00.000Z",
+      "updatedAt": "2025-11-29T11:30:00.000Z",
       "dueDate": "2025-11-08T17:00:00.000Z"
     },
     {
@@ -250,8 +250,8 @@
       "priority": "high",
       "tags": ["email", "automation", "newsletter"],
       "progress": 80,
-      "createdAt": "2025-10-12T15:45:00.000Z",
-      "updatedAt": "2025-10-29T10:15:00.000Z",
+      "createdAt": "2025-11-12T15:45:00.000Z",
+      "updatedAt": "2025-11-29T10:15:00.000Z",
       "dueDate": "2025-11-05T17:00:00.000Z"
     },
     {
@@ -262,8 +262,8 @@
       "boardId": "marketing-campaign",
       "priority": "medium",
       "tags": ["research", "competitors", "analysis"],
-      "createdAt": "2025-10-16T09:20:00.000Z",
-      "updatedAt": "2025-10-16T09:20:00.000Z",
+      "createdAt": "2025-11-16T09:20:00.000Z",
+      "updatedAt": "2025-11-16T09:20:00.000Z",
       "dueDate": "2025-11-15T17:00:00.000Z"
     },
     {
@@ -274,8 +274,8 @@
       "boardId": "marketing-campaign",
       "priority": "low",
       "tags": ["video", "testimonials", "customers"],
-      "createdAt": "2025-10-18T16:30:00.000Z",
-      "updatedAt": "2025-10-18T16:30:00.000Z",
+      "createdAt": "2025-11-18T16:30:00.000Z",
+      "updatedAt": "2025-11-18T16:30:00.000Z",
       "dueDate": "2025-11-30T17:00:00.000Z"
     },
     {
@@ -286,8 +286,8 @@
       "boardId": "marketing-campaign",
       "priority": "medium",
       "tags": ["influencers", "partnerships", "outreach"],
-      "createdAt": "2025-10-20T12:15:00.000Z",
-      "updatedAt": "2025-10-20T12:15:00.000Z",
+      "createdAt": "2025-11-20T12:15:00.000Z",
+      "updatedAt": "2025-11-20T12:15:00.000Z",
       "dueDate": "2025-11-20T17:00:00.000Z"
     },
     {
@@ -298,9 +298,9 @@
       "boardId": "home-improvement",
       "priority": "high",
       "tags": ["kitchen", "hardware", "renovation"],
-      "createdAt": "2025-10-04T14:00:00.000Z",
-      "updatedAt": "2025-10-20T16:45:00.000Z",
-      "completedAt": "2025-10-20T16:45:00.000Z"
+      "createdAt": "2025-11-04T14:00:00.000Z",
+      "updatedAt": "2025-11-20T16:45:00.000Z",
+      "completedAt": "2025-11-20T16:45:00.000Z"
     },
     {
       "id": "task-home-2",
@@ -311,8 +311,8 @@
       "priority": "medium",
       "tags": ["lighting", "electrical", "installation"],
       "progress": 50,
-      "createdAt": "2025-10-08T10:30:00.000Z",
-      "updatedAt": "2025-10-28T15:20:00.000Z",
+      "createdAt": "2025-11-08T10:30:00.000Z",
+      "updatedAt": "2025-11-28T15:20:00.000Z",
       "dueDate": "2025-11-10T17:00:00.000Z"
     },
     {
@@ -324,8 +324,8 @@
       "priority": "low",
       "tags": ["landscaping", "design", "backyard"],
       "progress": 25,
-      "createdAt": "2025-10-12T12:45:00.000Z",
-      "updatedAt": "2025-10-26T14:10:00.000Z",
+      "createdAt": "2025-11-12T12:45:00.000Z",
+      "updatedAt": "2025-11-26T14:10:00.000Z",
       "dueDate": "2025-12-01T17:00:00.000Z"
     },
     {
@@ -336,8 +336,8 @@
       "boardId": "home-improvement",
       "priority": "medium",
       "tags": ["painting", "bedroom", "interior"],
-      "createdAt": "2025-10-15T09:15:00.000Z",
-      "updatedAt": "2025-10-15T09:15:00.000Z",
+      "createdAt": "2025-11-15T09:15:00.000Z",
+      "updatedAt": "2025-11-15T09:15:00.000Z",
       "dueDate": "2025-11-15T17:00:00.000Z"
     },
     {
@@ -348,8 +348,8 @@
       "boardId": "home-improvement",
       "priority": "low",
       "tags": ["plumbing", "bathroom", "fixtures"],
-      "createdAt": "2025-10-18T11:40:00.000Z",
-      "updatedAt": "2025-10-18T11:40:00.000Z",
+      "createdAt": "2025-11-18T11:40:00.000Z",
+      "updatedAt": "2025-11-18T11:40:00.000Z",
       "dueDate": "2025-11-25T17:00:00.000Z"
     },
     {
@@ -360,8 +360,8 @@
       "boardId": "home-improvement",
       "priority": "medium",
       "tags": ["organization", "garage", "storage"],
-      "createdAt": "2025-10-22T13:25:00.000Z",
-      "updatedAt": "2025-10-22T13:25:00.000Z",
+      "createdAt": "2025-11-22T13:25:00.000Z",
+      "updatedAt": "2025-11-22T13:25:00.000Z",
       "dueDate": "2025-11-18T17:00:00.000Z"
     },
     {
@@ -373,8 +373,8 @@
       "priority": "high",
       "tags": ["react", "course", "frontend"],
       "progress": 70,
-      "createdAt": "2025-10-05T09:00:00.000Z",
-      "updatedAt": "2025-10-29T19:15:00.000Z",
+      "createdAt": "2025-11-05T09:00:00.000Z",
+      "updatedAt": "2025-11-29T19:15:00.000Z",
       "dueDate": "2025-11-15T17:00:00.000Z"
     },
     {
@@ -386,8 +386,8 @@
       "priority": "medium",
       "tags": ["reading", "architecture", "software-design"],
       "progress": 45,
-      "createdAt": "2025-10-10T20:30:00.000Z",
-      "updatedAt": "2025-10-28T21:00:00.000Z",
+      "createdAt": "2025-11-10T20:30:00.000Z",
+      "updatedAt": "2025-11-28T21:00:00.000Z",
       "dueDate": "2025-12-01T17:00:00.000Z"
     },
     {
@@ -398,8 +398,8 @@
       "boardId": "home-improvement",
       "priority": "high",
       "tags": ["typescript", "programming", "practice"],
-      "createdAt": "2025-10-15T18:45:00.000Z",
-      "updatedAt": "2025-10-15T18:45:00.000Z",
+      "createdAt": "2025-11-15T18:45:00.000Z",
+      "updatedAt": "2025-11-15T18:45:00.000Z",
       "dueDate": "2025-11-20T17:00:00.000Z"
     },
     {
@@ -410,9 +410,9 @@
       "boardId": "home-improvement",
       "priority": "medium",
       "tags": ["graphql", "workshop", "api"],
-      "createdAt": "2025-10-18T10:20:00.000Z",
-      "updatedAt": "2025-10-25T18:30:00.000Z",
-      "completedAt": "2025-10-25T18:30:00.000Z"
+      "createdAt": "2025-11-18T10:20:00.000Z",
+      "updatedAt": "2025-11-25T18:30:00.000Z",
+      "completedAt": "2025-11-25T18:30:00.000Z"
     },
     {
       "id": "task-learning-5",
@@ -422,8 +422,8 @@
       "boardId": "home-improvement",
       "priority": "low",
       "tags": ["nodejs", "cli", "project"],
-      "createdAt": "2025-10-20T17:10:00.000Z",
-      "updatedAt": "2025-10-20T17:10:00.000Z",
+      "createdAt": "2025-11-20T17:10:00.000Z",
+      "updatedAt": "2025-11-20T17:10:00.000Z",
       "dueDate": "2025-12-15T17:00:00.000Z"
     },
     {
@@ -434,8 +434,8 @@
       "boardId": "home-improvement",
       "priority": "medium",
       "tags": ["docker", "devops", "containers"],
-      "createdAt": "2025-10-22T14:55:00.000Z",
-      "updatedAt": "2025-10-22T14:55:00.000Z",
+      "createdAt": "2025-11-22T14:55:00.000Z",
+      "updatedAt": "2025-11-22T14:55:00.000Z",
       "dueDate": "2025-11-25T17:00:00.000Z"
     },
     {
@@ -447,8 +447,8 @@
       "priority": "high",
       "tags": ["aws", "certification", "cloud"],
       "progress": 30,
-      "createdAt": "2025-10-12T08:30:00.000Z",
-      "updatedAt": "2025-10-29T20:45:00.000Z",
+      "createdAt": "2025-11-12T08:30:00.000Z",
+      "updatedAt": "2025-11-29T20:45:00.000Z",
       "dueDate": "2025-12-10T17:00:00.000Z"
     },
     {
@@ -459,9 +459,9 @@
       "boardId": "side-project",
       "priority": "high",
       "tags": ["setup", "git", "ci-cd"],
-      "createdAt": "2025-10-10T16:00:00.000Z",
-      "updatedAt": "2025-10-15T12:30:00.000Z",
-      "completedAt": "2025-10-15T12:30:00.000Z"
+      "createdAt": "2025-11-10T16:00:00.000Z",
+      "updatedAt": "2025-11-15T12:30:00.000Z",
+      "completedAt": "2025-11-15T12:30:00.000Z"
     },
     {
       "id": "task-side-2",
@@ -471,9 +471,9 @@
       "boardId": "side-project",
       "priority": "high",
       "tags": ["design", "ux", "wireframes"],
-      "createdAt": "2025-10-12T13:15:00.000Z",
-      "updatedAt": "2025-10-20T17:45:00.000Z",
-      "completedAt": "2025-10-20T17:45:00.000Z"
+      "createdAt": "2025-11-12T13:15:00.000Z",
+      "updatedAt": "2025-11-20T17:45:00.000Z",
+      "completedAt": "2025-11-20T17:45:00.000Z"
     },
     {
       "id": "task-side-3",
@@ -484,8 +484,8 @@
       "priority": "high",
       "tags": ["development", "features", "crud"],
       "progress": 60,
-      "createdAt": "2025-10-15T09:30:00.000Z",
-      "updatedAt": "2025-10-29T16:20:00.000Z",
+      "createdAt": "2025-11-15T09:30:00.000Z",
+      "updatedAt": "2025-11-29T16:20:00.000Z",
       "dueDate": "2025-11-10T17:00:00.000Z"
     },
     {
@@ -497,8 +497,8 @@
       "priority": "medium",
       "tags": ["auth", "security", "oauth"],
       "progress": 40,
-      "createdAt": "2025-10-18T11:45:00.000Z",
-      "updatedAt": "2025-10-28T14:10:00.000Z",
+      "createdAt": "2025-11-18T11:45:00.000Z",
+      "updatedAt": "2025-11-28T14:10:00.000Z",
       "dueDate": "2025-11-15T17:00:00.000Z"
     },
     {
@@ -509,8 +509,8 @@
       "boardId": "side-project",
       "priority": "medium",
       "tags": ["mobile", "responsive", "ui"],
-      "createdAt": "2025-10-20T15:20:00.000Z",
-      "updatedAt": "2025-10-20T15:20:00.000Z",
+      "createdAt": "2025-11-20T15:20:00.000Z",
+      "updatedAt": "2025-11-20T15:20:00.000Z",
       "dueDate": "2025-11-20T17:00:00.000Z"
     },
     {
@@ -521,8 +521,8 @@
       "boardId": "side-project",
       "priority": "low",
       "tags": ["analytics", "monitoring", "tracking"],
-      "createdAt": "2025-10-22T10:35:00.000Z",
-      "updatedAt": "2025-10-22T10:35:00.000Z",
+      "createdAt": "2025-11-22T10:35:00.000Z",
+      "updatedAt": "2025-11-22T10:35:00.000Z",
       "dueDate": "2025-12-01T17:00:00.000Z"
     },
     {
@@ -533,8 +533,8 @@
       "boardId": "side-project",
       "priority": "medium",
       "tags": ["deployment", "hosting", "production"],
-      "createdAt": "2025-10-24T12:50:00.000Z",
-      "updatedAt": "2025-10-24T12:50:00.000Z",
+      "createdAt": "2025-11-24T12:50:00.000Z",
+      "updatedAt": "2025-11-24T12:50:00.000Z",
       "dueDate": "2025-11-25T17:00:00.000Z"
     },
     {
@@ -545,8 +545,8 @@
       "boardId": "side-project",
       "priority": "low",
       "tags": ["documentation", "guides", "help"],
-      "createdAt": "2025-10-25T14:25:00.000Z",
-      "updatedAt": "2025-10-25T14:25:00.000Z",
+      "createdAt": "2025-11-25T14:25:00.000Z",
+      "updatedAt": "2025-11-25T14:25:00.000Z",
       "dueDate": "2025-12-10T17:00:00.000Z"
     }
   ],
