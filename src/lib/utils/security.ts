@@ -22,6 +22,30 @@ const ALLOWED_PATTERNS = {
 } as const;
 
 /**
+ * Removes dangerous protocols and event handlers from input
+ */
+function removeDangerousContent(input: string): string {
+  return input
+    .replace(/[<>]/g, '')
+    .replace(/javascript:/gi, '')
+    .replace(/on\w+\s*=/gi, '')
+    .replace(/data:/gi, '')
+    .replace(/vbscript:/gi, '')
+    .replace(/file:/gi, '');
+}
+
+/**
+ * Validates input against pattern and removes invalid characters if needed
+ */
+function validateAndCleanPattern(input: string, type: keyof typeof INPUT_LIMITS): string {
+  const pattern = getPatternForType(type);
+  if (pattern && !pattern.test(input)) {
+    return input.replace(/[^a-zA-Z0-9\s\-_.,!?()[\]]/g, '');
+  }
+  return input;
+}
+
+/**
  * Sanitizes text input by removing potentially dangerous characters
  */
 export function sanitizeTextInput(
@@ -39,39 +63,22 @@ export function sanitizeTextInput(
 
   let sanitized = input;
 
-  // Trim whitespace if requested
   if (options.trimWhitespace !== false) {
     sanitized = sanitized.trim();
   }
 
-  // Remove HTML tags if not allowed
   if (!options.allowHtml) {
     sanitized = sanitized.replace(/<[^>]*>/g, '');
   }
 
-  // Remove potentially dangerous characters
-  sanitized = sanitized
-    .replace(/[<>]/g, '') // Remove angle brackets
-    .replace(/javascript:/gi, '') // Remove javascript: protocol
-    .replace(/on\w+\s*=/gi, '') // Remove event handlers
-    .replace(/data:/gi, '') // Remove data: protocol
-    .replace(/vbscript:/gi, '') // Remove vbscript: protocol
-    .replace(/file:/gi, ''); // Remove file: protocol
+  sanitized = removeDangerousContent(sanitized);
+  sanitized = validateAndCleanPattern(sanitized, type);
 
-  // Apply pattern validation based on type
-  const pattern = getPatternForType(type);
-  if (pattern && !pattern.test(sanitized)) {
-    // Remove invalid characters
-    sanitized = sanitized.replace(/[^a-zA-Z0-9\s\-_.,!?()[\]]/g, '');
-  }
-
-  // Enforce length limits
   const maxLength = INPUT_LIMITS[type];
   if (sanitized.length > maxLength) {
     sanitized = sanitized.slice(0, maxLength);
   }
 
-  // Normalize whitespace if not preserving
   if (!options.preserveWhitespace) {
     sanitized = sanitized.replace(/\s+/g, ' ');
   }
