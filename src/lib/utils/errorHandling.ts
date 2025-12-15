@@ -95,13 +95,43 @@ export class ErrorRecovery {
     return this.retryStrategies.get(errorCode) || null;
   }
 
+  private static async attemptOperation<T>(
+    operation: () => Promise<T>,
+    strategy: ErrorRecoveryOptions
+  ): Promise<{ success: boolean; result?: T; error?: Error }> {
+    for (let attempt = 0; attempt <= strategy.maxRetries; attempt++) {
+      try {
+        const result = await operation();
+        return { success: true, result };
+      } catch (error) {
+        if (attempt === strategy.maxRetries) {
+          return { success: false, error: error as Error };
+        }
+        await new Promise(resolve =>
+          setTimeout(resolve, strategy.retryDelay * (attempt + 1))
+        );
+      }
+    }
+    return { success: false };
+  }
+
+  private static executeFallback(strategy: ErrorRecoveryOptions): void {
+    if (strategy.fallbackAction) {
+      try {
+        strategy.fallbackAction();
+      } catch (fallbackError) {
+        console.error('Fallback action failed:', fallbackError);
+      }
+    }
+  }
+
   static async executeWithRetry<T>(
     operation: () => Promise<T>,
     errorCode: string,
     context: ErrorContext
   ): Promise<T> {
     const strategy = this.getStrategy(errorCode);
-    
+
     if (!strategy) {
       throw new AppError(
         `No recovery strategy for error: ${errorCode}`,
@@ -112,36 +142,16 @@ export class ErrorRecovery {
       );
     }
 
-    let lastError: Error | null = null;
+    const { success, result, error } = await this.attemptOperation(operation, strategy);
 
-    for (let attempt = 0; attempt <= strategy.maxRetries; attempt++) {
-      try {
-        return await operation();
-      } catch (error) {
-        lastError = error as Error;
-        
-        if (attempt === strategy.maxRetries) {
-          break;
-        }
-
-        // Wait before retry
-        await new Promise(resolve => 
-          setTimeout(resolve, strategy.retryDelay * (attempt + 1))
-        );
-      }
+    if (success && result !== undefined) {
+      return result;
     }
 
-    // Execute fallback action if available
-    if (strategy.fallbackAction) {
-      try {
-        strategy.fallbackAction();
-      } catch (fallbackError) {
-        console.error('Fallback action failed:', fallbackError);
-      }
-    }
+    this.executeFallback(strategy);
 
     throw new AppError(
-      `Operation failed after ${strategy.maxRetries} retries: ${lastError?.message}`,
+      `Operation failed after ${strategy.maxRetries} retries: ${error?.message}`,
       errorCode,
       context,
       false,

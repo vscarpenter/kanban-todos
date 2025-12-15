@@ -16,6 +16,42 @@ import {
   selectCurrentBoard,
 } from '@/lib/utils/boardHelpers';
 
+/**
+ * Loads boards from database, creating default board if none exist
+ */
+async function loadAndEnsureDefaultBoard(): Promise<Board[]> {
+  let boardsData = await taskDB.getBoards();
+
+  if (boardsData.length === 0) {
+    const defaultBoardData = createDefaultBoard();
+    await taskDB.addBoard(defaultBoardData);
+    boardsData = [defaultBoardData];
+  }
+
+  return boardsData;
+}
+
+/**
+ * Processes boards by assigning missing orders and deserializing dates
+ */
+async function processAndOrderBoards(boardsData: Board[]): Promise<Board[]> {
+  const { boards: boardsWithOrder, needsUpdate } = assignMissingOrders(boardsData);
+
+  if (needsUpdate) {
+    await persistBoardOrders(boardsWithOrder);
+  }
+
+  return boardsWithOrder.map(deserializeBoardDates);
+}
+
+/**
+ * Restores current board selection from settings
+ */
+async function restoreCurrentBoard(processedBoards: Board[]): Promise<string | null> {
+  const settings = await taskDB.getSettings();
+  return selectCurrentBoard(processedBoards, settings?.currentBoardId);
+}
+
 interface BoardState {
   boards: Board[];
   currentBoardId: string | null;
@@ -50,6 +86,25 @@ interface BoardActions {
   initializeBoards: () => Promise<void>;
 }
 
+// Default settings template for board persistence
+const DEFAULT_BOARD_SETTINGS = {
+  theme: 'system' as const,
+  autoArchiveDays: 30,
+  enableNotifications: false,
+  enableKeyboardShortcuts: true,
+  enableDebugMode: false,
+  enableDeveloperMode: false,
+  searchPreferences: {
+    defaultScope: 'current-board' as const,
+    rememberScope: true,
+  },
+  accessibility: {
+    highContrast: false,
+    reduceMotion: false,
+    fontSize: 'medium' as const,
+  },
+};
+
 // Use satisfies operator (TS 5.0+) for type-safe initial state
 const initialState = {
   boards: [],
@@ -64,26 +119,11 @@ export const useBoardStore = create<BoardState & BoardActions>((set, get) => ({
         setBoards: (boards) => set({ boards }),
         setCurrentBoard: async (boardId) => {
           set({ currentBoardId: boardId });
-          
-          // Persist current board selection in settings
+
           try {
             const existingSettings = await taskDB.getSettings();
             const updatedSettings = {
-              theme: 'system' as const,
-              autoArchiveDays: 30,
-              enableNotifications: false,
-              enableKeyboardShortcuts: true,
-              enableDebugMode: false,
-              enableDeveloperMode: false,
-              searchPreferences: {
-                defaultScope: 'current-board' as const,
-                rememberScope: true,
-              },
-              accessibility: {
-                highContrast: false,
-                reduceMotion: false,
-                fontSize: 'medium' as const,
-              },
+              ...DEFAULT_BOARD_SETTINGS,
               ...existingSettings,
               currentBoardId: boardId,
             };
@@ -342,27 +382,9 @@ export const useBoardStore = create<BoardState & BoardActions>((set, get) => ({
             }
 
             await taskDB.init();
-            let boardsData = await taskDB.getBoards();
-
-            // Create default board if none exist
-            if (boardsData.length === 0) {
-              const defaultBoardData = createDefaultBoard();
-              await taskDB.addBoard(defaultBoardData);
-              boardsData = [defaultBoardData];
-            }
-
-            // Assign missing order values
-            const { boards: boardsWithOrder, needsUpdate } = assignMissingOrders(boardsData);
-            if (needsUpdate) {
-              await persistBoardOrders(boardsWithOrder);
-            }
-
-            // Deserialize dates
-            const processedBoards = boardsWithOrder.map(deserializeBoardDates);
-
-            // Restore current board from settings
-            const settings = await taskDB.getSettings();
-            const currentBoardId = selectCurrentBoard(processedBoards, settings?.currentBoardId);
+            const boardsData = await loadAndEnsureDefaultBoard();
+            const processedBoards = await processAndOrderBoards(boardsData);
+            const currentBoardId = await restoreCurrentBoard(processedBoards);
 
             set({
               boards: processedBoards.sort((a, b) => a.order - b.order),
