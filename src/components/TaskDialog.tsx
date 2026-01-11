@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
+import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import { useTaskStore } from "@/lib/stores/taskStore";
 import { Task } from "@/lib/types";
 
@@ -45,9 +46,13 @@ interface FormData {
 export function TaskDialog({ mode, open, onOpenChange, boardId, task }: TaskDialogProps) {
   const { addTask, updateTask } = useTaskStore();
   const [isLoading, setIsLoading] = useState(false);
+  const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] = useState(false);
+
+  // Store initial form data for comparison
+  const initialFormDataRef = useRef<FormData | null>(null);
 
   // Initialize form data based on mode
-  const getInitialFormData = (): FormData => {
+  const getInitialFormData = useCallback((): FormData => {
     if (mode === "edit" && task) {
       return {
         title: task.title,
@@ -68,17 +73,54 @@ export function TaskDialog({ mode, open, onOpenChange, boardId, task }: TaskDial
       progress: 0,
       dueDate: undefined,
     };
-  };
+  }, [mode, task]);
 
   const [formData, setFormData] = useState<FormData>(getInitialFormData());
+
+  // Check if form has unsaved changes
+  const hasUnsavedChanges = useCallback((): boolean => {
+    if (!initialFormDataRef.current) return false;
+
+    const initial = initialFormDataRef.current;
+
+    // Compare all fields
+    if (formData.title !== initial.title) return true;
+    if (formData.description !== initial.description) return true;
+    if (formData.priority !== initial.priority) return true;
+    if (formData.tags !== initial.tags) return true;
+    if (formData.progress !== initial.progress) return true;
+
+    // Compare dates (both undefined, or same timestamp)
+    const initialTime = initial.dueDate?.getTime();
+    const currentTime = formData.dueDate?.getTime();
+    if (initialTime !== currentTime) return true;
+
+    return false;
+  }, [formData]);
+
+  // Handle dialog close with unsaved changes check
+  const handleOpenChange = useCallback((newOpen: boolean) => {
+    if (!newOpen && hasUnsavedChanges()) {
+      setShowUnsavedChangesDialog(true);
+      return;
+    }
+    onOpenChange(newOpen);
+  }, [hasUnsavedChanges, onOpenChange]);
+
+  // Discard changes and close
+  const handleDiscardChanges = useCallback(() => {
+    setShowUnsavedChangesDialog(false);
+    onOpenChange(false);
+  }, [onOpenChange]);
 
   // Reset form data when mode or task changes
   useEffect(() => {
     if (open) {
-      setFormData(getInitialFormData());
+      const initial = getInitialFormData();
+      setFormData(initial);
+      initialFormDataRef.current = initial;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, task, open]);
+  }, [mode, task, open, getInitialFormData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,7 +183,8 @@ export function TaskDialog({ mode, open, onOpenChange, boardId, task }: TaskDial
   const showProgressSlider = mode === "edit" && task?.status === 'in-progress';
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>
@@ -261,7 +304,7 @@ export function TaskDialog({ mode, open, onOpenChange, boardId, task }: TaskDial
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleOpenChange(false)}
               disabled={isLoading}
             >
               Cancel
@@ -273,5 +316,18 @@ export function TaskDialog({ mode, open, onOpenChange, boardId, task }: TaskDial
         </form>
       </DialogContent>
     </Dialog>
+
+    {/* Unsaved Changes Confirmation */}
+    <ConfirmationDialog
+      open={showUnsavedChangesDialog}
+      onOpenChange={setShowUnsavedChangesDialog}
+      title="Unsaved Changes"
+      description="You have unsaved changes. Are you sure you want to discard them?"
+      confirmText="Discard"
+      cancelText="Keep Editing"
+      type="warning"
+      onConfirm={handleDiscardChanges}
+    />
+    </>
   );
 }

@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import PwaUpdater from "@/components/PwaUpdater";
 import InstallPWA from "@/components/InstallPWA";
 import { IOSClassProvider } from "@/components/IOSClassProvider";
+import { NotificationProvider } from "@/components/NotificationProvider";
 
 const geist = Geist({ 
   subsets: ["latin"],
@@ -116,6 +117,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <IOSClassProvider />
+          <NotificationProvider />
           {children}
           <InstallPWA />
           <PwaUpdater />

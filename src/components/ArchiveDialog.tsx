@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Trash2, RotateCcw, Calendar } from "@/lib/icons";
+import { Input } from "@/components/ui/input";
+import { Trash2, RotateCcw, Calendar, Search, X } from "@/lib/icons";
 import { useTaskStore } from "@/lib/stores/taskStore";
 import { useBoardStore } from "@/lib/stores/boardStore";
 import { Task } from "@/lib/types";
@@ -23,6 +24,7 @@ export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const { tasks, unarchiveTask, deleteTask } = useTaskStore();
   const { boards } = useBoardStore();
 
@@ -33,6 +35,8 @@ export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
       const archived = tasks.filter(task => task.archivedAt);
       setArchivedTasks(archived);
       setIsLoading(false);
+      // Reset search when dialog opens
+      setSearchQuery("");
     }
   }, [open, tasks]);
 
@@ -45,6 +49,26 @@ export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
     const board = boards.find(b => b.id === boardId);
     return board?.color || '#6b7280';
   };
+
+  // Filter archived tasks based on search query
+  const filteredTasks = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return archivedTasks;
+    }
+
+    const query = searchQuery.toLowerCase();
+    return archivedTasks.filter(task => {
+      // Search in title
+      if (task.title.toLowerCase().includes(query)) return true;
+      // Search in description
+      if (task.description?.toLowerCase().includes(query)) return true;
+      // Search in tags
+      if (task.tags.some(tag => tag.toLowerCase().includes(query))) return true;
+      // Search in board name
+      if (getBoardName(task.boardId).toLowerCase().includes(query)) return true;
+      return false;
+    });
+  }, [archivedTasks, searchQuery]);
 
   const handleUnarchive = async (taskId: string) => {
     await unarchiveTask(taskId);
@@ -103,6 +127,29 @@ export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Search Input */}
+          {archivedTasks.length > 0 && (
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search archived tasks..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 pr-9"
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                  onClick={() => setSearchQuery("")}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          )}
+
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -113,10 +160,19 @@ export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
               <p className="text-lg font-medium">No archived tasks</p>
               <p className="text-sm">Tasks you archive will appear here</p>
             </div>
+          ) : filteredTasks.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-lg font-medium">No matching tasks</p>
+              <p className="text-sm">Try a different search term</p>
+            </div>
           ) : (
-            <div className="h-[500px] overflow-y-auto pr-4">
+            <div className="h-[450px] overflow-y-auto pr-4">
+              <div className="text-xs text-muted-foreground mb-2">
+                Showing {filteredTasks.length} of {archivedTasks.length} archived tasks
+              </div>
               <div className="space-y-3">
-                {archivedTasks.map((task) => (
+                {filteredTasks.map((task) => (
                   <Card key={task.id} className="hover:shadow-sm transition-shadow">
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-4">
