@@ -7,7 +7,7 @@ import { Menu, X } from "@/lib/icons";
 import { SidebarHeader } from "./sidebar/SidebarHeader";
 import { BoardsList } from "./sidebar/BoardsList";
 import { NavigationMenu } from "./sidebar/NavigationMenu";
-import { SidebarDialogs } from "./sidebar/SidebarDialogs";
+import { SidebarDialogs, type DialogType } from "./sidebar/SidebarDialogs";
 import { VersionFooter } from "./VersionIndicator";
 
 interface SidebarProps {
@@ -16,14 +16,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isOpen, onToggle }: SidebarProps) {
-  const [showCreateBoard, setShowCreateBoard] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showUserGuide, setShowUserGuide] = useState(false);
-  const [showExportDialog, setShowExportDialog] = useState(false);
-  const [showImportDialog, setShowImportDialog] = useState(false);
-  const [showArchiveDialog, setShowArchiveDialog] = useState(false);
-
-
+  const [activeDialog, setActiveDialog] = useState<DialogType | null>(null);
 
   return (
     <>
@@ -51,16 +44,16 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          <BoardsList onCreateBoard={() => setShowCreateBoard(true)} />
+          <BoardsList onCreateBoard={() => setActiveDialog('createBoard')} />
 
           <Separator />
 
           <NavigationMenu
-            onExport={() => setShowExportDialog(true)}
-            onImport={() => setShowImportDialog(true)}
-            onSettings={() => setShowSettings(true)}
-            onUserGuide={() => setShowUserGuide(true)}
-            onArchive={() => setShowArchiveDialog(true)}
+            onExport={() => setActiveDialog('export')}
+            onImport={() => setActiveDialog('import')}
+            onSettings={() => setActiveDialog('settings')}
+            onUserGuide={() => setActiveDialog('userGuide')}
+            onArchive={() => setActiveDialog('archive')}
           />
         </div>
 
@@ -68,9 +61,9 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
         <div className="p-4 border-t border-border">
           <VersionFooter />
           <div className="text-xs text-muted-foreground text-center mt-2">
-            <a 
-              href="https://vinny.dev/" 
-              target="_blank" 
+            <a
+              href="https://vinny.dev/"
+              target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground transition-colors underline"
             >
@@ -81,20 +74,9 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
       </div>
 
       <SidebarDialogs
-        showCreateBoard={showCreateBoard}
-        onCreateBoardChange={setShowCreateBoard}
-        showSettings={showSettings}
-        onSettingsChange={setShowSettings}
-        showUserGuide={showUserGuide}
-        onUserGuideChange={setShowUserGuide}
-        showExportDialog={showExportDialog}
-        onExportDialogChange={setShowExportDialog}
-        showImportDialog={showImportDialog}
-        onImportDialogChange={setShowImportDialog}
-        showArchiveDialog={showArchiveDialog}
-        onArchiveDialogChange={setShowArchiveDialog}
+        activeDialog={activeDialog}
+        onDialogChange={setActiveDialog}
       />
     </>
   );
 }
-

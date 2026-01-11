@@ -23,39 +23,18 @@ const ArchiveDialog = dynamic(() => import("../ArchiveDialog").then(mod => ({ de
   loading: () => null
 });
 
+export type DialogType = 'createBoard' | 'settings' | 'userGuide' | 'export' | 'import' | 'archive';
+
 interface SidebarDialogsProps {
-  showCreateBoard: boolean;
-  onCreateBoardChange: (show: boolean) => void;
-  showSettings: boolean;
-  onSettingsChange: (show: boolean) => void;
-  showUserGuide: boolean;
-  onUserGuideChange: (show: boolean) => void;
-  showExportDialog: boolean;
-  onExportDialogChange: (show: boolean) => void;
-  showImportDialog: boolean;
-  onImportDialogChange: (show: boolean) => void;
-  showArchiveDialog: boolean;
-  onArchiveDialogChange: (show: boolean) => void;
+  activeDialog: DialogType | null;
+  onDialogChange: (dialog: DialogType | null) => void;
 }
 
-export function SidebarDialogs({
-  showCreateBoard,
-  onCreateBoardChange,
-  showSettings,
-  onSettingsChange,
-  showUserGuide,
-  onUserGuideChange,
-  showExportDialog,
-  onExportDialogChange,
-  showImportDialog,
-  onImportDialogChange,
-  showArchiveDialog,
-  onArchiveDialogChange
-}: SidebarDialogsProps) {
+export function SidebarDialogs({ activeDialog, onDialogChange }: SidebarDialogsProps) {
   // Listen for keyboard shortcut events
   useEffect(() => {
-    const handleShowSettings = () => onSettingsChange(true);
-    const handleShowHelp = () => onUserGuideChange(true);
+    const handleShowSettings = () => onDialogChange('settings');
+    const handleShowHelp = () => onDialogChange('userGuide');
 
     document.addEventListener('show-settings-dialog', handleShowSettings);
     document.addEventListener('show-help-dialog', handleShowHelp);
@@ -64,38 +43,43 @@ export function SidebarDialogs({
       document.removeEventListener('show-settings-dialog', handleShowSettings);
       document.removeEventListener('show-help-dialog', handleShowHelp);
     };
-  }, [onSettingsChange, onUserGuideChange]);
+  }, [onDialogChange]);
+
+  // Helper to create open change handler for each dialog
+  const createOpenChangeHandler = (dialogType: DialogType) => (open: boolean) => {
+    onDialogChange(open ? dialogType : null);
+  };
 
   return (
     <>
       <CreateBoardDialog
-        open={showCreateBoard}
-        onOpenChange={onCreateBoardChange}
+        open={activeDialog === 'createBoard'}
+        onOpenChange={createOpenChangeHandler('createBoard')}
       />
 
       <SettingsDialog
-        open={showSettings}
-        onOpenChange={onSettingsChange}
+        open={activeDialog === 'settings'}
+        onOpenChange={createOpenChangeHandler('settings')}
       />
 
       <UserGuideDialog
-        open={showUserGuide}
-        onOpenChange={onUserGuideChange}
+        open={activeDialog === 'userGuide'}
+        onOpenChange={createOpenChangeHandler('userGuide')}
       />
 
       <ExportDialog
-        open={showExportDialog}
-        onOpenChange={onExportDialogChange}
+        open={activeDialog === 'export'}
+        onOpenChange={createOpenChangeHandler('export')}
       />
 
       <ImportDialog
-        open={showImportDialog}
-        onOpenChange={onImportDialogChange}
+        open={activeDialog === 'import'}
+        onOpenChange={createOpenChangeHandler('import')}
       />
 
       <ArchiveDialog
-        open={showArchiveDialog}
-        onOpenChange={onArchiveDialogChange}
+        open={activeDialog === 'archive'}
+        onOpenChange={createOpenChangeHandler('archive')}
       />
     </>
   );
