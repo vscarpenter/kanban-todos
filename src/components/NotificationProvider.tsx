@@ -24,11 +24,17 @@ export function NotificationProvider() {
       return;
     }
 
+    // Track if component is still mounted to prevent race conditions
+    let mounted = true;
+
     // Request permission once when notifications are enabled
     const initNotifications = async () => {
       if (!permissionRequested.current) {
         permissionRequested.current = true;
         const granted = await notificationManager.requestPermission();
+
+        // Check if still mounted after async operation
+        if (!mounted) return;
 
         if (!granted) {
           console.info("Notification permission not granted");
@@ -36,15 +42,18 @@ export function NotificationProvider() {
         }
       }
 
-      // Start periodic checking with current tasks
-      notificationManager.stopPeriodicCheck(); // Clear any existing interval
-      notificationManager.startPeriodicCheck(tasks);
+      // Only start periodic check if still mounted
+      if (mounted) {
+        notificationManager.stopPeriodicCheck(); // Clear any existing interval
+        notificationManager.startPeriodicCheck(tasks);
+      }
     };
 
     initNotifications();
 
     // Cleanup on unmount
     return () => {
+      mounted = false;
       notificationManager.stopPeriodicCheck();
     };
   }, [settings.enableNotifications, tasks]);
