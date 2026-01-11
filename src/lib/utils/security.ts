@@ -284,37 +284,6 @@ class RateLimiter {
 export const searchRateLimiter = new RateLimiter(10, 1000); // 10 requests per second
 
 /**
- * Content Security Policy utilities
- */
-export const CSP_DIRECTIVES = {
-  'default-src': ["'self'"],
-  'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-  'style-src': ["'self'", "'unsafe-inline'"],
-  'img-src': ["'self'", 'data:', 'blob:'],
-  'font-src': ["'self'", 'data:'],
-  'connect-src': ["'self'"],
-  'object-src': ["'none'"],
-  'base-uri': ["'self'"],
-  'form-action': ["'self'"],
-  'frame-ancestors': ["'none'"],
-  'upgrade-insecure-requests': [],
-} as const;
-
-/**
- * Generates CSP header value
- */
-export function generateCSPHeader(): string {
-  return Object.entries(CSP_DIRECTIVES)
-    .map(([directive, sources]) => {
-      if (sources.length === 0) {
-        return directive;
-      }
-      return `${directive} ${sources.join(' ')}`;
-    })
-    .join('; ');
-}
-
-/**
  * Validates and sanitizes user input for display
  */
 export function escapeHtml(unsafe: string): string {
