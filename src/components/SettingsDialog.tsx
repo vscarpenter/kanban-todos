@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useTheme } from "next-themes";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,21 @@ import { ConfirmationDialog } from "./ConfirmationDialog";
 import { AppResetDialog } from "./AppResetDialog";
 import { resetApplication } from "@/lib/utils/resetApp";
 
+// Deep compare settings objects
+function settingsEqual(a: Settings, b: Settings): boolean {
+  return (
+    a.theme === b.theme &&
+    a.autoArchiveDays === b.autoArchiveDays &&
+    a.enableNotifications === b.enableNotifications &&
+    a.enableKeyboardShortcuts === b.enableKeyboardShortcuts &&
+    a.enableDebugMode === b.enableDebugMode &&
+    a.enableDeveloperMode === b.enableDeveloperMode &&
+    a.accessibility.highContrast === b.accessibility.highContrast &&
+    a.accessibility.reduceMotion === b.accessibility.reduceMotion &&
+    a.accessibility.fontSize === b.accessibility.fontSize
+  );
+}
+
 interface SettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -28,14 +43,53 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showAppResetDialog, setShowAppResetDialog] = useState(false);
   const [isAppResetting, setIsAppResetting] = useState(false);
+  const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] = useState(false);
+
+  // Store initial settings when dialog opens
+  const initialSettingsRef = useRef<Settings | null>(null);
 
   // Sync settings when dialog opens or settings change
   useEffect(() => {
-    setLocalSettings({
+    const currentSettings = {
       ...settings,
       theme: (theme as Settings['theme']) || 'system'
-    });
+    };
+    setLocalSettings(currentSettings);
+
+    // Only capture initial settings when dialog opens
+    if (open && !initialSettingsRef.current) {
+      initialSettingsRef.current = currentSettings;
+    }
+    // Reset initial ref when dialog closes
+    if (!open) {
+      initialSettingsRef.current = null;
+    }
   }, [settings, theme, open]);
+
+  // Check if there are unsaved changes
+  const hasUnsavedChanges = useCallback((): boolean => {
+    if (!initialSettingsRef.current) return false;
+    return !settingsEqual(localSettings, initialSettingsRef.current);
+  }, [localSettings]);
+
+  // Handle dialog close with unsaved changes check
+  const handleOpenChange = useCallback((newOpen: boolean) => {
+    if (!newOpen && hasUnsavedChanges()) {
+      setShowUnsavedChangesDialog(true);
+      return;
+    }
+    onOpenChange(newOpen);
+  }, [hasUnsavedChanges, onOpenChange]);
+
+  // Discard changes and close (revert theme if changed)
+  const handleDiscardChanges = useCallback(() => {
+    // Revert theme to initial value if it was changed
+    if (initialSettingsRef.current && localSettings.theme !== initialSettingsRef.current.theme) {
+      setTheme(initialSettingsRef.current.theme);
+    }
+    setShowUnsavedChangesDialog(false);
+    onOpenChange(false);
+  }, [localSettings.theme, onOpenChange, setTheme]);
 
   const handleSave = async () => {
     setIsLoading(true);
@@ -111,7 +165,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
@@ -327,12 +382,12 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                onClick={() => onOpenChange(false)}
+                onClick={() => handleOpenChange(false)}
                 disabled={isLoading}
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 onClick={handleSave}
                 disabled={isLoading}
               >
@@ -363,5 +418,18 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         loading={isAppResetting}
       />
     </Dialog>
+
+    {/* Unsaved Changes Confirmation */}
+    <ConfirmationDialog
+      open={showUnsavedChangesDialog}
+      onOpenChange={setShowUnsavedChangesDialog}
+      title="Unsaved Changes"
+      description="You have unsaved settings changes. Are you sure you want to discard them? Any theme changes will be reverted."
+      confirmText="Discard"
+      cancelText="Keep Editing"
+      type="warning"
+      onConfirm={handleDiscardChanges}
+    />
+    </>
   );
 }
