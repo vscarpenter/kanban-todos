@@ -178,7 +178,20 @@ function createUpdateTask(get: () => TaskState & TaskActions, set: (state: Parti
       const task = get().tasks.find(t => t.id === taskId);
       if (!task) throw new Error('Task not found');
 
-      const updatedTask = { ...task, ...updates, updatedAt: new Date() };
+      // Sanitize text fields if they're being updated
+      const sanitizedUpdates = { ...updates };
+      if (updates.title !== undefined || updates.description !== undefined || updates.tags !== undefined) {
+        const sanitized = sanitizeTaskData({
+          title: updates.title ?? task.title,
+          description: updates.description ?? task.description,
+          tags: updates.tags ?? task.tags,
+        });
+        if (updates.title !== undefined) sanitizedUpdates.title = sanitized.title;
+        if (updates.description !== undefined) sanitizedUpdates.description = sanitized.description;
+        if (updates.tags !== undefined) sanitizedUpdates.tags = sanitized.tags;
+      }
+
+      const updatedTask = { ...task, ...sanitizedUpdates, updatedAt: new Date() };
       await taskDB.updateTask(updatedTask);
 
       const { tasks, filters } = get();

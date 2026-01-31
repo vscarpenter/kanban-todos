@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Board } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
 import { exportBoards, ExportData } from '@/lib/utils/exportImport';
+import { sanitizeBoardData } from '@/lib/utils/security';
 import {
   validateBoardName,
   checkDuplicateBoardName,
@@ -170,10 +171,23 @@ export const useBoardStore = create<BoardState & BoardActions>((set, get) => ({
         updateBoard: async (boardId, updates) => {
           try {
             set({ isLoading: true, error: null });
-            
+
+            const existingBoard = get().boards.find(b => b.id === boardId)!;
+
+            // Sanitize text fields if they're being updated
+            const sanitizedUpdates = { ...updates };
+            if (updates.name !== undefined || updates.description !== undefined) {
+              const sanitized = sanitizeBoardData({
+                name: updates.name ?? existingBoard.name,
+                description: updates.description ?? existingBoard.description,
+              });
+              if (updates.name !== undefined) sanitizedUpdates.name = sanitized.name;
+              if (updates.description !== undefined) sanitizedUpdates.description = sanitized.description;
+            }
+
             const updatedBoard = {
-              ...get().boards.find(b => b.id === boardId)!,
-              ...updates,
+              ...existingBoard,
+              ...sanitizedUpdates,
               updatedAt: new Date(),
             };
 
