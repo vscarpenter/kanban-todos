@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -12,16 +12,12 @@ interface KeyboardShortcutsDialogProps {
 }
 
 export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcutsDialogProps) {
-  const [shortcuts, setShortcuts] = useState<KeyboardShortcut[]>([]);
-  
-  // Update shortcuts when dialog opens
-  useEffect(() => {
-    if (open) {
-      const currentShortcuts = keyboardManager.getShortcuts();
-      setShortcuts(currentShortcuts);
-    }
+  // Derive shortcuts from manager when dialog is open
+  const shortcuts: KeyboardShortcut[] = useMemo(() => {
+    if (!open) return [];
+    return keyboardManager.getShortcuts();
   }, [open]);
-  
+
   const categories = [...new Set(shortcuts.map(s => s.category))];
 
   return (

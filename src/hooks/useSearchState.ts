@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { TaskFilters } from "@/lib/types";
 import { useTaskStore } from "@/lib/stores/taskStore";
 import { useSettingsStore } from "@/lib/stores/settingsStore";
@@ -21,16 +21,20 @@ export function useSearchState() {
   const { settings, updateSettings, isLoading: settingsLoading } = useSettingsStore();
 
   const [searchValue, setSearchValue] = useState(filters.search);
-  const [localFilters, setLocalFilters] = useState<TaskFilters>(filters);
   const [isUserTyping, setIsUserTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const prevFiltersRef = useRef(filters);
 
-  // Sync filters from store when user is not typing
+  // Derive localFilters from store filters - always in sync
+  const localFilters = useMemo(() => filters, [filters]);
+
+  // Sync search value from store when user is not typing and filters changed
   useEffect(() => {
-    if (!isUserTyping) {
-      setSearchValue(filters.search);
+    if (!isUserTyping && prevFiltersRef.current.search !== filters.search) {
+      // Defer state update to avoid synchronous setState in effect body
+      queueMicrotask(() => setSearchValue(filters.search));
     }
-    setLocalFilters(filters);
+    prevFiltersRef.current = filters;
   }, [filters, isUserTyping]);
 
   // Initialize cross-board search from settings
@@ -56,7 +60,6 @@ export function useSearchState() {
   const handleFilterChange = (key: keyof TaskFilters, value: string | undefined) => {
     const filterValue = value === 'all' ? undefined : value;
     const newFilters = { ...localFilters, [key]: filterValue };
-    setLocalFilters(newFilters);
     setFilters(newFilters);
   };
 
@@ -76,11 +79,6 @@ export function useSearchState() {
   const handleClearFilters = () => {
     setIsUserTyping(false);
     clearFilters();
-    setLocalFilters({
-      search: '',
-      tags: [],
-      crossBoardSearch: filters.crossBoardSearch
-    });
     setSearchValue('');
   };
 
@@ -131,6 +129,5 @@ export function useSearchState() {
     setIsUserTyping,
     setSearchValue,
     setFilters,
-    setLocalFilters,
   };
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { forwardRef, useRef, useEffect, useState } from 'react';
+import React, { forwardRef, useRef, useEffect, useState, useId } from 'react';
 import { Input } from '@/components/ui/input';
 
 type InputProps = React.ComponentProps<"input">;
@@ -40,6 +40,7 @@ export const AccessibleInput = forwardRef<HTMLInputElement, AccessibleInputProps
     onChange,
     onFocus,
     onBlur,
+    id: providedId,
     ...props
   }, ref) => {
     const inputRef = useRef<HTMLInputElement>(null);
@@ -47,6 +48,10 @@ export const AccessibleInput = forwardRef<HTMLInputElement, AccessibleInputProps
     // const [isFocused, setIsFocused] = useState(false);
     const [validationError, setValidationError] = useState<string | null>(null);
     const accessibilityManager = AccessibilityManager.getInstance();
+
+    // Generate stable ID for accessibility associations
+    const generatedId = useId();
+    const inputId = providedId || generatedId;
 
     // Combine refs
     useEffect(() => {
@@ -176,17 +181,18 @@ export const AccessibleInput = forwardRef<HTMLInputElement, AccessibleInputProps
 
     return (
       <div className="space-y-2">
-        <Label 
-          htmlFor={inputRef.current?.id}
+        <Label
+          htmlFor={inputId}
           className={isInvalid ? 'text-destructive' : ''}
         >
           {label}
           {required && <span className="text-destructive ml-1" aria-label="required">*</span>}
         </Label>
-        
+
         <div className="relative">
           <Input
             ref={inputRef}
+            id={inputId}
             value={currentValue}
             onChange={handleChange}
             onFocus={handleFocus}
@@ -196,10 +202,10 @@ export const AccessibleInput = forwardRef<HTMLInputElement, AccessibleInputProps
             className={isInvalid ? 'border-destructive' : ''}
             {...props}
           />
-          
+
           {showCharacterCount && maxLength && (
-            <div 
-              id={`${inputRef.current?.id}-count`}
+            <div
+              id={`${inputId}-count`}
               className="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-muted-foreground"
               aria-live="polite"
             >
@@ -209,13 +215,13 @@ export const AccessibleInput = forwardRef<HTMLInputElement, AccessibleInputProps
         </div>
 
         {description && (
-          <p className="text-sm text-muted-foreground" id={`${inputRef.current?.id}-description`}>
+          <p className="text-sm text-muted-foreground" id={`${inputId}-description`}>
             {description}
           </p>
         )}
 
         {currentError && (
-          <p className="text-sm text-destructive" id={`${inputRef.current?.id}-error`} role="alert">
+          <p className="text-sm text-destructive" id={`${inputId}-error`} role="alert">
             {currentError}
           </p>
         )}

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   exportData,
   exportTasks,
@@ -9,6 +9,7 @@ import {
   processImportData,
   generateExportFilename,
   DATA_FORMAT_VERSION,
+  type ExportData,
 } from '../exportImport';
 import type { Task, Board, Settings } from '@/lib/types';
 
@@ -228,7 +229,7 @@ describe('exportImport', () => {
       };
 
       const conflicts = detectImportConflicts(
-        importData as any,
+        importData as unknown as ExportData,
         existingTasks,
         []
       );
@@ -246,7 +247,7 @@ describe('exportImport', () => {
       };
 
       const conflicts = detectImportConflicts(
-        importData as any,
+        importData as unknown as ExportData,
         [],
         existingBoards
       );
@@ -263,7 +264,7 @@ describe('exportImport', () => {
       };
 
       const conflicts = detectImportConflicts(
-        importData as any,
+        importData as unknown as ExportData,
         [],
         []
       );
@@ -281,7 +282,7 @@ describe('exportImport', () => {
       };
 
       const conflicts = detectImportConflicts(
-        importData as any,
+        importData as unknown as ExportData,
         [],
         existingBoards
       );
@@ -310,7 +311,7 @@ describe('exportImport', () => {
         defaultBoardConflicts: [],
       };
 
-      const result = processImportData(importData as any, conflicts, {
+      const result = processImportData(importData as unknown as ExportData, conflicts, {
         overwriteExisting: false,
         generateNewIds: false,
         skipConflicts: true,
@@ -337,7 +338,7 @@ describe('exportImport', () => {
         defaultBoardConflicts: [],
       };
 
-      const result = processImportData(importData as any, conflicts, {
+      const result = processImportData(importData as unknown as ExportData, conflicts, {
         overwriteExisting: false,
         generateNewIds: true,
         skipConflicts: false,
@@ -369,7 +370,7 @@ describe('exportImport', () => {
         defaultBoardConflicts: [],
       };
 
-      const result = processImportData(importData as any, conflicts, {
+      const result = processImportData(importData as unknown as ExportData, conflicts, {
         overwriteExisting: false,
         generateNewIds: false,
         skipConflicts: true,
@@ -400,7 +401,7 @@ describe('exportImport', () => {
         defaultBoardConflicts: [],
       };
 
-      const result = processImportData(importData as any, conflicts, {
+      const result = processImportData(importData as unknown as ExportData, conflicts, {
         overwriteExisting: false,
         generateNewIds: false,
         skipConflicts: false,

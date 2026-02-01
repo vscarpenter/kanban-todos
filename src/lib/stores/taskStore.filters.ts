@@ -45,9 +45,10 @@ export type TaskStoreState = {
   saveSearchScope: (scope: SearchScope) => Promise<void>;
 };
 
-// Zustand setter type - using any to avoid complex type inference issues
-// This is a pragmatic choice - actual type safety comes from the store definition
-export type StoreSetter = (partial: any) => void;
+// Zustand setter type for partial state updates
+export type StoreSetter = (
+  partial: Partial<TaskStoreState> | ((state: TaskStoreState) => Partial<TaskStoreState>)
+) => void;
 
 interface GlobalWithTimeout {
   __searchTimeout?: NodeJS.Timeout;

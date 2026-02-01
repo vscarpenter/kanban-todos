@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { X, Download, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -9,31 +9,39 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
+// Check if running in standalone mode (installed PWA)
+const emptySubscribe = () => () => {};
+const getStandaloneSnapshot = () => {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia("(display-mode: standalone)").matches ||
+         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         (window.navigator as any).standalone === true;
+};
+const getServerSnapshot = () => false;
+
+// Detect browser type from user agent
+type BrowserType = "chrome" | "safari" | "firefox" | "other";
+const getBrowserTypeSnapshot = (): BrowserType => {
+  if (typeof window === 'undefined') return "other";
+  const userAgent = window.navigator.userAgent.toLowerCase();
+  if (userAgent.includes("chrome") && !userAgent.includes("edg")) return "chrome";
+  if (userAgent.includes("safari") && !userAgent.includes("chrome")) return "safari";
+  if (userAgent.includes("firefox")) return "firefox";
+  return "other";
+};
+const getBrowserTypeServerSnapshot = (): BrowserType => "other";
+
 export default function InstallPWA() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
-  const [browserType, setBrowserType] = useState<"chrome" | "safari" | "firefox" | "other">("other");
-  const [isStandalone, setIsStandalone] = useState(false);
+
+  // Use useSyncExternalStore for hydration-safe detection
+  const isStandalone = useSyncExternalStore(emptySubscribe, getStandaloneSnapshot, getServerSnapshot);
+  const browserType = useSyncExternalStore(emptySubscribe, getBrowserTypeSnapshot, getBrowserTypeServerSnapshot);
 
   useEffect(() => {
-    // Check if already installed
-    const isInstalled = window.matchMedia("(display-mode: standalone)").matches ||
-                       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                       (window.navigator as any).standalone === true;
-    setIsStandalone(isInstalled);
-
-    if (isInstalled) {
+    if (isStandalone) {
       return; // Don't show prompt if already installed
-    }
-
-    // Detect browser type
-    const userAgent = window.navigator.userAgent.toLowerCase();
-    if (userAgent.includes("chrome") && !userAgent.includes("edg")) {
-      setBrowserType("chrome");
-    } else if (userAgent.includes("safari") && !userAgent.includes("chrome")) {
-      setBrowserType("safari");
-    } else if (userAgent.includes("firefox")) {
-      setBrowserType("firefox");
     }
 
     // Check if user has dismissed the prompt before
@@ -58,7 +66,7 @@ export default function InstallPWA() {
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
 
     // For Safari/iOS, show prompt after a delay
-    if (browserType === "safari" && !isInstalled) {
+    if (browserType === "safari" && !isStandalone) {
       const timer = setTimeout(() => {
         setShowPrompt(true);
       }, 3000); // Show after 3 seconds
@@ -72,7 +80,7 @@ export default function InstallPWA() {
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     };
-  }, [browserType]);
+  }, [browserType, isStandalone]);
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) {

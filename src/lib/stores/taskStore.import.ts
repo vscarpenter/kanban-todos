@@ -13,9 +13,17 @@ type ImportExportState = {
   applyFilters: () => Promise<void>;
 };
 
-// Using any for setter to avoid complex type inference issues with Zustand
-// This is a pragmatic choice - the actual type safety comes from the store definition
-type StoreSetter = (partial: any) => void;
+// Partial state type for import operations
+type ImportPartialState = {
+  tasks?: Task[];
+  isLoading?: boolean;
+  error?: string | null;
+};
+
+// Zustand setter type for partial state updates
+type StoreSetter = (
+  partial: ImportPartialState | ((state: { tasks: Task[] }) => ImportPartialState)
+) => void;
 
 /**
  * Exports tasks to ExportData format

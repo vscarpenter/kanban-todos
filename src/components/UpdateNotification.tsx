@@ -108,12 +108,16 @@ export function UpdateNotification({ onDismiss, onUpdate, className }: UpdateNot
 
   // Check for updates on mount and periodically
   useEffect(() => {
-    checkForUpdates();
-    
+    // Defer initial check to avoid synchronous state update in effect body
+    const timeoutId = setTimeout(checkForUpdates, 0);
+
     // Check for updates every 5 minutes
     const interval = setInterval(checkForUpdates, 5 * 60 * 1000);
-    
-    return () => clearInterval(interval);
+
+    return () => {
+      clearTimeout(timeoutId);
+      clearInterval(interval);
+    };
   }, [checkForUpdates]);
 
   // Listen for service worker updates
