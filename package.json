@@ -1,11 +1,11 @@
 {
   "name": "kanban-todos-temp",
-  "version": "3.5.0",
+  "version": "3.6.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "rimraf .next out && NEXT_PUBLIC_APP_VERSION=$(node -p \"require('./package.json').version\") NEXT_PUBLIC_BUILD_TIME=$(date -u +\"%Y-%m-%dT%H:%M:%SZ\") NEXT_PUBLIC_BUILD_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo 'dev') NEXT_PUBLIC_BUILD_TIMESTAMP=$(date +%s) next build",
-    "build:analyze": "ANALYZE=true npm run build",
+    "build:analyze": "ANALYZE=true bun run build",
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
@@ -74,5 +74,5 @@
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   },
-  "packageManager": "pnpm@10.18.3+sha512.bbd16e6d7286fd7e01f6b3c0b3c932cda2965c06a908328f74663f10a9aea51f1129eea615134bf992831b009eabe167ecb7008b597f40ff9bc75946aadfb08d"
+  "packageManager": "bun@1.2.4"
 }
