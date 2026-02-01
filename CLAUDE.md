@@ -5,30 +5,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Commands
 
 ### Core Development
-- `npm run dev` - Start development server on http://localhost:3000
-- `npm run build` - Clean (.next, out) and build for production with static export 
-- `npm run build:analyze` - Build with bundle analyzer enabled (ANALYZE=true)
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint with Next.js configuration
+- `bun run dev` - Start development server on http://localhost:3000
+- `bun run build` - Clean (.next, out) and build for production with static export
+- `bun run build:analyze` - Build with bundle analyzer enabled (ANALYZE=true)
+- `bun run start` - Start production server
+- `bun run lint` - Run ESLint with Next.js configuration
+- `bun run test` - Run tests with vitest
 
 ### Deployment
-- `npm run deploy` - Single environment deployment (todos.vinny.dev) via `./scripts/deploy.sh`
-- `npm run deploy:multi` - Interactive multi-environment deployment script
-- `npm run deploy:todos` - Deploy specifically to todos.vinny.dev environment
-- `npm run deploy:cascade` - Deploy specifically to cascade.vinny.dev environment  
-- `npm run deploy:all` - Deploy to all configured environments
-- `npm run deploy:check` - Verify todos.vinny.dev deployment status
-- `npm run deploy:check:cascade` - Verify cascade.vinny.dev deployment status
+- `bun run deploy` - Single environment deployment (todos.vinny.dev) via `./scripts/deploy.sh`
+- `bun run deploy:multi` - Interactive multi-environment deployment script
+- `bun run deploy:todos` - Deploy specifically to todos.vinny.dev environment
+- `bun run deploy:cascade` - Deploy specifically to cascade.vinny.dev environment
+- `bun run deploy:all` - Deploy to all configured environments
+- `bun run deploy:check` - Verify todos.vinny.dev deployment status
+- `bun run deploy:check:cascade` - Verify cascade.vinny.dev deployment status
 - `./scripts/deploy-multi.sh` - Multi-environment deployment with JSON configuration
 
 ### Package Management
-- `npm install` - Install all dependencies
-- Uses Node.js 18+ with package-lock.json
+- `bun install` - Install all dependencies
+- Uses bun as package manager with bun.lock
 
 ## Architecture Overview
 
 ### Tech Stack
-- **Framework**: Next.js 15.4.6 with App Router, static export
+- **Framework**: Next.js 16.x with App Router, static export
 - **Language**: TypeScript (strict), shadcn/ui, Tailwind CSS v4
 - **State**: Zustand stores + IndexedDB (custom TaskDatabase class)
 - **Performance**: @dnd-kit lazy loaded, React.memo, dynamic imports
@@ -74,7 +75,6 @@ src/
     │   ├── iosDetection.ts     # iOS device detection utilities
     │   ├── versionManagement.ts # Version comparison and update handling
     │   ├── security.ts         # Input sanitization and XSS prevention
-    │   ├── errorHandling.ts    # Comprehensive error handling system
     │   ├── accessibility.ts    # Accessibility utility functions
     │   └── deploymentValidator.ts # Production deployment validation
     ├── utils.ts       # Common utilities (cn function)
@@ -118,12 +118,12 @@ Reference `archive/README.md` for complete index.
 - **Secondary**: `cascade.vinny.dev` (S3 + CloudFront)  
 - **Security**: CSP, HSTS, security headers policy
 - **Cache**: 1-year static assets, no HTML cache, 5-min dynamic
-- **Deploy**: `npm run deploy` or `./scripts/deploy-multi.sh`
+- **Deploy**: `bun run deploy` or `./scripts/deploy-multi.sh`
 
 ### Performance
 - Bundle: ~388kB with lazy loading, tree shaking, React.memo
 - Memory optimization: `src/lib/utils/memoryOptimization.ts` utilities (debounce, throttle, cleanup)
-- Analysis: `npm run build:analyze`
+- Analysis: `bun run build:analyze`
 
 ### Keyboard Shortcuts
 - **`N`** / **`Ctrl/Cmd + K`** - Create task
@@ -166,17 +166,15 @@ Implementation: `src/lib/utils/keyboard.ts` with cross-platform support.
 
 ## Error Handling & Recovery
 
-### Comprehensive Error System
-- **Error Classification**: `src/lib/utils/errorHandling.ts` with severity levels
-- **Recovery Strategies**: Automatic retry with exponential backoff
-- **User Feedback**: Context-aware error messages
-- **Database Recovery**: IndexedDB corruption detection and cleanup
-- **Operation Context**: Detailed error tracking with user agent and URL
+### Error Handling Approach
+- **Store-Level Handling**: Each Zustand store handles errors with `setError` actions
+- **User Feedback**: Context-aware error messages displayed via UI
+- **Database Recovery**: IndexedDB error handling in database.ts
+- **Graceful Degradation**: Operations fail safely with user notification
 
 ### Error Boundary Integration
 - **React Error Boundaries**: Component-level error containment
 - **Fallback Actions**: Graceful degradation strategies
-- **Error Logging**: Development and production error tracking
 
 ## Version Management & Updates
 
