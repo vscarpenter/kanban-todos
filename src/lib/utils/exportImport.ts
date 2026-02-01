@@ -24,7 +24,7 @@ import {
   filterConflictingItems,
   removeOrphanedTasks
 } from './exportImportHelpers';
-// import { validateImportFile, validateImportJson, sanitizeTaskData, sanitizeBoardData } from './security';
+import { sanitizeTaskData, sanitizeBoardData } from './security';
 
 // Version for data format compatibility
 export const DATA_FORMAT_VERSION = '1.0.0';
@@ -333,8 +333,37 @@ export function processImportData(
   conflicts: ImportConflicts,
   options: ImportOptions
 ): { tasks: Task[]; boards: Board[]; settings?: Settings } {
-  let processedTasks = importData.tasks.map(deserializeTask);
-  let processedBoards = importData.boards.map(deserializeBoard);
+  // Deserialize and sanitize tasks
+  let processedTasks: Task[] = importData.tasks.map(serializedTask => {
+    const task = deserializeTask(serializedTask);
+    const sanitized = sanitizeTaskData({
+      title: task.title,
+      description: task.description,
+      tags: task.tags,
+    });
+    // Apply sanitized values, preserving undefined for optional fields
+    task.title = sanitized.title;
+    task.tags = sanitized.tags;
+    if (task.description !== undefined) {
+      task.description = sanitized.description;
+    }
+    return task;
+  });
+
+  // Deserialize and sanitize boards
+  let processedBoards: Board[] = importData.boards.map(serializedBoard => {
+    const board = deserializeBoard(serializedBoard);
+    const sanitized = sanitizeBoardData({
+      name: board.name,
+      description: board.description,
+    });
+    // Apply sanitized values, preserving undefined for optional fields
+    board.name = sanitized.name;
+    if (board.description !== undefined) {
+      board.description = sanitized.description;
+    }
+    return board;
+  });
 
   // Handle ID conflicts based on strategy
   if (options.generateNewIds) {
