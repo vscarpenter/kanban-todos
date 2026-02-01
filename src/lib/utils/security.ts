@@ -13,6 +13,12 @@ export const INPUT_LIMITS = {
   SEARCH_QUERY: 500,
 } as const;
 
+// Rate limiting configuration
+const RATE_LIMIT_CONFIG = {
+  DEFAULT_MAX_REQUESTS: 10,      // Maximum requests allowed in window
+  DEFAULT_WINDOW_MS: 1000,       // Window duration in milliseconds (1 second)
+} as const;
+
 // Allowed characters for different input types
 const ALLOWED_PATTERNS = {
   TASK_TITLE: /^[a-zA-Z0-9\s\-_.,!?()[\]]*$/,
@@ -253,7 +259,10 @@ class RateLimiter {
   private readonly maxRequests: number;
   private readonly windowMs: number;
 
-  constructor(maxRequests: number = 10, windowMs: number = 1000) {
+  constructor(
+    maxRequests: number = RATE_LIMIT_CONFIG.DEFAULT_MAX_REQUESTS,
+    windowMs: number = RATE_LIMIT_CONFIG.DEFAULT_WINDOW_MS
+  ) {
     this.maxRequests = maxRequests;
     this.windowMs = windowMs;
   }
@@ -281,7 +290,10 @@ class RateLimiter {
   }
 }
 
-export const searchRateLimiter = new RateLimiter(10, 1000); // 10 requests per second
+export const searchRateLimiter = new RateLimiter(
+  RATE_LIMIT_CONFIG.DEFAULT_MAX_REQUESTS,
+  RATE_LIMIT_CONFIG.DEFAULT_WINDOW_MS
+);
 
 /**
  * Validates and sanitizes user input for display

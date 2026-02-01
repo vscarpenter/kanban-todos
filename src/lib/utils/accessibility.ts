@@ -26,6 +26,9 @@ export interface AnnouncementOptions {
 // Constants
 // ============================================================================
 
+// Grid navigation assumes cells are approximately this width in pixels
+const GRID_CELL_WIDTH_PX = 200;
+
 const FOCUSABLE_SELECTORS = [
   'button:not([disabled])',
   'input:not([disabled])',
@@ -450,7 +453,7 @@ class KeyboardNavigationManager {
     const cells = Array.from(grid.querySelectorAll('[role="gridcell"]')) as HTMLElement[];
     const currentIndex = cells.indexOf(document.activeElement as HTMLElement);
     const gridElement = grid as HTMLElement;
-    const gridWidth = Math.floor(gridElement.offsetWidth / 200);
+    const gridWidth = Math.floor(gridElement.offsetWidth / GRID_CELL_WIDTH_PX);
     let nextIndex = currentIndex;
 
     switch (key) {
