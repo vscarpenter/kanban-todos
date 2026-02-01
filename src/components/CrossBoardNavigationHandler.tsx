@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import { useTaskStore } from "@/lib/stores/taskStore";
 import { useBoardStore } from "@/lib/stores/boardStore";
@@ -13,11 +13,14 @@ export function CrossBoardNavigationHandler({ children }: CrossBoardNavigationHa
   const { navigateToTaskBoard } = useTaskStore();
   const { setCurrentBoard, boards } = useBoardStore();
 
+  // Use ref to enable retry without circular dependency
+  const handleNavigationRef = useRef<(taskId: string) => Promise<boolean>>();
+
   // Handle cross-board navigation with error handling and focus management
   const handleCrossBoardNavigation = useCallback(async (taskId: string) => {
     try {
       const result = await navigateToTaskBoard(taskId);
-      
+
       if (!result.success) {
         toast.error("Navigation Failed", {
           description: result.error,
@@ -28,7 +31,7 @@ export function CrossBoardNavigationHandler({ children }: CrossBoardNavigationHa
         });
         return false;
       }
-      
+
       if (result.boardId) {
         // Check if board exists in current boards
         const targetBoard = boards.find(b => b.id === result.boardId);
@@ -42,17 +45,17 @@ export function CrossBoardNavigationHandler({ children }: CrossBoardNavigationHa
           });
           return false;
         }
-        
+
         // Navigate to the board
         await setCurrentBoard(result.boardId);
-        
+
         // Focus management: Focus the task after navigation
         setTimeout(() => {
           const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
           if (taskElement && taskElement instanceof HTMLElement) {
             taskElement.focus();
             taskElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
+
             // Add temporary highlight effect
             taskElement.style.outline = '2px solid hsl(var(--ring))';
             taskElement.style.outlineOffset = '2px';
@@ -68,14 +71,14 @@ export function CrossBoardNavigationHandler({ children }: CrossBoardNavigationHa
             }
           }
         }, 100);
-        
+
         toast.success("Navigation Successful", {
           description: `Switched to "${targetBoard.name}" board`,
         });
-        
+
         return true;
       }
-      
+
       return false;
     } catch (error) {
       console.error('Cross-board navigation error:', error);
@@ -83,12 +86,17 @@ export function CrossBoardNavigationHandler({ children }: CrossBoardNavigationHa
         description: "An unexpected error occurred while navigating to the task.",
         action: {
           label: "Try Again",
-          onClick: () => handleCrossBoardNavigation(taskId),
+          onClick: () => { handleNavigationRef.current?.(taskId); },
         },
       });
       return false;
     }
   }, [navigateToTaskBoard, boards, setCurrentBoard]);
+
+  // Keep ref in sync with current callback (in effect to avoid render-time access)
+  useEffect(() => {
+    handleNavigationRef.current = handleCrossBoardNavigation;
+  }, [handleCrossBoardNavigation]);
 
   // Listen for navigation events from task cards
   useEffect(() => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Info, ExternalLink } from '@/lib/icons';
@@ -11,31 +11,23 @@ interface VersionInfo {
   buildHash: string;
 }
 
+// Get version info from build-time environment variables
+function getVersionInfo(): VersionInfo {
+  const version = process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0';
+  const buildTime = process.env.NEXT_PUBLIC_BUILD_TIME || new Date().toISOString();
+  const buildHash = process.env.NEXT_PUBLIC_BUILD_HASH || 'dev';
+
+  return {
+    version,
+    buildTime,
+    buildHash: buildHash.slice(0, 7), // Short hash
+  };
+}
+
 export function VersionIndicator() {
-  const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null);
+  // Initialize with version info directly (env vars are available at build time)
+  const [versionInfo] = useState<VersionInfo>(getVersionInfo);
   const [isExpanded, setIsExpanded] = useState(false);
-
-  useEffect(() => {
-    // Get version info from build-time environment variables or package.json
-    const getVersionInfo = (): VersionInfo => {
-      // Try to get build-time environment variables first
-      const version = process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0';
-      const buildTime = process.env.NEXT_PUBLIC_BUILD_TIME || new Date().toISOString();
-      const buildHash = process.env.NEXT_PUBLIC_BUILD_HASH || 'dev';
-
-      return {
-        version,
-        buildTime,
-        buildHash: buildHash.slice(0, 7), // Short hash
-      };
-    };
-
-    setVersionInfo(getVersionInfo());
-  }, []);
-
-  if (!versionInfo) {
-    return null;
-  }
 
   const buildDate = new Date(versionInfo.buildTime).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -85,31 +77,8 @@ export function VersionIndicator() {
 
 // Minimal footer version for space-constrained areas
 export function VersionFooter() {
-  const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null);
-
-  useEffect(() => {
-    const getVersionInfo = (): VersionInfo => {
-      const version = process.env.NEXT_PUBLIC_APP_VERSION || '2.0.0';
-      const buildTime = process.env.NEXT_PUBLIC_BUILD_TIME || new Date().toISOString();
-      const buildHash = process.env.NEXT_PUBLIC_BUILD_HASH || 'dev';
-
-      return {
-        version,
-        buildTime,
-        buildHash: buildHash.slice(0, 7),
-      };
-    };
-
-    setVersionInfo(getVersionInfo());
-  }, []);
-
-  if (!versionInfo) {
-    return (
-      <div className="text-center text-xs text-muted-foreground">
-        Cascade v2.0.0 • {new Date().getFullYear()}
-      </div>
-    );
-  }
+  // Initialize with version info directly (env vars are available at build time)
+  const [versionInfo] = useState<VersionInfo>(getVersionInfo);
 
   // Format build date for display
   const buildDate = new Date(versionInfo.buildTime);
@@ -118,7 +87,7 @@ export function VersionFooter() {
     day: 'numeric',
     year: buildDate.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined,
   });
-  
+
   const formattedTime = buildDate.toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',

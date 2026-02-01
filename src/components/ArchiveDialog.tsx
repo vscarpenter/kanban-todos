@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,30 +20,30 @@ interface ArchiveDialogProps {
 }
 
 export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
-  const [archivedTasks, setArchivedTasks] = useState<Task[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const { tasks, unarchiveTask, deleteTask } = useTaskStore();
   const { boards } = useBoardStore();
 
-  useEffect(() => {
-    if (open) {
-      setIsLoading(true);
-      // Filter archived tasks from the current tasks
-      const archived = tasks.filter(task => task.archivedAt);
-      setArchivedTasks(archived);
-      setIsLoading(false);
-      // Reset search when dialog opens
-      setSearchQuery("");
-    }
+  // Derive archived tasks directly from tasks - no need for separate state
+  const archivedTasks = useMemo(() => {
+    if (!open) return [];
+    return tasks.filter(task => task.archivedAt);
   }, [open, tasks]);
 
-  const getBoardName = (boardId: string) => {
+  // Reset search when dialog closes and reopens
+  const handleOpenChange = useCallback((newOpen: boolean) => {
+    if (newOpen && !open) {
+      setSearchQuery("");
+    }
+    onOpenChange(newOpen);
+  }, [open, onOpenChange]);
+
+  const getBoardName = useCallback((boardId: string) => {
     const board = boards.find(b => b.id === boardId);
     return board?.name || 'Unknown Board';
-  };
+  }, [boards]);
 
   const getBoardColor = (boardId: string) => {
     const board = boards.find(b => b.id === boardId);
@@ -68,12 +68,10 @@ export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
       if (getBoardName(task.boardId).toLowerCase().includes(query)) return true;
       return false;
     });
-  }, [archivedTasks, searchQuery]);
+  }, [archivedTasks, searchQuery, getBoardName]);
 
   const handleUnarchive = async (taskId: string) => {
     await unarchiveTask(taskId);
-    // Update local state
-    setArchivedTasks(prev => prev.filter(task => task.id !== taskId));
   };
 
   const handleDelete = (task: Task) => {
@@ -84,8 +82,6 @@ export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
   const confirmDelete = async () => {
     if (taskToDelete) {
       await deleteTask(taskToDelete.id);
-      // Update local state
-      setArchivedTasks(prev => prev.filter(task => task.id !== taskToDelete.id));
       setTaskToDelete(null);
     }
   };
@@ -117,7 +113,7 @@ export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-4xl max-h-[80vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -150,11 +146,7 @@ export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
             </div>
           )}
 
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
-          ) : archivedTasks.length === 0 ? (
+          {archivedTasks.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p className="text-lg font-medium">No archived tasks</p>

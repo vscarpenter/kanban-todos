@@ -90,37 +90,37 @@ describe('taskValidation utility', () => {
 
     describe('invalid data types', () => {
       it('returns false when id is not a string', () => {
-        const task = createValidTask({ id: 123 as any });
+        const task = createValidTask({ id: 123 as unknown as string });
         expect(validateTaskIntegrity(task)).toBe(false);
         expect(console.warn).toHaveBeenCalled();
       });
 
       it('returns false when title is not a string', () => {
-        const task = createValidTask({ title: null as any });
+        const task = createValidTask({ title: null as unknown as string });
         expect(validateTaskIntegrity(task)).toBe(false);
         expect(console.warn).toHaveBeenCalled();
       });
 
       it('returns false when boardId is not a string', () => {
-        const task = createValidTask({ boardId: undefined as any });
+        const task = createValidTask({ boardId: undefined as unknown as string });
         expect(validateTaskIntegrity(task)).toBe(false);
         expect(console.warn).toHaveBeenCalled();
       });
 
       it('returns false when createdAt is not a Date', () => {
-        const task = createValidTask({ createdAt: '2024-01-01' as any });
+        const task = createValidTask({ createdAt: '2024-01-01' as unknown as Date });
         expect(validateTaskIntegrity(task)).toBe(false);
         expect(console.warn).toHaveBeenCalled();
       });
 
       it('returns false when updatedAt is not a Date', () => {
-        const task = createValidTask({ updatedAt: new Date().toISOString() as any });
+        const task = createValidTask({ updatedAt: new Date().toISOString() as unknown as Date });
         expect(validateTaskIntegrity(task)).toBe(false);
         expect(console.warn).toHaveBeenCalled();
       });
 
       it('returns false when tags is not an array', () => {
-        const task = createValidTask({ tags: 'tag1,tag2' as any });
+        const task = createValidTask({ tags: 'tag1,tag2' as unknown as string[] });
         expect(validateTaskIntegrity(task)).toBe(false);
         expect(console.warn).toHaveBeenCalled();
       });
@@ -128,19 +128,19 @@ describe('taskValidation utility', () => {
 
     describe('invalid enum values', () => {
       it('returns false for invalid status', () => {
-        const task = createValidTask({ status: 'completed' as any });
+        const task = createValidTask({ status: 'completed' as unknown as Task['status'] });
         expect(validateTaskIntegrity(task)).toBe(false);
         expect(console.warn).toHaveBeenCalled();
       });
 
       it('returns false for invalid priority', () => {
-        const task = createValidTask({ priority: 'urgent' as any });
+        const task = createValidTask({ priority: 'urgent' as unknown as Task['priority'] });
         expect(validateTaskIntegrity(task)).toBe(false);
         expect(console.warn).toHaveBeenCalled();
       });
 
       it('returns false for empty string status', () => {
-        const task = createValidTask({ status: '' as any });
+        const task = createValidTask({ status: '' as unknown as Task['status'] });
         expect(validateTaskIntegrity(task)).toBe(false);
       });
     });
@@ -178,7 +178,7 @@ describe('taskValidation utility', () => {
         createValidTask({ title: 'Valid 1' }),
         createValidTask({ title: '', id: 'invalid-1' }), // Invalid - empty title
         createValidTask({ title: 'Valid 2' }),
-        createValidTask({ status: 'invalid' as any, id: 'invalid-2' }), // Invalid status
+        createValidTask({ status: 'invalid' as unknown as Task['status'], id: 'invalid-2' }), // Invalid status
         createValidTask({ title: 'Valid 3' })
       ];
 
@@ -278,14 +278,14 @@ describe('taskValidation utility', () => {
           // Missing required fields
           id: 'corrupt-1',
           title: 'Corrupt Task'
-        } as any,
+        } as unknown as Task,
         createValidTask({ title: 'Good Task 2' }),
         {
           // Wrong date type (string instead of Date)
           ...createValidTask({ title: 'Corrupt Task 2' }),
           createdAt: '2024-01-01',
           updatedAt: '2024-01-01'
-        } as any,
+        } as unknown as Task,
         createValidTask({ title: 'Good Task 3' })
       ];
 
@@ -301,7 +301,7 @@ describe('taskValidation utility', () => {
           ...createValidTask(),
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
-        } as any
+        } as unknown as Task
       ];
 
       const result = validateTaskCollection(jsonTasks);
