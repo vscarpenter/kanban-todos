@@ -14,7 +14,7 @@ export function CrossBoardNavigationHandler({ children }: CrossBoardNavigationHa
   const { setCurrentBoard, boards } = useBoardStore();
 
   // Use ref to enable retry without circular dependency
-  const handleNavigationRef = useRef<(taskId: string) => Promise<boolean>>();
+  const handleNavigationRef = useRef<(taskId: string) => Promise<boolean>>(undefined);
 
   // Handle cross-board navigation with error handling and focus management
   const handleCrossBoardNavigation = useCallback(async (taskId: string) => {
