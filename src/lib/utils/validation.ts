@@ -145,7 +145,107 @@ export const exportDataSchema: ValidationSchema = {
 };
 
 // ============================================================================
-// Schema Validation
+// Schema Validation Helpers
+// ============================================================================
+
+function schemaIncludesType(schema: ValidationSchema, type: string): boolean {
+  return schema.type === type || (Array.isArray(schema.type) && schema.type.includes(type));
+}
+
+function validateArraySchema(
+  data: unknown[],
+  schema: ValidationSchema,
+  path: string,
+  errors: ValidationError[],
+  warnings: ValidationWarning[]
+): void {
+  if (schema.items) {
+    data.forEach((item, index) => {
+      const result = validateSchema(item, schema.items!, `${path}[${index}]`);
+      errors.push(...result.errors);
+      warnings.push(...result.warnings);
+    });
+  }
+  if (schema.maxItems !== undefined && data.length > schema.maxItems) {
+    errors.push({ path, message: `Array exceeds maximum length: ${schema.maxItems}`, value: data.length, severity: 'error' });
+  }
+}
+
+function validateObjectSchema(
+  data: Record<string, unknown>,
+  schema: ValidationSchema,
+  path: string,
+  errors: ValidationError[],
+  warnings: ValidationWarning[]
+): void {
+  if (schema.required) {
+    for (const prop of schema.required) {
+      if (!(prop in data)) {
+        errors.push({ path: `${path}.${prop}`, message: `Missing required property: ${prop}`, severity: 'error' });
+      }
+    }
+  }
+
+  if (schema.properties) {
+    for (const [propName, propSchema] of Object.entries(schema.properties)) {
+      if (propName in data) {
+        const result = validateSchema(data[propName], propSchema, path ? `${path}.${propName}` : propName);
+        errors.push(...result.errors);
+        warnings.push(...result.warnings);
+      }
+    }
+  }
+
+  if (schema.additionalProperties === false) {
+    const allowed = new Set(Object.keys(schema.properties || {}));
+    for (const prop of Object.keys(data)) {
+      if (!allowed.has(prop)) {
+        warnings.push({ path: `${path}.${prop}`, message: `Unexpected property: ${prop}`, value: data[prop], suggestion: 'Will be removed during sanitization' });
+      }
+    }
+  }
+}
+
+function validateStringSchema(
+  data: string,
+  schema: ValidationSchema,
+  path: string,
+  errors: ValidationError[],
+  warnings: ValidationWarning[]
+): void {
+  if (schema.minLength && data.length < schema.minLength) {
+    errors.push({ path, message: `String too short. Minimum: ${schema.minLength}`, value: data.length, severity: 'error' });
+  }
+  if (schema.maxLength && data.length > schema.maxLength) {
+    warnings.push({ path, message: `String too long. Maximum: ${schema.maxLength}`, value: data.length, suggestion: 'Will be truncated' });
+  }
+  if (schema.pattern && !new RegExp(schema.pattern).test(data)) {
+    errors.push({ path, message: `String does not match pattern: ${schema.pattern}`, value: data, severity: 'error' });
+  }
+  if (schema.enum && !schema.enum.includes(data)) {
+    errors.push({ path, message: `Invalid value. Must be: ${schema.enum.join(', ')}`, value: data, severity: 'error' });
+  }
+  if (schema.format === 'date-time' && isNaN(new Date(data).getTime())) {
+    errors.push({ path, message: 'Invalid date-time format', value: data, severity: 'error' });
+  }
+}
+
+function validateNumberSchema(
+  data: number,
+  schema: ValidationSchema,
+  path: string,
+  errors: ValidationError[]
+): void {
+  if (schema.minimum !== undefined && data < schema.minimum) {
+    errors.push({ path, message: `Number below minimum: ${schema.minimum}`, value: data, severity: 'error' });
+  }
+  if (schema.maximum !== undefined && data > schema.maximum) {
+    errors.push({ path, message: `Number above maximum: ${schema.maximum}`, value: data, severity: 'error' });
+  }
+}
+
+// ============================================================================
+// Schema Validation (Main Function)
 // ============================================================================
 
 export function validateSchema(
@@ -171,90 +271,26 @@ export function validateSchema(
       (allowedTypes.includes('undefined') && data === undefined);
 
     if (!isValidType) {
-      errors.push({
-        path,
-        message: `Expected ${allowedTypes.join(' or ')}, got ${dataType}`,
-        value: data,
-        severity: 'error'
-      });
+      errors.push({ path, message: `Expected ${allowedTypes.join(' or ')}, got ${dataType}`, value: data, severity: 'error' });
       return { isValid: false, errors, warnings };
     }
   }
 
-  // Array validation
-  if ((schema.type === 'array' || (Array.isArray(schema.type) && schema.type.includes('array'))) && Array.isArray(data)) {
-    if (schema.items) {
-      data.forEach((item, index) => {
-        const result = validateSchema(item, schema.items!, `${path}[${index}]`);
-        errors.push(...result.errors);
-        warnings.push(...result.warnings);
-      });
-    }
-    if (schema.maxItems !== undefined && data.length > schema.maxItems) {
-      errors.push({ path, message: `Array exceeds maximum length: ${schema.maxItems}`, value: data.length, severity: 'error' });
-    }
+  // Delegate to type-specific validators
+  if (schemaIncludesType(schema, 'array') && Array.isArray(data)) {
+    validateArraySchema(data, schema, path, errors, warnings);
   }
 
-  // Object validation
-  if ((schema.type === 'object' || (Array.isArray(schema.type) && schema.type.includes('object'))) &&
-      data && typeof data === 'object' && !Array.isArray(data)) {
-    const objData = data as Record<string, unknown>;
-
-    if (schema.required) {
-      for (const prop of schema.required) {
-        if (!(prop in objData)) {
-          errors.push({ path: `${path}.${prop}`, message: `Missing required property: ${prop}`, severity: 'error' });
-        }
-      }
-    }
-
-    if (schema.properties) {
-      for (const [propName, propSchema] of Object.entries(schema.properties)) {
-        if (propName in objData) {
-          const result = validateSchema(objData[propName], propSchema, path ? `${path}.${propName}` : propName);
-          errors.push(...result.errors);
-          warnings.push(...result.warnings);
-        }
-      }
-    }
-
-    if (schema.additionalProperties === false) {
-      const allowed = new Set(Object.keys(schema.properties || {}));
-      for (const prop of Object.keys(objData)) {
-        if (!allowed.has(prop)) {
-          warnings.push({ path: `${path}.${prop}`, message: `Unexpected property: ${prop}`, value: objData[prop], suggestion: 'Will be removed during sanitization' });
-        }
-      }
-    }
+  if (schemaIncludesType(schema, 'object') && data && typeof data === 'object' && !Array.isArray(data)) {
+    validateObjectSchema(data as Record<string, unknown>, schema, path, errors, warnings);
   }
 
-  // String validation
-  if ((schema.type === 'string' || (Array.isArray(schema.type) && schema.type.includes('string'))) && typeof data === 'string') {
-    if (schema.minLength && data.length < schema.minLength) {
-      errors.push({ path, message: `String too short. Minimum: ${schema.minLength}`, value: data.length, severity: 'error' });
-    }
-    if (schema.maxLength && data.length > schema.maxLength) {
-      warnings.push({ path, message: `String too long. Maximum: ${schema.maxLength}`, value: data.length, suggestion: 'Will be truncated' });
-    }
-    if (schema.pattern && !new RegExp(schema.pattern).test(data)) {
-      errors.push({ path, message: `String does not match pattern: ${schema.pattern}`, value: data, severity: 'error' });
-    }
-    if (schema.enum && !schema.enum.includes(data)) {
-      errors.push({ path, message: `Invalid value. Must be: ${schema.enum.join(', ')}`, value: data, severity: 'error' });
-    }
-    if (schema.format === 'date-time' && isNaN(new Date(data).getTime())) {
-      errors.push({ path, message: 'Invalid date-time format', value: data, severity: 'error' });
-    }
+  if (schemaIncludesType(schema, 'string') && typeof data === 'string') {
+    validateStringSchema(data, schema, path, errors, warnings);
   }
 
-  // Number validation
-  if ((schema.type === 'number' || (Array.isArray(schema.type) && schema.type.includes('number'))) && typeof data === 'number') {
-    if (schema.minimum !== undefined && data < schema.minimum) {
-      errors.push({ path, message: `Number below minimum: ${schema.minimum}`, value: data, severity: 'error' });
-    }
-    if (schema.maximum !== undefined && data > schema.maximum) {
-      errors.push({ path, message: `Number above maximum: ${schema.maximum}`, value: data, severity: 'error' });
-    }
+  if (schemaIncludesType(schema, 'number') && typeof data === 'number') {
+    validateNumberSchema(data, schema, path, errors);
   }
 
   return { isValid: errors.length === 0, errors, warnings };
