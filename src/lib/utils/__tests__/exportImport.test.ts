@@ -7,6 +7,7 @@ import {
   validateImportData,
   detectImportConflicts,
   processImportData,
+  processAdvancedImport,
   generateExportFilename,
   DATA_FORMAT_VERSION,
   type ExportData,
@@ -410,6 +411,38 @@ describe('exportImport', () => {
 
       expect(result.tasks[0].createdAt).toBeInstanceOf(Date);
       expect(result.tasks[0].updatedAt).toBeInstanceOf(Date);
+    });
+  });
+
+  describe('processAdvancedImport', () => {
+    it('preserves enableDeveloperMode in settings round-trip', () => {
+      const importedSettings = createSettings({ enableDeveloperMode: true });
+      const existingSettings = createSettings({ enableDeveloperMode: false });
+      const importData: ExportData = {
+        version: DATA_FORMAT_VERSION,
+        exportedAt: new Date().toISOString(),
+        tasks: [],
+        boards: [],
+        settings: importedSettings,
+      };
+
+      const { result } = processAdvancedImport(
+        importData,
+        [],
+        [],
+        existingSettings,
+        {
+          taskStrategy: 'merge',
+          boardStrategy: 'merge',
+          settingsStrategy: 'merge',
+          mergeStrategy: 'use_imported',
+          preserveRelationships: true,
+          generateBackup: false,
+        }
+      );
+
+      expect(result.resolvedSettings).toBeDefined();
+      expect(result.resolvedSettings?.enableDeveloperMode).toBe(true);
     });
   });
 

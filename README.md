@@ -217,6 +217,16 @@ The codebase follows strict quality guidelines:
 - **Import**: Use "Import Data" to restore from a previously exported file
 - **Archive**: Archive completed tasks to keep your boards clean
 
+## 🔒 Security Headers Governance
+
+- CloudFront response headers policy is the production source of truth for security headers and CSP.
+- Header/CSP drift checks are versioned in `docs/security-headers-baseline.json`.
+- Validate live environments with:
+  - `npm run security:headers:check`
+- Automated validation runs via GitHub Actions:
+  - `.github/workflows/security-headers-check.yml`
+- Note: Next.js `headers()` is intentionally not used for production enforcement because this app is deployed with static export (`output: 'export'`).
+
 ## 🔧 Configuration
 
 ### Typography Customization

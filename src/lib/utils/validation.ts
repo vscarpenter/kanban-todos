@@ -106,6 +106,7 @@ export const settingsSchema: ValidationSchema = {
     enableNotifications: { type: 'boolean' },
     enableKeyboardShortcuts: { type: 'boolean' },
     enableDebugMode: { type: 'boolean' },
+    enableDeveloperMode: { type: 'boolean' },
     currentBoardId: { type: ['string', 'undefined'] },
     searchPreferences: {
       type: 'object',
@@ -127,7 +128,7 @@ export const settingsSchema: ValidationSchema = {
       additionalProperties: false
     }
   },
-  required: ['theme', 'autoArchiveDays', 'enableNotifications', 'enableKeyboardShortcuts', 'enableDebugMode', 'searchPreferences', 'accessibility'],
+  required: ['theme', 'autoArchiveDays', 'enableNotifications', 'enableKeyboardShortcuts', 'enableDebugMode', 'enableDeveloperMode', 'searchPreferences', 'accessibility'],
   additionalProperties: false
 };
 

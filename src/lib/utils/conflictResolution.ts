@@ -115,7 +115,14 @@ export function mergeSettings(existing: Settings, imported: Settings, strategy: 
   const conflicts: FieldConflict[] = [];
   const mergedFields: string[] = [];
   const merged = { ...existing };
-  const fields: (keyof Settings)[] = ['theme', 'autoArchiveDays', 'enableNotifications', 'enableKeyboardShortcuts', 'enableDebugMode'];
+  const fields: (keyof Settings)[] = [
+    'theme',
+    'autoArchiveDays',
+    'enableNotifications',
+    'enableKeyboardShortcuts',
+    'enableDebugMode',
+    'enableDeveloperMode',
+  ];
 
   for (const field of fields) {
     if (existing[field] !== imported[field]) {
