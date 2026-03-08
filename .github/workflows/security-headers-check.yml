@@ -1,0 +1,16 @@
+name: Security Headers Check
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 14 * * 1"
+
+jobs:
+  validate-security-headers:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate deployed security headers
+        run: ./scripts/test-security-headers.sh

@@ -1,0 +1,32 @@
+{
+  "domains": [
+    "https://todos.vinny.dev",
+    "https://cascade.vinny.dev"
+  ],
+  "requiredHeaders": {
+    "x-frame-options": "DENY",
+    "x-content-type-options": "nosniff",
+    "strict-transport-security": "max-age=31536000; includeSubDomains",
+    "referrer-policy": "strict-origin-when-cross-origin",
+    "permissions-policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()"
+  },
+  "csp": {
+    "requiredDirectives": [
+      "default-src 'self'",
+      "script-src 'self'",
+      "style-src 'self'",
+      "img-src 'self' data: blob:",
+      "connect-src 'self'",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'"
+    ],
+    "disallowedTokens": [
+      "'unsafe-inline'",
+      "'unsafe-eval'",
+      "https://cdnjs.cloudflare.com",
+      "http:"
+    ]
+  }
+}
