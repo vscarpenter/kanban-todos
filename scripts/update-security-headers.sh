@@ -108,6 +108,12 @@ for POLICY_ID in $POLICY_IDS; do
       "IncludeSubdomains": true,
       "Preload": false
     }
+    # Set X-XSS-Protection (deprecated but required by CloudFront API)
+    | .SecurityHeadersConfig.XSSProtection = {
+      "Override": true,
+      "Protection": true,
+      "ModeBlock": true
+    }
     '
   )"
 
