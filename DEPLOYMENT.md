@@ -199,10 +199,42 @@ npx lighthouse https://cascade.vinny.dev --output=html
 npm run build:analyze
 ```
 
+## Security Headers Management
+
+Security headers (including CSP) are enforced by a CloudFront response headers policy, **not** by Next.js (which uses static export). The source of truth for expected headers is `docs/security-headers-baseline.json`.
+
+### Updating CSP / Security Headers
+```bash
+# Preview changes without applying
+./scripts/update-security-headers.sh --dry-run
+
+# Apply changes to CloudFront response headers policy
+./scripts/update-security-headers.sh
+# or
+bun run security:headers:update
+
+# Verify after propagation (~5 minutes)
+bun run security:headers:check
+```
+
+The update script reads `docs/security-headers-baseline.json` and applies the CSP directives to the CloudFront policy referenced in `deploy-config.json`.
+
+### Required IAM Permissions for Header Updates
+```json
+{
+  "Effect": "Allow",
+  "Action": [
+    "cloudfront:GetResponseHeadersPolicy",
+    "cloudfront:UpdateResponseHeadersPolicy"
+  ],
+  "Resource": "*"
+}
+```
+
 ## Security Considerations
 
 - HTTPS enforced via CloudFront
-- Security headers configured
+- Security headers configured via CloudFront response headers policy
 - No sensitive data in client bundle
 - All data stored locally (IndexedDB)
 
