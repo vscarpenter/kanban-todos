@@ -24,7 +24,8 @@
     "invalidate:todos": "./scripts/invalidate.sh todos",
     "deploy:check": "curl -I https://todos.vinny.dev",
     "deploy:check:cascade": "curl -I https://cascade.vinny.dev",
-    "security:headers:check": "./scripts/test-security-headers.sh"
+    "security:headers:check": "./scripts/test-security-headers.sh",
+    "security:headers:update": "./scripts/update-security-headers.sh"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
