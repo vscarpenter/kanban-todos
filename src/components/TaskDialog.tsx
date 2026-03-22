@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { Slider } from "@/components/ui/slider";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import { useTaskStore } from "@/lib/stores/taskStore";
+import { useAsyncOperation } from "@/lib/hooks/useAsyncOperation";
 import { Task } from "@/lib/types";
 
 // Helper to parse comma-separated tags
@@ -45,7 +46,9 @@ interface FormData {
 
 export function TaskDialog({ mode, open, onOpenChange, boardId, task }: TaskDialogProps) {
   const { addTask, updateTask } = useTaskStore();
-  const [isLoading, setIsLoading] = useState(false);
+  const { execute, isLoading } = useAsyncOperation({
+    errorMessage: `Failed to ${mode} task`,
+  });
   const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] = useState(false);
 
   // Store initial form data for comparison
@@ -100,12 +103,16 @@ export function TaskDialog({ mode, open, onOpenChange, boardId, task }: TaskDial
 
   // Handle dialog close with unsaved changes check
   const handleOpenChange = useCallback((newOpen: boolean) => {
-    if (!newOpen && hasUnsavedChanges()) {
+    if (newOpen) {
+      const initial = getInitialFormData();
+      setFormData(initial);
+      initialFormDataRef.current = initial;
+    } else if (hasUnsavedChanges()) {
       setShowUnsavedChangesDialog(true);
       return;
     }
     onOpenChange(newOpen);
-  }, [hasUnsavedChanges, onOpenChange]);
+  }, [hasUnsavedChanges, onOpenChange, getInitialFormData]);
 
   // Discard changes and close
   const handleDiscardChanges = useCallback(() => {
@@ -113,23 +120,12 @@ export function TaskDialog({ mode, open, onOpenChange, boardId, task }: TaskDial
     onOpenChange(false);
   }, [onOpenChange]);
 
-  // Reset form data when mode or task changes
-  useEffect(() => {
-    if (open) {
-      const initial = getInitialFormData();
-      setFormData(initial);
-      initialFormDataRef.current = initial;
-    }
-  }, [mode, task, open, getInitialFormData]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.title.trim()) return;
 
-    setIsLoading(true);
-
-    try {
+    const result = await execute(async () => {
       const tags = parseTags(formData.tags);
 
       if (mode === "create") {
@@ -158,12 +154,11 @@ export function TaskDialog({ mode, open, onOpenChange, boardId, task }: TaskDial
 
         await updateTask(task.id, updates);
       }
+    });
 
+    // Only close dialog on success (result is not undefined)
+    if (result !== undefined) {
       onOpenChange(false);
-    } catch (error) {
-      console.error(`Failed to ${mode} task:`, error);
-    } finally {
-      setIsLoading(false);
     }
   };
 

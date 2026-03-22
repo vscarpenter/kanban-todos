@@ -1,7 +1,6 @@
 /**
- * Export/Import utilities - re-export barrel
- * All implementation has been split into src/lib/utils/exportImport/ directory.
- * This file ensures backward compatibility for imports from '@/lib/utils/exportImport'.
+ * Export/Import utilities - barrel export
+ * Re-exports all export/import sub-modules for backward compatibility
  */
 
 // Types and serialization helpers
@@ -21,7 +20,7 @@ export {
   deserializeTask,
   serializeBoard,
   deserializeBoard,
-} from './exportImport/serialize';
+} from './serialize';
 
 // Export functions
 export {
@@ -32,7 +31,7 @@ export {
   validateAndSanitizeExport,
   downloadAsJson,
   generateExportFilename,
-} from './exportImport/exportData';
+} from './exportData';
 
 // Import functions
 export {
@@ -40,4 +39,4 @@ export {
   detectImportConflicts,
   processImportData,
   processAdvancedImport,
-} from './exportImport/importData';
+} from './importData';

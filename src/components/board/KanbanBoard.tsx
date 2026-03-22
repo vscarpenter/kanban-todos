@@ -153,7 +153,7 @@ export function KanbanBoard({ tasks, onNavigateToBoard }: KanbanBoardProps) {
         {/* Kanban Columns Container */}
         <div
           ref={scrollContainerRef}
-          className={`flex md:grid md:grid-cols-3 gap-6 min-h-full overflow-x-auto md:overflow-x-visible snap-x snap-mandatory md:snap-none scrollbar-hide mobile-scroll-container transition-all duration-150 ${
+          className={`flex md:grid md:grid-cols-3 gap-6 min-h-full overflow-x-auto md:overflow-x-visible snap-x snap-mandatory md:snap-none scrollbar-hide mobile-scroll-container transition-all duration-200 ease-out board-animate-in ${
             isScrolling ? 'opacity-95' : 'opacity-100'
           } ${
             isDragging ? 'md:grid-cols-3 !grid grid-cols-3 !overflow-visible !gap-2 scale-[0.85]' : ''

@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useBoardStore } from "@/lib/stores/boardStore";
+import { useAsyncOperation } from "@/lib/hooks/useAsyncOperation";
 import { Board } from "@/lib/types";
 
 interface BoardSettingsDialogProps {
@@ -28,45 +29,44 @@ const BOARD_COLORS = [
   '#6366f1', // indigo
 ];
 
+function getInitialFormData(board: Board | null) {
+  return {
+    name: board?.name ?? "",
+    description: board?.description ?? "",
+    color: board?.color ?? BOARD_COLORS[0],
+  };
+}
+
 export function BoardSettingsDialog({ open, onOpenChange, board }: BoardSettingsDialogProps) {
   const { updateBoard } = useBoardStore();
-  const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    color: BOARD_COLORS[0],
+  const { execute, isLoading } = useAsyncOperation({
+    errorMessage: "Failed to update board settings",
   });
+  const [formData, setFormData] = useState(() => getInitialFormData(board));
 
-  // Update form data when board changes
-  useEffect(() => {
-    if (board) {
-      setFormData({
-        name: board.name,
-        description: board.description || "",
-        color: board.color,
-      });
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) {
+      setFormData(getInitialFormData(board));
     }
-  }, [board]);
+    onOpenChange(nextOpen);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.name.trim() || !board) return;
-    
-    setIsLoading(true);
-    
-    try {
+
+    const result = await execute(async () => {
       await updateBoard(board.id, {
         name: formData.name.trim(),
         description: formData.description.trim() || undefined,
         color: formData.color,
       });
+    });
 
-      onOpenChange(false);
-    } catch (error) {
-      console.error('Failed to update board:', error);
-    } finally {
-      setIsLoading(false);
+    // Only close dialog on success
+    if (result !== undefined) {
+      handleOpenChange(false);
     }
   };
 
@@ -77,12 +77,12 @@ export function BoardSettingsDialog({ open, onOpenChange, board }: BoardSettings
   if (!board) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Board Settings</DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Name */}
           <div className="space-y-2">
@@ -126,8 +126,8 @@ export function BoardSettingsDialog({ open, onOpenChange, board }: BoardSettings
                   type="button"
                   className={`
                     w-10 h-10 rounded-full border-2 transition-all
-                    ${formData.color === color 
-                      ? 'border-foreground scale-110' 
+                    ${formData.color === color
+                      ? 'border-foreground scale-110'
                       : 'border-border hover:border-foreground/50'
                     }
                   `}
@@ -153,7 +153,7 @@ export function BoardSettingsDialog({ open, onOpenChange, board }: BoardSettings
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleOpenChange(false)}
               disabled={isLoading}
             >
               Cancel

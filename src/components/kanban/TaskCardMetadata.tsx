@@ -91,7 +91,7 @@ export function TaskCardMetadata({ task }: TaskCardMetadataProps) {
       )}
 
       {/* Created/Completed Date */}
-      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+      <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
         <Calendar className="h-3 w-3" aria-hidden="true" />
         <span>
           {task.completedAt

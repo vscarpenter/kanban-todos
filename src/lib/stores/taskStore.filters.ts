@@ -8,7 +8,6 @@ import { taskDB } from '@/lib/utils/database';
 import { sanitizeSearchQuery, searchRateLimiter } from '@/lib/utils/security';
 import { searchTasks } from '@/lib/utils/taskSearch';
 import {
-  validateTasks,
   validateBoardAccess,
   generateCacheKey,
   checkCache,
@@ -17,6 +16,7 @@ import {
   isComplexSearch,
   type SearchCache,
 } from '@/lib/utils/taskFiltering';
+import { validateTaskCollection } from '@/lib/utils/taskValidation';
 
 // ============================================================================
 // Configuration
@@ -226,7 +226,7 @@ export function createApplyFilters(get: () => TaskStoreState, set: StoreSetter) 
 
     try {
       // Validate tasks to prevent runtime errors
-      let validTasks = validateTasks(tasks, get().validateTaskIntegrity);
+      let validTasks = validateTaskCollection(tasks, get().validateTaskIntegrity);
       if (validTasks.length !== tasks.length) {
         set({ tasks: validTasks });
       }
@@ -258,7 +258,7 @@ export function createApplyFilters(get: () => TaskStoreState, set: StoreSetter) 
 
       // Apply filters with recovery
       let filteredTasks = await applyFiltersWithRecovery(currentTasks, filters, set);
-      filteredTasks = validateTasks(filteredTasks, get().validateTaskIntegrity);
+      filteredTasks = validateTaskCollection(filteredTasks, get().validateTaskIntegrity);
 
       // Cache results
       if (filters.search && filteredTasks.length > 0 && filteredTasks.length < 1000) {
