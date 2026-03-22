@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useSettingsStore } from "@/lib/stores/settingsStore";
+import { useAsyncOperation } from "@/lib/hooks/useAsyncOperation";
 import { Settings } from "@/lib/types";
 import { Palette, Monitor, Archive, Accessibility, Trash2 } from "lucide-react";
 import { ConfirmationDialog } from "./ConfirmationDialog";
@@ -38,7 +39,9 @@ interface SettingsDialogProps {
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const { settings, updateSettings, resetSettings } = useSettingsStore();
   const { theme, setTheme } = useTheme();
-  const [isLoading, setIsLoading] = useState(false);
+  const { execute, isLoading } = useAsyncOperation({
+    errorMessage: "Failed to save settings",
+  });
   const [localSettings, setLocalSettings] = useState<Settings>(settings);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showAppResetDialog, setShowAppResetDialog] = useState(false);
@@ -92,18 +95,17 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   }, [localSettings.theme, onOpenChange, setTheme]);
 
   const handleSave = async () => {
-    setIsLoading(true);
-    try {
+    const result = await execute(async () => {
       // Ensure next-themes is in sync with local settings
       if (localSettings.theme !== theme) {
         setTheme(localSettings.theme);
       }
       await updateSettings(localSettings);
+    });
+
+    // Only close dialog on success
+    if (result !== undefined) {
       onOpenChange(false);
-    } catch (error) {
-      console.error('Failed to save settings:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -112,16 +114,15 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   };
 
   const handleResetConfirm = async () => {
-    setIsLoading(true);
-    try {
+    const result = await execute(async () => {
       await resetSettings();
       setTheme('system'); // Reset theme in next-themes
       setLocalSettings(settings);
+    });
+
+    // Only close dialog on success
+    if (result !== undefined) {
       onOpenChange(false);
-    } catch (error) {
-      console.error('Failed to reset settings:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -137,6 +138,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       await resetApplication();
     } catch (error) {
       console.error('Failed to reset application:', error);
+      const { toast } = await import("sonner");
+      toast.error("Failed to reset application");
       // Only reset loading state if we didn't reload the page
       setIsAppResetting(false);
     }

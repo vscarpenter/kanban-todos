@@ -105,6 +105,7 @@ export function BoardView() {
         isCrossBoardSearch={isCrossBoardSearch}
         searchQuery={filters.search}
         boardGroupsCount={Object.keys(boardGroups).length}
+        tasks={displayTasks}
         onCreateTask={() => setShowCreateTask(true)}
       />
 

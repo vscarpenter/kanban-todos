@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useBoardStore } from "@/lib/stores/boardStore";
+import { useAsyncOperation } from "@/lib/hooks/useAsyncOperation";
 
 interface CreateBoardDialogProps {
   open: boolean;
@@ -28,7 +29,9 @@ const BOARD_COLORS = [
 
 export function CreateBoardDialog({ open, onOpenChange }: CreateBoardDialogProps) {
   const { addBoard } = useBoardStore();
-  const [isLoading, setIsLoading] = useState(false);
+  const { execute, isLoading } = useAsyncOperation({
+    errorMessage: "Failed to create board",
+  });
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -37,12 +40,10 @@ export function CreateBoardDialog({ open, onOpenChange }: CreateBoardDialogProps
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.name.trim()) return;
-    
-    setIsLoading(true);
-    
-    try {
+
+    const result = await execute(async () => {
       await addBoard({
         name: formData.name.trim(),
         description: formData.description.trim() || undefined,
@@ -50,18 +51,16 @@ export function CreateBoardDialog({ open, onOpenChange }: CreateBoardDialogProps
         isDefault: false,
         order: 0, // Will be automatically assigned by addBoard
       });
+    });
 
-      // Reset form and close dialog
+    // Only reset form and close on success
+    if (result !== undefined) {
       setFormData({
         name: "",
         description: "",
         color: BOARD_COLORS[0],
       });
       onOpenChange(false);
-    } catch (error) {
-      console.error('Failed to create board:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 

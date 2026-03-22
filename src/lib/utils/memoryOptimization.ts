@@ -81,41 +81,6 @@ export function createCleanupManager() {
   };
 }
 
-// WeakMap-based cache for component instances
-export function createWeakCache<K extends object, V>() {
-  const cache = new WeakMap<K, V>();
-  
-  return {
-    get: (key: K): V | undefined => cache.get(key),
-    set: (key: K, value: V): void => {
-      cache.set(key, value);
-    },
-    has: (key: K): boolean => cache.has(key),
-    delete: (key: K): boolean => cache.delete(key),
-  };
-}
-
-// Memory usage monitoring (browser only)
-export function getMemoryInfo() {
-  if (typeof window === 'undefined') return null;
-  
-  const performance = window.performance as typeof window.performance & {
-    memory?: {
-      usedJSHeapSize: number;
-      totalJSHeapSize: number;
-      jsHeapSizeLimit: number;
-    };
-  };
-  
-  if (!performance?.memory) return null;
-  
-  return {
-    used: Math.round(performance.memory.usedJSHeapSize / 1024 / 1024 * 100) / 100,
-    total: Math.round(performance.memory.totalJSHeapSize / 1024 / 1024 * 100) / 100,
-    limit: Math.round(performance.memory.jsHeapSizeLimit / 1024 / 1024 * 100) / 100,
-  };
-}
-
 // Efficient array updates to minimize re-renders
 export function optimizedArrayUpdate<T>(
   array: T[],
@@ -137,36 +102,3 @@ export function optimizedArrayUpdate<T>(
   return hasChanges ? newArray : array;
 }
 
-// Batch DOM updates to prevent layout thrashing
-export function batchDOMUpdates(callback: () => void): void {
-  if (typeof window === 'undefined') {
-    callback();
-    return;
-  }
-  
-  if ('requestIdleCallback' in window) {
-    window.requestIdleCallback(callback, { timeout: 100 });
-  } else {
-    setTimeout(callback, 0);
-  }
-}
-
-// Virtual scrolling helper for large lists
-export function calculateVisibleRange(
-  scrollTop: number,
-  containerHeight: number,
-  itemHeight: number,
-  totalItems: number,
-  overscan = 5
-): { start: number; end: number; visibleStart: number; visibleEnd: number } {
-  const visibleStart = Math.floor(scrollTop / itemHeight);
-  const visibleEnd = Math.min(
-    totalItems - 1,
-    Math.ceil((scrollTop + containerHeight) / itemHeight)
-  );
-  
-  const start = Math.max(0, visibleStart - overscan);
-  const end = Math.min(totalItems - 1, visibleEnd + overscan);
-  
-  return { start, end, visibleStart, visibleEnd };
-}

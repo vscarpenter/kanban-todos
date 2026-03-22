@@ -142,7 +142,7 @@ describe('BoardView - Cross-board Navigation', () => {
       render(<BoardView />)
       
       expect(screen.getByText('No Results Found')).toBeInTheDocument()
-      expect(screen.getByText('No tasks found matching "nonexistent" in Current Board.')).toBeInTheDocument()
+      expect(screen.getByText('No tasks matching "nonexistent" in Current Board.')).toBeInTheDocument()
       expect(screen.getByText('Clear Search')).toBeInTheDocument()
     })
 
@@ -258,7 +258,7 @@ describe('BoardView - Cross-board Navigation', () => {
       render(<BoardView />)
       
       expect(screen.getByText('No Results Found')).toBeInTheDocument()
-      expect(screen.getByText('No tasks found matching "nonexistent" across all boards.')).toBeInTheDocument()
+      expect(screen.getByText('No tasks matching "nonexistent" across all boards.')).toBeInTheDocument()
       expect(screen.getByText('Clear Search')).toBeInTheDocument()
     })
 

@@ -9,7 +9,7 @@ interface SidebarHeaderProps {
 
 export function SidebarHeader({ onToggle }: SidebarHeaderProps) {
   return (
-    <div className="p-6 border-b border-border">
+    <div className="p-6 border-b border-border relative z-10">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -18,7 +18,11 @@ export function SidebarHeader({ onToggle }: SidebarHeaderProps) {
             alt="Cascade Logo"
             className="w-8 h-8"
           />
-          <h1 className="text-2xl font-semibold text-foreground tracking-tight">Cascade</h1>
+          <h1
+            className="text-2xl font-bold tracking-tighter bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent"
+          >
+            Cascade
+          </h1>
         </div>
         <Button
           variant="ghost"
@@ -29,9 +33,6 @@ export function SidebarHeader({ onToggle }: SidebarHeaderProps) {
           <ChevronLeft className="h-4 w-4" />
         </Button>
       </div>
-      <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-        Task Management System
-      </p>
     </div>
   );
 }

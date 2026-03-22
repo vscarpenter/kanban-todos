@@ -1,6 +1,5 @@
 import { Task, TaskFilters } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
-import { validateTaskCollection } from '@/lib/utils/taskValidation';
 
 // Cache configuration
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
@@ -8,18 +7,6 @@ const MAX_CACHE_SIZE = 50;
 
 export type CacheEntry = { results: Task[]; timestamp: number };
 export type SearchCache = Map<string, CacheEntry>;
-
-/**
- * Validates task integrity before filtering
- * Returns only tasks with valid required fields
- * @deprecated Use validateTaskCollection from taskValidation.ts directly
- */
-export function validateTasks(
-  tasks: Task[],
-  validateFn: (task: Task) => boolean
-): Task[] {
-  return validateTaskCollection(tasks, validateFn);
-}
 
 /**
  * Validates board access for cross-board search

@@ -28,7 +28,6 @@ const nextConfig: NextConfig = {
   // Performance optimizations
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons', '@dnd-kit/core'],
-    turbopackUseSystemTlsCerts: true, // Fix font fetching in some environments
   },
 
   // Compiler optimizations

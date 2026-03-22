@@ -9,13 +9,19 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
+// iOS Safari exposes a non-standard `standalone` property on navigator
+// to indicate if the page is running in a home-screen web app.
+// See: https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
+interface NavigatorStandalone extends Navigator {
+  standalone?: boolean;
+}
+
 // Check if running in standalone mode (installed PWA)
 const emptySubscribe = () => () => {};
 const getStandaloneSnapshot = () => {
   if (typeof window === 'undefined') return false;
   return window.matchMedia("(display-mode: standalone)").matches ||
-         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-         (window.navigator as any).standalone === true;
+         (window.navigator as NavigatorStandalone).standalone === true;
 };
 const getServerSnapshot = () => false;
 

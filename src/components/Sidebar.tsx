@@ -37,7 +37,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
           transform transition-transform duration-300 ease-in-out
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
           w-80 bg-card border-r border-border
-          flex flex-col
+          flex flex-col sidebar-glass grain-overlay
         `}
       >
         <SidebarHeader onToggle={onToggle} />

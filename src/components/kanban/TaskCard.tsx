@@ -10,6 +10,12 @@ import { BoardIndicator } from "../BoardIndicator";
 import { TaskCardActions } from "./TaskCardActions";
 import { TaskCardMetadata } from "./TaskCardMetadata";
 
+const priorityBorderColor: Record<Task['priority'], string> = {
+  high: 'border-l-red-500 dark:border-l-red-400',
+  medium: 'border-l-amber-400 dark:border-l-amber-300',
+  low: 'border-l-emerald-400 dark:border-l-emerald-300',
+};
+
 interface TaskCardProps {
   task: Task;
   showBoardIndicator?: boolean;
@@ -68,9 +74,8 @@ export function TaskCard({
       <div
         ref={setNodeRef}
         style={style}
-        className="opacity-50"
       >
-        <Card className="h-24 bg-muted/50 border-dashed" />
+        <div className="h-24 drag-ghost animate-pulse rounded-xl" />
       </div>
     );
   }
@@ -91,7 +96,7 @@ export function TaskCard({
       data-task-id={task.id}
     >
       <Card
-        className={`hover:shadow-md transition-all duration-200 ${showBoardIndicator && !isCurrentBoard ? 'hover:bg-accent/50 hover:border-accent-foreground/30' : ''
+        className={`border-l-4 ${priorityBorderColor[task.priority]} hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 ease-out ${showBoardIndicator && !isCurrentBoard ? 'hover:bg-accent/50 hover:border-l-accent-foreground/30' : ''
           } focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2`}
         role="article"
         aria-labelledby={`task-title-${task.id}`}
@@ -114,7 +119,7 @@ export function TaskCard({
           <div className="flex items-start justify-between gap-2 mb-3">
             <h3
               id={`task-title-${task.id}`}
-              className="font-medium text-foreground text-sm leading-tight flex-1"
+              className="font-semibold text-foreground text-sm leading-tight flex-1 tracking-[-0.01em]"
             >
               {task.title}
             </h3>
@@ -123,7 +128,7 @@ export function TaskCard({
 
           {/* Task Description */}
           {task.description && (
-            <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+            <p className="text-[0.8125rem] text-muted-foreground mb-3 line-clamp-2 font-normal leading-relaxed">
               {task.description}
             </p>
           )}
