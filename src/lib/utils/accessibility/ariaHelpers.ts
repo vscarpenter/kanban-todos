@@ -23,7 +23,7 @@ export function getAriaDescription(element: HTMLElement): string {
 }
 
 export function setAriaDescription(element: HTMLElement, description: string): void {
-  const id = `desc-${Math.random().toString(36).substr(2, 9)}`;
+  const id = `desc-${crypto.randomUUID().slice(0, 9)}`;
   const descElement = document.createElement('div');
   descElement.id = id;
   descElement.className = 'sr-only';

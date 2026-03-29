@@ -72,69 +72,137 @@ export interface FieldConflict {
 // Merge Utilities
 // ============================================================================
 
-export function mergeBoards(existing: Board, imported: Board, strategy: MergeStrategy): MergeResult<Board> {
-  const conflicts: FieldConflict[] = [];
-  const mergedFields: string[] = [];
-  const merged = { ...existing };
-  const fields: (keyof Board)[] = ['name', 'description', 'color', 'isDefault'];
-
-  for (const field of fields) {
-    if (existing[field] !== imported[field]) {
-      conflicts.push({ field, existingValue: existing[field], importedValue: imported[field], resolution: 'kept_existing', reason: `Different ${field} values` });
-      if (strategy === 'use_imported') { (merged as Record<string, unknown>)[field] = imported[field]; mergedFields.push(field); }
-      else if (strategy === 'keep_newer' && imported.updatedAt > existing.updatedAt) { (merged as Record<string, unknown>)[field] = imported[field]; mergedFields.push(field); }
-      else if (strategy === 'merge_fields' && field === 'description' && !existing[field] && imported[field]) { (merged as Record<string, unknown>)[field] = imported[field]; mergedFields.push(field); }
-    }
-  }
-  if (imported.updatedAt > existing.updatedAt) { merged.updatedAt = imported.updatedAt; mergedFields.push('updatedAt'); }
-  return { merged, conflicts, mergedFields };
+interface MergeFieldConfig {
+  field: string;
+  deepCompare?: boolean;
+  /** Custom merge_fields handler. Return undefined to skip the field. */
+  customMerge?: (existing: Record<string, unknown>, imported: Record<string, unknown>) => unknown;
 }
 
-export function mergeTasks(existing: Task, imported: Task, strategy: MergeStrategy): MergeResult<Task> {
+interface MergeEntityOptions {
+  fields: MergeFieldConfig[];
+  /** Whether to update updatedAt from imported when newer */
+  trackUpdatedAt?: boolean;
+  /** Additional merge_fields logic run after field iteration */
+  extraMergeFields?: (merged: Record<string, unknown>, existing: Record<string, unknown>, imported: Record<string, unknown>, mergedFields: string[]) => void;
+}
+
+function mergeEntities(
+  existing: Record<string, unknown>,
+  imported: Record<string, unknown>,
+  strategy: MergeStrategy,
+  options: MergeEntityOptions,
+): { merged: Record<string, unknown>; conflicts: FieldConflict[]; mergedFields: string[] } {
   const conflicts: FieldConflict[] = [];
   const mergedFields: string[] = [];
   const merged = { ...existing };
-  const fields: (keyof Task)[] = ['title', 'description', 'status', 'priority', 'tags', 'progress'];
 
-  for (const field of fields) {
-    if (JSON.stringify(existing[field]) !== JSON.stringify(imported[field])) {
-      conflicts.push({ field, existingValue: existing[field], importedValue: imported[field], resolution: 'kept_existing', reason: `Different ${field} values` });
-      if (strategy === 'use_imported') { (merged as Record<string, unknown>)[field] = imported[field]; mergedFields.push(field); }
-      else if (strategy === 'keep_newer' && imported.updatedAt > existing.updatedAt) { (merged as Record<string, unknown>)[field] = imported[field]; mergedFields.push(field); }
-      else if (strategy === 'merge_fields') {
-        if (field === 'tags') { merged.tags = [...new Set([...(existing.tags || []), ...(imported.tags || [])])]; mergedFields.push(field); }
-        else if (field === 'description' && !existing[field] && imported[field]) { (merged as Record<string, unknown>)[field] = imported[field]; mergedFields.push(field); }
+  for (const { field, deepCompare, customMerge } of options.fields) {
+    const existingVal = existing[field];
+    const importedVal = imported[field];
+    const isDifferent = deepCompare
+      ? JSON.stringify(existingVal) !== JSON.stringify(importedVal)
+      : existingVal !== importedVal;
+
+    if (!isDifferent) continue;
+
+    conflicts.push({
+      field,
+      existingValue: existingVal,
+      importedValue: importedVal,
+      resolution: 'kept_existing',
+      reason: `Different ${field} values`,
+    });
+
+    if (strategy === 'use_imported') {
+      merged[field] = importedVal;
+      mergedFields.push(field);
+    } else if (
+      strategy === 'keep_newer' &&
+      options.trackUpdatedAt &&
+      imported.updatedAt && existing.updatedAt &&
+      (imported.updatedAt as Date) > (existing.updatedAt as Date)
+    ) {
+      merged[field] = importedVal;
+      mergedFields.push(field);
+    } else if (strategy === 'merge_fields' && customMerge) {
+      const result = customMerge(existing, imported);
+      if (result !== undefined) {
+        merged[field] = result;
+        mergedFields.push(field);
       }
     }
   }
-  if (imported.updatedAt > existing.updatedAt) { merged.updatedAt = imported.updatedAt; mergedFields.push('updatedAt'); }
+
+  if (options.trackUpdatedAt && imported.updatedAt && existing.updatedAt) {
+    if ((imported.updatedAt as Date) > (existing.updatedAt as Date)) {
+      merged.updatedAt = imported.updatedAt;
+      mergedFields.push('updatedAt');
+    }
+  }
+
+  if (strategy === 'merge_fields' && options.extraMergeFields) {
+    options.extraMergeFields(merged, existing, imported, mergedFields);
+  }
+
   return { merged, conflicts, mergedFields };
 }
 
-export function mergeSettings(existing: Settings, imported: Settings, strategy: MergeStrategy): MergeResult<Settings> {
-  const conflicts: FieldConflict[] = [];
-  const mergedFields: string[] = [];
-  const merged = { ...existing };
-  const fields: (keyof Settings)[] = [
-    'theme',
-    'autoArchiveDays',
-    'enableNotifications',
-    'enableKeyboardShortcuts',
-    'enableDebugMode',
-    'enableDeveloperMode',
-  ];
+/** Fill empty field from imported value */
+const fillEmpty = (field: string) =>
+  (existing: Record<string, unknown>, imported: Record<string, unknown>) =>
+    !existing[field] && imported[field] ? imported[field] : undefined;
 
-  for (const field of fields) {
-    if (existing[field] !== imported[field]) {
-      conflicts.push({ field, existingValue: existing[field], importedValue: imported[field], resolution: 'kept_existing', reason: `Different ${field} values` });
-      if (strategy === 'use_imported' || strategy === 'merge_fields') { (merged as Record<string, unknown>)[field] = imported[field]; mergedFields.push(field); }
-    }
-  }
-  if (JSON.stringify(existing.accessibility) !== JSON.stringify(imported.accessibility)) {
-    if (strategy === 'use_imported') { merged.accessibility = imported.accessibility; mergedFields.push('accessibility'); }
-    else if (strategy === 'merge_fields') { merged.accessibility = { ...existing.accessibility, ...imported.accessibility }; mergedFields.push('accessibility'); }
-  }
-  return { merged, conflicts, mergedFields };
+export function mergeBoards(existing: Board, imported: Board, strategy: MergeStrategy): MergeResult<Board> {
+  const result = mergeEntities(existing as unknown as Record<string, unknown>, imported as unknown as Record<string, unknown>, strategy, {
+    trackUpdatedAt: true,
+    fields: [
+      { field: 'name' },
+      { field: 'description', customMerge: fillEmpty('description') },
+      { field: 'color' },
+      { field: 'isDefault' },
+    ],
+  });
+  return { ...result, merged: result.merged as unknown as Board };
+}
+
+export function mergeTasks(existing: Task, imported: Task, strategy: MergeStrategy): MergeResult<Task> {
+  const result = mergeEntities(existing as unknown as Record<string, unknown>, imported as unknown as Record<string, unknown>, strategy, {
+    trackUpdatedAt: true,
+    fields: [
+      { field: 'title' },
+      { field: 'description', deepCompare: true, customMerge: fillEmpty('description') },
+      { field: 'status', deepCompare: true },
+      { field: 'priority', deepCompare: true },
+      {
+        field: 'tags',
+        deepCompare: true,
+        customMerge: (e, i) => [...new Set([...((e.tags as string[]) || []), ...((i.tags as string[]) || [])])],
+      },
+      { field: 'progress', deepCompare: true },
+    ],
+  });
+  return { ...result, merged: result.merged as unknown as Task };
+}
+
+export function mergeSettings(existing: Settings, imported: Settings, strategy: MergeStrategy): MergeResult<Settings> {
+  const result = mergeEntities(existing as unknown as Record<string, unknown>, imported as unknown as Record<string, unknown>, strategy, {
+    fields: [
+      { field: 'theme' },
+      { field: 'autoArchiveDays' },
+      { field: 'enableNotifications' },
+      { field: 'enableKeyboardShortcuts' },
+      { field: 'enableDebugMode' },
+      { field: 'enableDeveloperMode' },
+    ],
+    extraMergeFields: (merged, existing, imported, mergedFields) => {
+      if (JSON.stringify(existing.accessibility) !== JSON.stringify(imported.accessibility)) {
+        merged.accessibility = { ...(existing.accessibility as object), ...(imported.accessibility as object) };
+        mergedFields.push('accessibility');
+      }
+    },
+  });
+  return { ...result, merged: result.merged as unknown as Settings };
 }
 
 export function generateUniqueBoardName(baseName: string, existingBoards: Board[]): string {

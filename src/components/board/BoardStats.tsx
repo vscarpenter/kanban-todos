@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { Task, Board } from "@/lib/types";
 
 interface BoardGroup {
@@ -14,18 +15,18 @@ interface BoardStatsProps {
 }
 
 export function BoardStats({ tasks, isCrossBoardSearch, boardGroups = {} }: BoardStatsProps) {
-  const todoTasks = tasks.filter(task => task.status === 'todo');
-  const inProgressTasks = tasks.filter(task => task.status === 'in-progress');
-  const doneTasks = tasks.filter(task => task.status === 'done');
+  const todoTasks = useMemo(() => tasks.filter(task => task.status === 'todo'), [tasks]);
+  const inProgressTasks = useMemo(() => tasks.filter(task => task.status === 'in-progress'), [tasks]);
+  const doneTasks = useMemo(() => tasks.filter(task => task.status === 'done'), [tasks]);
 
-  const boardStats = isCrossBoardSearch ? Object.entries(boardGroups).map(([boardId, group]) => ({
+  const boardStats = useMemo(() => isCrossBoardSearch ? Object.entries(boardGroups).map(([boardId, group]) => ({
     boardId,
     board: group.board,
     totalTasks: group.tasks.length,
     todoTasks: group.tasks.filter(t => t.status === 'todo').length,
     inProgressTasks: group.tasks.filter(t => t.status === 'in-progress').length,
     doneTasks: group.tasks.filter(t => t.status === 'done').length,
-  })) : [];
+  })) : [], [isCrossBoardSearch, boardGroups]);
 
   return (
     <div className="mt-4 space-y-3">
@@ -45,6 +46,7 @@ export function BoardStats({ tasks, isCrossBoardSearch, boardGroups = {} }: Boar
               <div
                 className="w-3 h-3 rounded-full"
                 style={{ backgroundColor: board.color }}
+                aria-hidden="true"
               />
               <span className="font-medium">{board.name}:</span>
               <span className="text-muted-foreground">
