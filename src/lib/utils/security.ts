@@ -21,10 +21,10 @@ const RATE_LIMIT_CONFIG = {
 
 // Allowed characters for different input types
 const ALLOWED_PATTERNS = {
-  TASK_TITLE: /^[a-zA-Z0-9\s\-_.,!?()[\]]*$/,
-  BOARD_NAME: /^[a-zA-Z0-9\s\-_.,!?()[\]]*$/,
-  TAG: /^[a-zA-Z0-9\s\-_]*$/,
-  SEARCH: /^[a-zA-Z0-9\s\-_.,!?()[\]]*$/,
+  TASK_TITLE: /^[\p{L}\p{N}\s\-_.,!?()[\]]*$/u,
+  BOARD_NAME: /^[\p{L}\p{N}\s\-_.,!?()[\]]*$/u,
+  TAG: /^[\p{L}\p{N}\s\-_]*$/u,
+  SEARCH: /^[\p{L}\p{N}\s\-_.,!?()[\]]*$/u,
 } as const;
 
 /**

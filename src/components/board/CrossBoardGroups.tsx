@@ -26,6 +26,7 @@ export function CrossBoardGroups({ boardGroups, onNavigateToBoard }: CrossBoardG
               <div
                 className="w-4 h-4 rounded-full"
                 style={{ backgroundColor: board.color }}
+                aria-hidden="true"
               />
               <h4 className="font-medium text-foreground">{board.name}</h4>
               <span className="text-sm text-muted-foreground">({tasks.length} tasks)</span>
@@ -48,10 +49,12 @@ export function CrossBoardGroups({ boardGroups, onNavigateToBoard }: CrossBoardG
                     </h5>
                     <div className="space-y-2 max-h-40 overflow-y-auto">
                       {statusTasks.slice(0, 3).map((task) => (
-                        <div
+                        <button
                           key={task.id}
-                          className="text-sm p-2 bg-accent/30 rounded border cursor-pointer hover:bg-accent/50 transition-colors"
+                          type="button"
+                          className="w-full text-left text-sm p-2 bg-accent/30 rounded border cursor-pointer hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors"
                           onClick={() => onNavigateToBoard(boardId, task.id)}
+                          aria-label={`Navigate to task: ${task.title}`}
                         >
                           <div className="font-medium truncate">{task.title}</div>
                           {task.description && (
@@ -59,7 +62,7 @@ export function CrossBoardGroups({ boardGroups, onNavigateToBoard }: CrossBoardG
                               {task.description}
                             </div>
                           )}
-                        </div>
+                        </button>
                       ))}
                       {statusTasks.length > 3 && (
                         <div className="text-xs text-muted-foreground text-center py-1">

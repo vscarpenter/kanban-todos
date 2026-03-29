@@ -33,7 +33,7 @@ export async function resetApplication(): Promise<void> {
       console.log('Clearing cookies...');
       document.cookie.split(";").forEach(cookie => {
         const eqPos = cookie.indexOf("=");
-        const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+        const name = eqPos > -1 ? cookie.slice(0, eqPos).trim() : cookie.trim();
         // Delete cookie by setting it to expire in the past
         document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
         document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;

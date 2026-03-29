@@ -232,7 +232,7 @@ describe('Accessibility Tests', () => {
       
       const article = screen.getByRole('article');
       expect(article).toHaveAttribute('aria-labelledby', 'task-title-task-1');
-      expect(article).toHaveAttribute('aria-describedby', 'task-meta-task-1');
+      expect(article).toHaveAttribute('aria-describedby', 'task-meta-task-1 task-priority-task-1');
       
       const title = screen.getByRole('heading', { level: 3 });
       expect(title).toHaveAttribute('id', 'task-title-task-1');

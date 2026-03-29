@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -28,14 +29,16 @@ export function SearchFilterPopover({
   onScopeToggle,
   onClearFilters
 }: SearchFilterPopoverProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <Popover>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
           size="sm"
           aria-label={`Open filters menu${hasActiveFilters ? ` (${Object.values(filters).filter(Boolean).length} active)` : ''}`}
-          aria-expanded={false}
+          aria-expanded={isOpen}
           aria-haspopup="dialog"
         >
           <Filter className="h-4 w-4 mr-2" aria-hidden="true" />

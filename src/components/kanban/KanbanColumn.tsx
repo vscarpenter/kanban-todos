@@ -72,7 +72,7 @@ export function KanbanColumn({ title, tasks, status, color, borderColor, onNavig
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <StatusIcon className="h-4 w-4 opacity-60" />
+              <StatusIcon className="h-4 w-4 opacity-60" aria-hidden="true" />
               {title}
             </CardTitle>
             <Badge className={`text-xs font-semibold border-0 ${config.badgeClass}`}>

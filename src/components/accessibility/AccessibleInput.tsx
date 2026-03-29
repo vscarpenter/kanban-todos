@@ -45,7 +45,6 @@ export const AccessibleInput = forwardRef<HTMLInputElement, AccessibleInputProps
   }, ref) => {
     const inputRef = useRef<HTMLInputElement>(null);
     const [internalValue, setInternalValue] = useState(value || '');
-    // const [isFocused, setIsFocused] = useState(false);
     const [validationError, setValidationError] = useState<string | null>(null);
     const accessibilityManager = AccessibilityManager.getInstance();
 

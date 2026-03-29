@@ -47,7 +47,9 @@ export default function PwaUpdater() {
         // Check for updates whenever the app becomes visible
         const onVisibility = () => {
           if (document.visibilityState === "visible") {
-            registration.update().catch(() => {});
+            registration.update().catch((error) => {
+              console.warn("Service worker update check failed:", error);
+            });
           }
         };
         document.addEventListener("visibilitychange", onVisibility);
@@ -58,7 +60,9 @@ export default function PwaUpdater() {
           document.removeEventListener("visibilitychange", onVisibility);
         };
       })
-      .catch(() => {});
+      .catch((error) => {
+        console.warn("Service worker registration failed:", error);
+      });
 
     // Reload the page when the new SW takes control
     const onControllerChange = () => {
@@ -75,7 +79,9 @@ export default function PwaUpdater() {
   const reload = () => {
     try {
       waiting?.postMessage({ type: "SKIP_WAITING" });
-    } catch {}
+    } catch (error) {
+      console.warn("Failed to signal service worker to skip waiting:", error);
+    }
   };
 
   if (!show) return null;

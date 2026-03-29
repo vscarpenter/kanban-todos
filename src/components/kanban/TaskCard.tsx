@@ -100,8 +100,11 @@ export function TaskCard({
           } focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2`}
         role="article"
         aria-labelledby={`task-title-${task.id}`}
-        aria-describedby={`task-meta-${task.id}`}
+        aria-describedby={`task-meta-${task.id} task-priority-${task.id}`}
       >
+        <span id={`task-priority-${task.id}`} className="sr-only">
+          Priority: {task.priority}
+        </span>
         <CardContent className="p-4">
           {/* Board Indicator */}
           {showBoardIndicator && board && (
