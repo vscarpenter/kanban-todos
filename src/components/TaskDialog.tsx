@@ -79,6 +79,7 @@ export function TaskDialog({ mode, open, onOpenChange, boardId, task }: TaskDial
   }, [mode, task]);
 
   const [formData, setFormData] = useState<FormData>(getInitialFormData());
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   // Check if form has unsaved changes
   const hasUnsavedChanges = useCallback((): boolean => {
@@ -186,112 +187,178 @@ export function TaskDialog({ mode, open, onOpenChange, boardId, task }: TaskDial
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Title */}
-          <div className="space-y-2">
-            <Label htmlFor="title">Title *</Label>
-            <Input
-              id="title"
-              value={formData.title}
-              onChange={(e) => handleInputChange('title', e.target.value)}
-              placeholder="Enter task title"
-              maxLength={200}
-              required
-            />
-            <div className="text-xs text-muted-foreground text-right">
-              {formData.title.length}/200
-            </div>
-          </div>
-
-          {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              placeholder="Enter task description (optional)"
-              rows={3}
-              maxLength={500}
-            />
-            <div className="text-xs text-muted-foreground text-right">
-              {formData.description.length}/500
-            </div>
-          </div>
-
-          {/* Priority */}
-          <div className="space-y-2">
-            <Label htmlFor="priority">Priority</Label>
-            <Select
-              value={formData.priority}
-              onValueChange={(value: Task['priority']) =>
-                setFormData(prev => ({ ...prev, priority: value }))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Progress Slider - Only show for in-progress tasks in edit mode */}
-          {showProgressSlider && (
+          {/* Primary Fields - Always Visible */}
+          <div className="space-y-4">
+            {/* Title */}
             <div className="space-y-2">
-              <Label htmlFor="progress">Progress</Label>
-              <div className="px-3">
-                <Slider
-                  id="progress"
-                  min={0}
-                  max={100}
-                  step={5}
-                  value={[formData.progress]}
-                  onValueChange={(value: number[]) =>
-                    setFormData(prev => ({ ...prev, progress: value[0] }))
-                  }
-                  className="w-full"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                  <span>0%</span>
-                  <span className="font-medium">{formData.progress}%</span>
-                  <span>100%</span>
-                </div>
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Track your progress on this task
+              <Label htmlFor="title">Title *</Label>
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) => handleInputChange('title', e.target.value)}
+                placeholder="Enter task title"
+                maxLength={200}
+                required
+                autoFocus
+              />
+              <div className="text-xs text-muted text-right">
+                {formData.title.length}/200
               </div>
             </div>
-          )}
 
-          {/* Due Date */}
-          <div className="space-y-2">
-            <Label>Due Date</Label>
-            <DateTimePicker
-              value={formData.dueDate}
-              onChange={handleDateChange}
-              placeholder="Select due date and time"
-              minDate={new Date()}
-            />
-            <div className="text-xs text-muted-foreground">
-              Optional deadline for this task
+            {/* Due Date - Primary field for productivity */}
+            <div className="space-y-2">
+              <Label>Due Date</Label>
+              <div className="flex flex-wrap gap-2">
+                {/* Quick picks for common dates */}
+                <div className="flex gap-1 mb-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setFormData(prev => ({ ...prev, dueDate: new Date() }))}
+                  >
+                    Today
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const tomorrow = new Date();
+                      tomorrow.setDate(tomorrow.getDate() + 1);
+                      setFormData(prev => ({ ...prev, dueDate: tomorrow }));
+                    }}
+                  >
+                    Tomorrow
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const nextWeek = new Date();
+                      nextWeek.setDate(nextWeek.getDate() + 7);
+                      setFormData(prev => ({ ...prev, dueDate: nextWeek }));
+                    }}
+                  >
+                    Next Week
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setFormData(prev => ({ ...prev, dueDate: undefined }))}
+                  >
+                    No Due Date
+                  </Button>
+                </div>
+                <DateTimePicker
+                  value={formData.dueDate}
+                  onChange={handleDateChange}
+                  placeholder="Or select custom date"
+                  minDate={new Date()}
+                />
+              </div>
             </div>
           </div>
 
-          {/* Tags */}
-          <div className="space-y-2">
-            <Label htmlFor="tags">Tags</Label>
-            <Input
-              id="tags"
-              value={formData.tags}
-              onChange={(e) => handleInputChange('tags', e.target.value)}
-              placeholder="Enter tags separated by commas"
-            />
-            <div className="text-xs text-muted-foreground">
-              Separate multiple tags with commas
-            </div>
+          {/* Secondary Fields - Collapsible */}
+          <div className="border-t border-border pt-4">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="text-muted hover:text-foreground mb-3"
+            >
+              {showAdvanced ? 'Hide' : 'Show'} Details
+              <span className="ml-1">
+                {showAdvanced ? '↑' : '↓'}
+              </span>
+            </Button>
+
+            {showAdvanced && (
+              <div className="space-y-4">
+                {/* Description */}
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    placeholder="Enter task description (optional)"
+                    rows={3}
+                    maxLength={500}
+                  />
+                  <div className="text-xs text-muted text-right">
+                    {formData.description.length}/500
+                  </div>
+                </div>
+
+                {/* Priority */}
+                <div className="space-y-2">
+                  <Label htmlFor="priority">Priority</Label>
+                  <Select
+                    value={formData.priority}
+                    onValueChange={(value: Task['priority']) =>
+                      setFormData(prev => ({ ...prev, priority: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Tags - Will improve this to chip input later */}
+                <div className="space-y-2">
+                  <Label htmlFor="tags">Tags</Label>
+                  <Input
+                    id="tags"
+                    value={formData.tags}
+                    onChange={(e) => handleInputChange('tags', e.target.value)}
+                    placeholder="Enter tags separated by commas"
+                  />
+                  <div className="text-xs text-muted">
+                    Separate multiple tags with commas
+                  </div>
+                </div>
+
+                {/* Progress Slider - Only show for in-progress tasks in edit mode */}
+                {showProgressSlider && (
+                  <div className="space-y-2">
+                    <Label htmlFor="progress">Progress</Label>
+                    <div className="px-3">
+                      <Slider
+                        id="progress"
+                        min={0}
+                        max={100}
+                        step={5}
+                        value={[formData.progress]}
+                        onValueChange={(value: number[]) =>
+                          setFormData(prev => ({ ...prev, progress: value[0] }))
+                        }
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-xs text-muted mt-1">
+                        <span>0%</span>
+                        <span className="font-medium">{formData.progress}%</span>
+                        <span>100%</span>
+                      </div>
+                    </div>
+                    <div className="text-xs text-muted">
+                      Track your progress on this task
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Form Actions */}

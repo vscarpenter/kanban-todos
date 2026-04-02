@@ -44,7 +44,7 @@ export function SearchFilterPopover({
           <Filter className="h-4 w-4 mr-2" aria-hidden="true" />
           Filters
           {hasActiveFilters && (
-            <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-xs" aria-label={`${Object.values(filters).filter(Boolean).length} active filters`}>
+            <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-xs bg-primary text-primary-foreground" aria-label={`${Object.values(filters).filter(Boolean).length} active filters`}>
               {Object.values(filters).filter(Boolean).length}
             </Badge>
           )}

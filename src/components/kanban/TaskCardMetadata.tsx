@@ -25,17 +25,19 @@ export function TaskCardMetadata({ task }: TaskCardMetadataProps) {
 
   return (
     <div id={`task-meta-${task.id}`} className="space-y-2">
-      {/* Priority */}
-      <div className="flex items-center gap-2">
-        <span aria-hidden="true">{getPriorityIcon(task.priority)}</span>
-        <Badge
-          variant="secondary"
-          className={`text-xs ${getPriorityColor(task.priority)}`}
-          aria-label={`Priority: ${task.priority}`}
-        >
-          {task.priority}
-        </Badge>
-      </div>
+      {/* Priority - Only show if not default medium */}
+      {task.priority !== 'medium' && (
+        <div className="flex items-center gap-2">
+          <span aria-hidden="true">{getPriorityIcon(task.priority)}</span>
+          <Badge
+            variant="secondary"
+            className={`text-xs ${getPriorityColor(task.priority)}`}
+            aria-label={`Priority: ${task.priority}`}
+          >
+            {task.priority}
+          </Badge>
+        </div>
+      )}
 
       {/* Tags */}
       {task.tags.length > 0 && (
@@ -77,10 +79,16 @@ export function TaskCardMetadata({ task }: TaskCardMetadataProps) {
         </div>
       )}
 
-      {/* Due Date */}
+      {/* Due Date - Using semantic colors */}
       {dueDateStatus && (
         <div
-          className={`flex items-center gap-1 text-xs ${getDueDateClasses(dueDateStatus.isOverdue, dueDateStatus.isDueSoon)}`}
+          className={`flex items-center gap-1 text-xs ${
+            dueDateStatus.isOverdue 
+              ? 'due-date--overdue' 
+              : dueDateStatus.isDueSoon 
+              ? 'due-date--due-soon' 
+              : 'due-date--normal'
+          }`}
           role={dueDateStatus.isOverdue ? 'alert' : undefined}
           aria-label={`Due date: ${formatDueDate(dueDateStatus.dueDate)}${dueDateStatus.isOverdue ? ' (Overdue)' : dueDateStatus.isDueSoon ? ' (Due soon)' : ''}`}
         >
@@ -89,17 +97,6 @@ export function TaskCardMetadata({ task }: TaskCardMetadataProps) {
           {dueDateStatus.isOverdue && <span className="font-medium">(Overdue)</span>}
         </div>
       )}
-
-      {/* Created/Completed Date */}
-      <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
-        <Calendar className="h-3 w-3" aria-hidden="true" />
-        <span>
-          {task.completedAt
-            ? `Completed ${formatDistanceToNow(new Date(task.completedAt))} ago`
-            : `Created ${formatDistanceToNow(new Date(task.createdAt))} ago`
-          }
-        </span>
-      </div>
     </div>
   );
 }

@@ -168,6 +168,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* Main Settings Groups */}
           <AppearanceSection
             localSettings={localSettings}
             updateLocalSetting={updateLocalSetting}
@@ -190,37 +191,99 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
           <Separator />
 
-          <DeveloperSection
-            localSettings={localSettings}
-            updateLocalSetting={updateLocalSetting}
-            onAppResetClick={() => setShowAppResetDialog(true)}
-          />
+          {/* Advanced (Collapsible) */}
+          <details className="group">
+            <summary className="cursor-pointer flex items-center gap-2 text-lg font-medium hover:text-foreground text-muted">
+              <span className="transform transition-transform group-open:rotate-90">▶</span>
+              Advanced
+            </summary>
+            <div className="mt-4 pl-6 space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="debugMode">Debug mode</Label>
+                    <p className="text-xs text-muted">
+                      Enable additional logging and debugging features
+                    </p>
+                  </div>
+                  <Switch
+                    id="debugMode"
+                    checked={localSettings.enableDebugMode}
+                    onCheckedChange={(checked) => updateLocalSetting('enableDebugMode', checked)}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="developerMode">Developer mode</Label>
+                    <p className="text-xs text-muted">
+                      Show developer tools like monitoring and production readiness dashboards
+                    </p>
+                  </div>
+                  <Switch
+                    id="developerMode"
+                    checked={localSettings.enableDeveloperMode}
+                    onCheckedChange={(checked) => updateLocalSetting('enableDeveloperMode', checked)}
+                  />
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <Separator />
+
+          {/* Danger Zone */}
+          <div className="bg-danger/5 border border-danger/20 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-2 h-2 bg-danger rounded-full"></div>
+              <h3 className="text-lg font-medium text-danger">Danger Zone</h3>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowResetConfirm(true)}
+                  disabled={isLoading}
+                  className="w-full border-warning text-warning hover:bg-warning/10"
+                >
+                  Reset Settings to Default
+                </Button>
+                <p className="text-xs text-muted mt-1">
+                  Restores all settings to their original values. Your data remains intact.
+                </p>
+              </div>
+              
+              <div>
+                <Button
+                  variant="destructive"
+                  onClick={() => setShowAppResetDialog(true)}
+                  disabled={isLoading}
+                  className="w-full"
+                >
+                  Reset App to Default
+                </Button>
+                <p className="text-xs text-danger mt-1">
+                  Permanently deletes all data including boards, tasks, and settings. This cannot be undone. Consider exporting your data first.
+                </p>
+              </div>
+            </div>
+          </div>
 
           {/* Actions */}
-          <div className="flex justify-between pt-4">
+          <div className="flex justify-end gap-2 pt-4">
             <Button
               variant="outline"
-              onClick={() => setShowResetConfirm(true)}
+              onClick={() => handleOpenChange(false)}
               disabled={isLoading}
             >
-              Reset to Default
+              Cancel
             </Button>
-
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => handleOpenChange(false)}
-                disabled={isLoading}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSave}
-                disabled={isLoading}
-              >
-                {isLoading ? "Saving..." : "Save Changes"}
-              </Button>
-            </div>
+            <Button
+              onClick={handleSave}
+              disabled={isLoading}
+            >
+              {isLoading ? "Saving..." : "Save Changes"}
+            </Button>
           </div>
         </div>
       </DialogContent>
