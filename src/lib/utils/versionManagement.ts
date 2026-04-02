@@ -152,7 +152,10 @@ export function getVersionPreferences(): VersionPreferences {
   try {
     const stored = localStorage.getItem(VERSION_PREFERENCES_KEY);
     if (stored) {
-      return { ...DEFAULT_PREFERENCES, ...JSON.parse(stored) };
+      const parsed = JSON.parse(stored);
+      if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+        return { ...DEFAULT_PREFERENCES, ...parsed };
+      }
     }
   } catch (error) {
     console.error('Failed to load version preferences:', error);

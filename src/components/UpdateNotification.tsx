@@ -127,15 +127,17 @@ export function UpdateNotification({ onDismiss, onUpdate, className }: UpdateNot
         checkForUpdates();
       };
 
-      navigator.serviceWorker.addEventListener('message', (event) => {
+      const handleMessage = (event: MessageEvent) => {
         if (event.data?.type === 'UPDATE_AVAILABLE') {
           checkForUpdates();
         }
-      });
+      };
 
+      navigator.serviceWorker.addEventListener('message', handleMessage);
       navigator.serviceWorker.addEventListener('controllerchange', handleUpdateFound);
-      
+
       return () => {
+        navigator.serviceWorker.removeEventListener('message', handleMessage);
         navigator.serviceWorker.removeEventListener('controllerchange', handleUpdateFound);
       };
     }

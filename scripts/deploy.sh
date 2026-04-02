@@ -3,12 +3,12 @@
 # Production Deployment Script for Cascade Kanban
 # Deploys to S3 bucket with CloudFront invalidation
 
-set -e  # Exit on any error
+set -euo pipefail
 
-# Configuration
-S3_BUCKET="s3://todos.vinny.dev"
-CLOUDFRONT_DISTRIBUTION_ID="E2UEF9C8JAMJH5"
-DOMAIN="https://todos.vinny.dev"
+# Configuration — override via environment variables
+S3_BUCKET="${DEPLOY_S3_BUCKET:-s3://todos.vinny.dev}"
+CLOUDFRONT_DISTRIBUTION_ID="${DEPLOY_CLOUDFRONT_ID:-E2UEF9C8JAMJH5}"
+DOMAIN="${DEPLOY_DOMAIN:-https://todos.vinny.dev}"
 
 # Colors for output
 RED='\033[0;31m'
@@ -49,9 +49,9 @@ check_prerequisites() {
         error "AWS credentials not configured. Please run 'aws configure' or set environment variables."
     fi
     
-    # Check if Node.js and npm are available
-    if ! command -v npm &> /dev/null; then
-        error "npm is not installed. Please install Node.js and npm."
+    # Check if bun is available
+    if ! command -v bun &> /dev/null; then
+        error "bun is not installed. Please install bun first."
     fi
     
     info "✓ Prerequisites check passed"
@@ -64,11 +64,11 @@ build_app() {
     # Install dependencies if node_modules doesn't exist
     if [ ! -d "node_modules" ]; then
         info "Installing dependencies..."
-        npm install
+        bun install
     fi
-    
+
     # Run build
-    npm run build
+    bun run build
     
     # Verify build output exists
     if [ ! -d "out" ]; then
@@ -84,7 +84,7 @@ deploy_to_s3() {
     
     # Sync static assets with long cache
     info "Uploading static assets..."
-    aws s3 sync ./out $S3_BUCKET \
+    aws s3 sync ./out "$S3_BUCKET" \
         --delete \
         --cache-control "max-age=31536000,public" \
         --exclude "*.html" \
@@ -92,17 +92,17 @@ deploy_to_s3() {
         --exclude "*.txt" \
         --exclude "sw.js" \
         --exclude "manifest.json"
-    
+
     # Sync HTML files with no cache
     info "Uploading HTML files..."
-    aws s3 sync ./out $S3_BUCKET \
+    aws s3 sync ./out "$S3_BUCKET" \
         --delete \
         --cache-control "max-age=0,no-cache,no-store,must-revalidate" \
         --include "*.html"
-    
+
     # Sync other dynamic files with short cache
     info "Uploading dynamic files..."
-    aws s3 sync ./out $S3_BUCKET \
+    aws s3 sync ./out "$S3_BUCKET" \
         --delete \
         --cache-control "max-age=300,public" \
         --include "*.json" \
@@ -111,14 +111,14 @@ deploy_to_s3() {
     # Ensure service worker and manifest are never cached
     if [ -f "out/sw.js" ]; then
         info "Uploading service worker with no-cache..."
-        aws s3 cp ./out/sw.js $S3_BUCKET/sw.js \
+        aws s3 cp ./out/sw.js "$S3_BUCKET/sw.js" \
             --cache-control "max-age=0,no-cache,no-store,must-revalidate" \
             --content-type "application/javascript"
     fi
 
     if [ -f "out/manifest.json" ]; then
         info "Uploading manifest with short/no-cache..."
-        aws s3 cp ./out/manifest.json $S3_BUCKET/manifest.json \
+        aws s3 cp ./out/manifest.json "$S3_BUCKET/manifest.json" \
             --cache-control "max-age=0,no-cache,must-revalidate" \
             --content-type "application/manifest+json"
     fi
@@ -131,19 +131,19 @@ invalidate_cloudfront() {
     log "Invalidating CloudFront cache..."
     
     INVALIDATION_ID=$(aws cloudfront create-invalidation \
-        --distribution-id $CLOUDFRONT_DISTRIBUTION_ID \
+        --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" \
         --paths "/*" \
         --query 'Invalidation.Id' \
         --output text)
-    
+
     info "✓ CloudFront invalidation created: $INVALIDATION_ID"
-    
+
     # Wait for invalidation to complete (optional)
-    if [ "$WAIT_FOR_INVALIDATION" = "true" ]; then
+    if [ "${WAIT_FOR_INVALIDATION:-}" = "true" ]; then
         info "Waiting for invalidation to complete..."
         aws cloudfront wait invalidation-completed \
-            --distribution-id $CLOUDFRONT_DISTRIBUTION_ID \
-            --id $INVALIDATION_ID
+            --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" \
+            --id "$INVALIDATION_ID"
         info "✓ Invalidation completed"
     else
         warn "Invalidation is in progress. It may take 5-15 minutes to complete."
@@ -158,37 +158,39 @@ verify_deployment() {
     sleep 5
     
     # Check if site is accessible
-    HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $DOMAIN)
-    
+    HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$DOMAIN" 2>/dev/null) || true
+
     if [ "$HTTP_STATUS" = "200" ]; then
         info "✓ Site is accessible at $DOMAIN"
+    elif [ -z "$HTTP_STATUS" ] || [ "$HTTP_STATUS" = "000" ]; then
+        warn "Could not reach $DOMAIN (DNS or network issue). Verify manually."
     else
         warn "Site returned HTTP status: $HTTP_STATUS"
         warn "This might be due to CloudFront cache. Try again in a few minutes."
     fi
-    
+
     # Check for specific content
-    if curl -s $DOMAIN | grep -q "Cascade"; then
+    if curl -s --max-time 10 "$DOMAIN" 2>/dev/null | grep -q "Cascade"; then
         info "✓ Application content verified"
     else
         warn "Could not verify application content"
     fi
-    
+
     # Test security headers
     info "Testing security headers..."
-    if command -v ./scripts/test-security-headers.sh &> /dev/null; then
-        ./scripts/test-security-headers.sh
+    if [ -x "./scripts/test-security-headers.sh" ]; then
+        ./scripts/test-security-headers.sh || warn "Security headers test returned warnings"
     else
-        warn "Security headers test script not found. Run manually: ./scripts/test-security-headers.sh"
+        warn "Security headers test script not found or not executable."
     fi
 }
 
 # Main deployment process
 main() {
     info "Starting deployment to production..."
-    info "Target: $DOMAIN"
-    info "S3 Bucket: $S3_BUCKET"
-    info "CloudFront Distribution: $CLOUDFRONT_DISTRIBUTION_ID"
+    info "Target: ${DOMAIN}"
+    info "S3 Bucket: ${S3_BUCKET}"
+    info "CloudFront Distribution: ${CLOUDFRONT_DISTRIBUTION_ID}"
     echo
     
     check_prerequisites
@@ -199,9 +201,9 @@ main() {
     
     echo
     log "🚀 Deployment completed successfully!"
-    info "Your application is now live at: $DOMAIN"
-    
-    if [ "$WAIT_FOR_INVALIDATION" != "true" ]; then
+    info "Your application is now live at: ${DOMAIN}"
+
+    if [ "${WAIT_FOR_INVALIDATION:-}" != "true" ]; then
         warn "Note: CloudFront cache invalidation is in progress."
         warn "Changes may take 5-15 minutes to be visible globally."
     fi

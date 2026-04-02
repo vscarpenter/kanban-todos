@@ -58,7 +58,6 @@ export function sanitizeTextInput(
   input: string,
   type: keyof typeof INPUT_LIMITS,
   options: {
-    allowHtml?: boolean;
     preserveWhitespace?: boolean;
     trimWhitespace?: boolean;
   } = {}
@@ -73,10 +72,8 @@ export function sanitizeTextInput(
     sanitized = sanitized.trim();
   }
 
-  if (!options.allowHtml) {
-    sanitized = sanitized.replace(/<[^>]*>/g, '');
-  }
-
+  // Strip HTML tags first, then remove residual dangerous content
+  sanitized = sanitized.replace(/<[^>]*>/g, '');
   sanitized = removeDangerousContent(sanitized);
   sanitized = validateAndCleanPattern(sanitized, type);
 
@@ -294,18 +291,6 @@ export const searchRateLimiter = new RateLimiter(
   RATE_LIMIT_CONFIG.DEFAULT_MAX_REQUESTS,
   RATE_LIMIT_CONFIG.DEFAULT_WINDOW_MS
 );
-
-/**
- * Validates and sanitizes user input for display
- */
-export function escapeHtml(unsafe: string): string {
-  return unsafe
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
 
 /**
  * Validates UUID format

@@ -37,7 +37,7 @@ interface KanbanColumnProps {
 
 export function KanbanColumn({ title, tasks, status, color, borderColor, onNavigateToBoard }: KanbanColumnProps) {
   const { boards, currentBoardId } = useBoardStore();
-  const { filters, searchState } = useTaskStore();
+  const { filters: { search: searchQuery, crossBoardSearch }, searchState: { highlightedTaskId } } = useTaskStore();
 
   const {
     setNodeRef,
@@ -51,8 +51,8 @@ export function KanbanColumn({ title, tasks, status, color, borderColor, onNavig
   });
 
   // Check if we're in cross-board search mode
-  const isSearchActive = filters.search.length > 0;
-  const isCrossBoardSearch = filters.crossBoardSearch && isSearchActive;
+  const isSearchActive = searchQuery.length > 0;
+  const isCrossBoardSearch = crossBoardSearch && isSearchActive;
 
   const config = columnConfig[status];
   const StatusIcon = config.icon;
@@ -93,7 +93,7 @@ export function KanbanColumn({ title, tasks, status, color, borderColor, onNavig
               tasks.map((task, index) => {
                 const taskBoard = boards.find(b => b.id === task.boardId);
                 const isCurrentBoard = task.boardId === currentBoardId;
-                const isHighlighted = searchState.highlightedTaskId === task.id;
+                const isHighlighted = highlightedTaskId === task.id;
 
                 return (
                   <div

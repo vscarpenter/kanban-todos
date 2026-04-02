@@ -84,30 +84,38 @@ export function TaskCardActions({ task }: TaskCardActionsProps) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Dialogs */}
-      <TaskDialog
-        mode="edit"
-        open={showEditDialog}
-        onOpenChange={setShowEditDialog}
-        boardId={task.boardId}
-        task={task}
-      />
-      <ShareTaskDialog
-        open={showShareDialog}
-        onOpenChange={setShowShareDialog}
-        task={task}
-      />
-      <MoveTaskDialog
-        open={showMoveDialog}
-        onOpenChange={setShowMoveDialog}
-        task={task}
-      />
-      <DeleteTaskDialog
-        open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
-        task={task}
-        onConfirm={confirmDelete}
-      />
+      {/* Dialogs — only mount when open to avoid per-card DOM overhead */}
+      {showEditDialog && (
+        <TaskDialog
+          mode="edit"
+          open={showEditDialog}
+          onOpenChange={setShowEditDialog}
+          boardId={task.boardId}
+          task={task}
+        />
+      )}
+      {showShareDialog && (
+        <ShareTaskDialog
+          open={showShareDialog}
+          onOpenChange={setShowShareDialog}
+          task={task}
+        />
+      )}
+      {showMoveDialog && (
+        <MoveTaskDialog
+          open={showMoveDialog}
+          onOpenChange={setShowMoveDialog}
+          task={task}
+        />
+      )}
+      {showDeleteDialog && (
+        <DeleteTaskDialog
+          open={showDeleteDialog}
+          onOpenChange={setShowDeleteDialog}
+          task={task}
+          onConfirm={confirmDelete}
+        />
+      )}
     </>
   );
 }

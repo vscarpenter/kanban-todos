@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
+import { devtools } from 'zustand/middleware';
 import { Settings, SearchScope } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
 import { exportSettings, ExportData } from '@/lib/utils/exportImport';
@@ -82,9 +82,8 @@ const ensureSettingsStructure = (settings: unknown): Settings => {
 
 export const useSettingsStore = create<SettingsState & SettingsActions>()(
   devtools(
-    persist(
-      (set, get) => ({
-        ...initialState,
+    (set, get) => ({
+      ...initialState,
 
         setSettings: (settings) => set({ settings: ensureSettingsStructure(settings) }),
         setLoading: (isLoading) => set({ isLoading }),
@@ -220,19 +219,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
             });
           }
         },
-      }),
-      {
-        name: 'cascade-settings',
-        partialize: (state) => ({ 
-          settings: state.settings 
-        }),
-        onRehydrateStorage: () => (state) => {
-          if (state) {
-            state.settings = ensureSettingsStructure(state.settings);
-          }
-        },
-      }
-    )
+    })
   )
 );
 
