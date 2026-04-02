@@ -127,7 +127,7 @@ const initialState: TaskState = {
 // CRUD Operations (inline for simplicity)
 // ============================================================================
 
-function createAddTask(get: () => TaskState & TaskActions, set: (state: Partial<TaskState>) => void) {
+function createAddTask(_get: () => TaskState & TaskActions, set: (state: Partial<TaskState> | ((state: TaskState) => Partial<TaskState>)) => void) {
   return async (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
       set({ isLoading: true, error: null });
@@ -152,14 +152,15 @@ function createAddTask(get: () => TaskState & TaskActions, set: (state: Partial<
 
       await taskDB.addTask(newTask);
 
-      const { tasks, filters } = get();
-      const updatedTasks = [...tasks, newTask];
-
-      set({
-        tasks: updatedTasks,
-        filteredTasks: applyFiltersToTasks(updatedTasks, filters),
-        isLoading: false,
-        searchCache: new Map(),
+      // Use functional updater to avoid stale state after await
+      set((state) => {
+        const updatedTasks = [...state.tasks, newTask];
+        return {
+          tasks: updatedTasks,
+          filteredTasks: applyFiltersToTasks(updatedTasks, state.filters),
+          isLoading: false,
+          searchCache: new Map(),
+        };
       });
     } catch (error: unknown) {
       set({
@@ -170,7 +171,7 @@ function createAddTask(get: () => TaskState & TaskActions, set: (state: Partial<
   };
 }
 
-function createUpdateTask(get: () => TaskState & TaskActions, set: (state: Partial<TaskState>) => void) {
+function createUpdateTask(get: () => TaskState & TaskActions, set: (state: Partial<TaskState> | ((state: TaskState) => Partial<TaskState>)) => void) {
   return async (taskId: string, updates: Partial<Task>) => {
     try {
       set({ isLoading: true, error: null });
@@ -194,14 +195,15 @@ function createUpdateTask(get: () => TaskState & TaskActions, set: (state: Parti
       const updatedTask = { ...task, ...sanitizedUpdates, updatedAt: new Date() };
       await taskDB.updateTask(updatedTask);
 
-      const { tasks, filters } = get();
-      const updatedTasks = tasks.map(t => t.id === taskId ? updatedTask : t);
-
-      set({
-        tasks: updatedTasks,
-        filteredTasks: applyFiltersToTasks(updatedTasks, filters),
-        isLoading: false,
-        searchCache: new Map(),
+      // Use functional updater to avoid stale state after await
+      set((state) => {
+        const updatedTasks = state.tasks.map(t => t.id === taskId ? updatedTask : t);
+        return {
+          tasks: updatedTasks,
+          filteredTasks: applyFiltersToTasks(updatedTasks, state.filters),
+          isLoading: false,
+          searchCache: new Map(),
+        };
       });
     } catch (error: unknown) {
       set({
@@ -212,20 +214,21 @@ function createUpdateTask(get: () => TaskState & TaskActions, set: (state: Parti
   };
 }
 
-function createDeleteTask(get: () => TaskState & TaskActions, set: (state: Partial<TaskState>) => void) {
+function createDeleteTask(_get: () => TaskState & TaskActions, set: (state: Partial<TaskState> | ((state: TaskState) => Partial<TaskState>)) => void) {
   return async (taskId: string) => {
     try {
       set({ isLoading: true, error: null });
       await taskDB.deleteTask(taskId);
 
-      const { tasks, filters } = get();
-      const updatedTasks = tasks.filter(t => t.id !== taskId);
-
-      set({
-        tasks: updatedTasks,
-        filteredTasks: applyFiltersToTasks(updatedTasks, filters),
-        isLoading: false,
-        searchCache: new Map(),
+      // Use functional updater to avoid stale state after await
+      set((state) => {
+        const updatedTasks = state.tasks.filter(t => t.id !== taskId);
+        return {
+          tasks: updatedTasks,
+          filteredTasks: applyFiltersToTasks(updatedTasks, state.filters),
+          isLoading: false,
+          searchCache: new Map(),
+        };
       });
     } catch (error: unknown) {
       set({

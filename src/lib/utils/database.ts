@@ -18,6 +18,18 @@ export class TaskDatabase {
       request.onerror = () => reject(request.error);
       request.onsuccess = () => {
         this.db = request.result;
+
+        // Handle version change from another tab upgrading the DB
+        this.db.onversionchange = () => {
+          this.db?.close();
+          this.db = null;
+        };
+
+        // Handle unexpected connection close
+        this.db.onclose = () => {
+          this.db = null;
+        };
+
         resolve();
       };
 
@@ -57,16 +69,14 @@ export class TaskDatabase {
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction(['tasks'], 'readonly');
       const store = transaction.objectStore('tasks');
-      const request = store.getAll();
+
+      // Use the boardId index for efficient filtered lookups
+      const request = boardId
+        ? store.index('boardId').getAll(boardId)
+        : store.getAll();
 
       request.onerror = () => reject(request.error);
-      request.onsuccess = () => {
-        let tasks = request.result;
-        if (boardId) {
-          tasks = tasks.filter((task: Task) => task.boardId === boardId);
-        }
-        resolve(tasks);
-      };
+      request.onsuccess = () => resolve(request.result);
     });
   }
 
@@ -202,25 +212,40 @@ export class TaskDatabase {
   }
 
   async importData(data: { tasks?: Task[]; boards?: Board[]; settings?: Settings; }): Promise<void> {
-    // Clear existing data
-    await this.clearAll();
+    if (!this.db) throw new Error('Database not initialized');
 
-    // Import new data
-    if (data.tasks) {
-      for (const task of data.tasks) {
-        await this.addTask(task);
+    // Use a single transaction for atomicity — all-or-nothing
+    const storeNames = ['tasks', 'boards', 'settings', 'archive'] as const;
+    const transaction = this.db.transaction([...storeNames], 'readwrite');
+
+    return new Promise((resolve, reject) => {
+      transaction.onerror = () => reject(transaction.error);
+      transaction.oncomplete = () => resolve();
+
+      // Clear all stores first
+      for (const storeName of storeNames) {
+        transaction.objectStore(storeName).clear();
       }
-    }
 
-    if (data.boards) {
-      for (const board of data.boards) {
-        await this.addBoard(board);
+      // Import new data within the same transaction
+      if (data.tasks) {
+        const taskStore = transaction.objectStore('tasks');
+        for (const task of data.tasks) {
+          taskStore.add(task);
+        }
       }
-    }
 
-    if (data.settings) {
-      await this.updateSettings(data.settings);
-    }
+      if (data.boards) {
+        const boardStore = transaction.objectStore('boards');
+        for (const board of data.boards) {
+          boardStore.add(board);
+        }
+      }
+
+      if (data.settings) {
+        transaction.objectStore('settings').put({ id: 'default', ...data.settings });
+      }
+    });
   }
 
   async resetDatabase(): Promise<void> {
@@ -230,17 +255,18 @@ export class TaskDatabase {
   private async clearAll(): Promise<void> {
     if (!this.db) throw new Error('Database not initialized');
 
-    const stores = ['tasks', 'boards', 'settings', 'archive'];
-    
-    for (const storeName of stores) {
-      const transaction = this.db!.transaction([storeName], 'readwrite');
-      const store = transaction.objectStore(storeName);
-      await new Promise<void>((resolve, reject) => {
-        const request = store.clear();
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => resolve();
-      });
-    }
+    // Use a single transaction for atomicity
+    const storeNames = ['tasks', 'boards', 'settings', 'archive'];
+    const transaction = this.db.transaction(storeNames, 'readwrite');
+
+    return new Promise((resolve, reject) => {
+      transaction.onerror = () => reject(transaction.error);
+      transaction.oncomplete = () => resolve();
+
+      for (const storeName of storeNames) {
+        transaction.objectStore(storeName).clear();
+      }
+    });
   }
 }
 

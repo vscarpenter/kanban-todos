@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { Sidebar } from "./Sidebar";
 import { BoardView } from "./BoardView";
@@ -79,23 +79,30 @@ export function KanbanBoard() {
     setBoardFilter(currentBoardId);
   }, [currentBoardId, setBoardFilter]);
 
-  // Initialize notifications system
+  // Keep a ref to tasks so the notification system can read current tasks
+  // without re-triggering the effect on every task change
+  const tasksRef = useRef(tasks);
+  useEffect(() => {
+    tasksRef.current = tasks;
+  }, [tasks]);
+
+  // Initialize notifications system — only re-run when the setting toggles
+  const initNotifications = useCallback(async () => {
+    const hasPermission = await notificationManager.requestPermission();
+    if (hasPermission) {
+      notificationManager.startPeriodicCheck(tasksRef.current);
+    }
+  }, []);
+
   useEffect(() => {
     if (!settings.enableNotifications) return;
 
-    const initializeNotifications = async () => {
-      const hasPermission = await notificationManager.requestPermission();
-      if (hasPermission) {
-        notificationManager.startPeriodicCheck(tasks);
-      }
-    };
-
-    initializeNotifications();
+    initNotifications();
 
     return () => {
       notificationManager.stopPeriodicCheck();
     };
-  }, [settings.enableNotifications, tasks]);
+  }, [settings.enableNotifications, initNotifications]);
 
   // Listen for custom keyboard shortcut events
   useEffect(() => {

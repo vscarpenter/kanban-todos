@@ -172,7 +172,8 @@ export const useBoardStore = create<BoardState & BoardActions>((set, get) => ({
           try {
             set({ isLoading: true, error: null });
 
-            const existingBoard = get().boards.find(b => b.id === boardId)!;
+            const existingBoard = get().boards.find(b => b.id === boardId);
+            if (!existingBoard) throw new Error(`Board not found: ${boardId}`);
 
             // Sanitize text fields if they're being updated
             const sanitizedUpdates = { ...updates };

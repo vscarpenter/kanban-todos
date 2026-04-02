@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -18,6 +18,9 @@ import { Task } from "@/lib/types";
 import { useTaskStore } from "@/lib/stores/taskStore";
 import TaskCard from "./kanban/TaskCard";
 
+// Cache touch detection once at module level with SSR guard
+const isTouchDevice = typeof window !== 'undefined' && 'ontouchstart' in window;
+
 interface DragDropProviderProps {
   children: React.ReactNode;
   onDragStart?: (event: DragStartEvent) => void;
@@ -25,19 +28,20 @@ interface DragDropProviderProps {
   onDragOver?: (event: DragOverEvent) => void;
 }
 
-export function DragDropProvider({ 
-  children, 
-  onDragStart, 
-  onDragEnd, 
-  onDragOver 
+export function DragDropProvider({
+  children,
+  onDragStart,
+  onDragEnd,
+  onDragOver
 }: DragDropProviderProps) {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const { tasks, moveTask } = useTaskStore();
-  
-  // Simple touch sensor configuration
-  const touchSensorConfig = 'ontouchstart' in window
+
+  // Simple touch sensor configuration using cached detection
+  const touchSensorConfig = useMemo(() => isTouchDevice
     ? { activationConstraint: { delay: 150, tolerance: 8 } }
-    : { activationConstraint: { delay: 100, tolerance: 5 } };
+    : { activationConstraint: { delay: 100, tolerance: 5 } },
+  []);
   
   // Configure drag sensors for both mouse and touch
   const sensors = useSensors(
@@ -86,14 +90,7 @@ export function DragDropProvider({
   // Custom collision detection for better mobile accuracy
   const customCollisionDetection = (args: Parameters<typeof rectIntersection>[0]) => {
     // On mobile, use center-based detection for more accurate targeting
-    const isMobile = 'ontouchstart' in window;
-
-    if (isMobile) {
-      return closestCenter(args);
-    }
-
-    // On desktop, use rectangle intersection for better accuracy
-    return rectIntersection(args);
+    return isTouchDevice ? closestCenter(args) : rectIntersection(args);
   };
 
   return (

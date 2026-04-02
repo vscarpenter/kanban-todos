@@ -24,6 +24,9 @@ import { validateTaskCollection } from '@/lib/utils/taskValidation';
 
 export const SEARCH_DEBOUNCE_MS = 300;
 
+// Module-scoped search debounce timeout
+let searchTimeout: ReturnType<typeof setTimeout> | undefined;
+
 // ============================================================================
 // Type Definitions
 // ============================================================================
@@ -49,10 +52,6 @@ export type TaskStoreState = {
 export type StoreSetter = (
   partial: Partial<TaskStoreState> | ((state: TaskStoreState) => Partial<TaskStoreState>)
 ) => void;
-
-interface GlobalWithTimeout {
-  __searchTimeout?: NodeJS.Timeout;
-}
 
 // ============================================================================
 // Filter Helpers
@@ -190,8 +189,9 @@ export function createSetSearchQuery(get: () => TaskStoreState, set: StoreSetter
     set((state: TaskStoreState) => ({ filters: { ...state.filters, search: sanitizedQuery } }));
 
     // Clear any existing timeout
-    if ((globalThis as GlobalWithTimeout).__searchTimeout) {
-      clearTimeout((globalThis as GlobalWithTimeout).__searchTimeout);
+    if (searchTimeout !== undefined) {
+      clearTimeout(searchTimeout);
+      searchTimeout = undefined;
     }
 
     // Handle empty queries immediately
@@ -204,7 +204,8 @@ export function createSetSearchQuery(get: () => TaskStoreState, set: StoreSetter
     // Show loading state and debounce filter application
     set({ isSearching: true, error: null });
 
-    const timeoutId = setTimeout(async () => {
+    searchTimeout = setTimeout(async () => {
+      searchTimeout = undefined;
       try {
         await get().applyFilters();
       } catch (error: unknown) {
@@ -215,8 +216,6 @@ export function createSetSearchQuery(get: () => TaskStoreState, set: StoreSetter
         });
       }
     }, SEARCH_DEBOUNCE_MS);
-
-    (globalThis as GlobalWithTimeout).__searchTimeout = timeoutId;
   };
 }
 
@@ -227,16 +226,18 @@ export function createApplyFilters(get: () => TaskStoreState, set: StoreSetter) 
     try {
       // Validate tasks to prevent runtime errors
       let validTasks = validateTaskCollection(tasks, get().validateTaskIntegrity);
-      if (validTasks.length !== tasks.length) {
-        set({ tasks: validTasks });
-      }
+      let tasksChanged = validTasks.length !== tasks.length;
 
       // Validate board access for cross-board search
       if (filters.crossBoardSearch) {
+        const beforeCount = validTasks.length;
         validTasks = await validateBoardAccess(validTasks);
-        if (validTasks.length !== tasks.length) {
-          set({ tasks: validTasks });
-        }
+        if (validTasks.length !== beforeCount) tasksChanged = true;
+      }
+
+      // Apply task validation changes in a single set()
+      if (tasksChanged) {
+        set({ tasks: validTasks });
       }
 
       // Check cache for repeated searches
@@ -260,17 +261,20 @@ export function createApplyFilters(get: () => TaskStoreState, set: StoreSetter) 
       let filteredTasks = await applyFiltersWithRecovery(currentTasks, filters, set);
       filteredTasks = validateTaskCollection(filteredTasks, get().validateTaskIntegrity);
 
-      // Cache results
+      // Cache results — create a new Map so Zustand detects the change
+      let updatedCache = searchCache;
       if (filters.search && filteredTasks.length > 0 && filteredTasks.length < 1000) {
         cacheResults(cacheKey, filteredTasks, searchCache);
+        updatedCache = new Map(searchCache);
       }
 
       // Probabilistic cache cleanup
       if (Math.random() < 0.1) {
-        cleanupExpiredCache(searchCache);
+        cleanupExpiredCache(updatedCache);
+        updatedCache = new Map(updatedCache);
       }
 
-      set({ filteredTasks, isSearching: false, error: get().error, searchCache });
+      set({ filteredTasks, isSearching: false, error: get().error, searchCache: updatedCache });
 
     } catch (error: unknown) {
       console.error('Filter application failed:', error);

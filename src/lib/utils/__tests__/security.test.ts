@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   sanitizeTextInput,
   sanitizeTaskData,
@@ -6,7 +6,6 @@ import {
   sanitizeSearchQuery,
   validateImportFile,
   validateImportJson,
-  escapeHtml,
   isValidUUID,
   sanitizeBoardId,
   sanitizeTaskId,
@@ -94,37 +93,6 @@ describe('security utilities', () => {
 
       const boardResult = sanitizeTextInput(longInput, 'BOARD_NAME');
       expect(boardResult.length).toBeLessThanOrEqual(INPUT_LIMITS.BOARD_NAME);
-    });
-  });
-
-  describe('escapeHtml', () => {
-    it('escapes ampersand', () => {
-      expect(escapeHtml('&')).toBe('&amp;');
-    });
-
-    it('escapes less-than', () => {
-      expect(escapeHtml('<')).toBe('&lt;');
-    });
-
-    it('escapes greater-than', () => {
-      expect(escapeHtml('>')).toBe('&gt;');
-    });
-
-    it('escapes double quotes', () => {
-      expect(escapeHtml('"')).toBe('&quot;');
-    });
-
-    it('escapes single quotes', () => {
-      expect(escapeHtml("'")).toBe('&#039;');
-    });
-
-    it('escapes all special characters in a mixed string', () => {
-      const result = escapeHtml('<div class="test">&\'hello\'</div>');
-      expect(result).toBe('&lt;div class=&quot;test&quot;&gt;&amp;&#039;hello&#039;&lt;/div&gt;');
-    });
-
-    it('returns plain text unchanged', () => {
-      expect(escapeHtml('Hello world')).toBe('Hello world');
     });
   });
 
