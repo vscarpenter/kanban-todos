@@ -63,9 +63,9 @@ export function BoardHeader({
                   <p className="text-muted-foreground">{board.description}</p>
                 )}
                 {taskSummary && (
-                  <p className="text-xs text-muted-foreground font-mono tracking-wide">
+                  <p className="text-xs text-muted font-mono tracking-wide">
                     {board.description && <span className="mx-1 opacity-30">|</span>}
-                    {taskSummary.todo} to do · {taskSummary.inProgress} in progress · {taskSummary.done} done
+                    {taskSummary.todo + taskSummary.inProgress + taskSummary.done} tasks · {taskSummary.todo} to do · {taskSummary.inProgress} in progress
                   </p>
                 )}
               </div>

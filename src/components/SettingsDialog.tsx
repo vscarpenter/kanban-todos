@@ -49,6 +49,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [showAppResetDialog, setShowAppResetDialog] = useState(false);
   const [isAppResetting, setIsAppResetting] = useState(false);
   const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   // Store initial settings when dialog opens
   const initialSettingsRef = useRef<Settings | null>(null);
@@ -168,6 +169,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* Main Settings Groups */}
           <AppearanceSection
             localSettings={localSettings}
             updateLocalSetting={updateLocalSetting}
@@ -188,22 +190,71 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             updateAccessibilitySetting={updateAccessibilitySetting}
           />
 
-          <Separator />
+          {/* Advanced Section Toggle */}
+          <div className="pt-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="w-full justify-center text-muted hover:text-foreground"
+            >
+              Advanced
+              <svg className={`ml-1 h-4 w-4 transition-transform ${
+                showAdvanced ? 'rotate-180' : ''
+              }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </Button>
+          </div>
 
-          <DeveloperSection
-            localSettings={localSettings}
-            updateLocalSetting={updateLocalSetting}
-            onAppResetClick={() => setShowAppResetDialog(true)}
-          />
+          {/* Advanced Settings - Collapsible */}
+          {showAdvanced && (
+            <>
+              <Separator />
+              
+              <DeveloperSection
+                localSettings={localSettings}
+                updateLocalSetting={updateLocalSetting}
+                onAppResetClick={() => setShowAppResetDialog(true)}
+              />
+            </>
+          )}
+
+          {/* Danger Zone */}
+          <div className="space-y-4 pt-6 border-t-2 border-danger/20">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-danger rounded-full" />
+              <h3 className="text-lg font-medium text-danger">Danger Zone</h3>
+            </div>
+            <div className="bg-danger/5 border border-danger/20 rounded-lg p-4 space-y-3">
+              <div>
+                <h4 className="font-medium text-foreground mb-1">Reset Application</h4>
+                <p className="text-sm text-muted mb-3">
+                  Permanently delete all data including boards, tasks, and settings. 
+                  <strong className="text-danger">This action cannot be undone.</strong>
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAppResetDialog(true)}
+                  className="border-danger text-danger hover:bg-danger hover:text-white"
+                >
+                  Reset App to Default
+                </Button>
+              </div>
+            </div>
+          </div>
 
           {/* Actions */}
-          <div className="flex justify-between pt-4">
+          <div className="flex justify-between pt-6">
             <Button
               variant="outline"
               onClick={() => setShowResetConfirm(true)}
               disabled={isLoading}
+              className="text-muted hover:text-foreground"
             >
-              Reset to Default
+              Reset Settings
             </Button>
 
             <div className="flex gap-2">

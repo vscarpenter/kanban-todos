@@ -14,18 +14,15 @@ import { useTaskStore } from "@/lib/stores/taskStore";
 const columnConfig = {
   'todo': {
     icon: Circle,
-    accentClass: 'column-accent-blue',
-    badgeClass: 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300',
+    statusDot: 'status-dot--todo',
   },
   'in-progress': {
     icon: Loader2,
-    accentClass: 'column-accent-yellow',
-    badgeClass: 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300',
+    statusDot: 'status-dot--in-progress',
   },
   'done': {
     icon: CheckCircle2,
-    accentClass: 'column-accent-green',
-    badgeClass: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300',
+    statusDot: 'status-dot--done',
   },
 } as const;
 
@@ -63,21 +60,22 @@ export function KanbanColumn({ title, tasks, status, color, borderColor, onNavig
   return (
     <div
       ref={setNodeRef}
-      className={`flex flex-col min-h-0 min-w-full md:min-w-0 snap-center md:snap-align-none ${color} ${borderColor} border-2 rounded-xl column-accent-strip ${config.accentClass} transition-all duration-200 ${
+      className={`kanban-column min-h-0 min-w-full md:min-w-0 snap-center md:snap-align-none transition-all duration-200 ${
         isOver ? 'drop-zone-active ring-4 ring-primary scale-[1.02]' : ''
       }`}
       style={{ height: 'calc(100vh - 280px)' }}
     >
       <Card className="flex flex-col h-full border-0 bg-transparent">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <StatusIcon className="h-4 w-4 opacity-60" aria-hidden="true" />
+        <CardHeader className="kanban-column__header">
+          <div className="flex items-center gap-3">
+            <div className={`status-dot ${config.statusDot}`} aria-hidden="true" />
+            <CardTitle className="text-lg font-medium text-foreground">
               {title}
             </CardTitle>
-            <Badge className={`text-xs font-semibold border-0 ${config.badgeClass}`}>
+            <div className="flex-1" />
+            <span className="kanban-column__count">
               {tasks.length}
-            </Badge>
+            </span>
           </div>
         </CardHeader>
 
