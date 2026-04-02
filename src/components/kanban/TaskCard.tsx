@@ -10,10 +10,11 @@ import { BoardIndicator } from "../BoardIndicator";
 import { TaskCardActions } from "./TaskCardActions";
 import { TaskCardMetadata } from "./TaskCardMetadata";
 
-const priorityBorderColor: Record<Task['priority'], string> = {
-  high: 'border-l-red-500 dark:border-l-red-400',
-  medium: 'border-l-amber-400 dark:border-l-amber-300',
-  low: 'border-l-emerald-400 dark:border-l-emerald-300',
+// Priority colors using semantic tokens (only show if non-default)
+const priorityColors: Record<Task['priority'], string> = {
+  high: 'text-danger',
+  medium: 'text-warning', 
+  low: 'text-success',
 };
 
 interface TaskCardProps {
@@ -96,8 +97,8 @@ export function TaskCard({
       data-task-id={task.id}
     >
       <Card
-        className={`border-l-4 ${priorityBorderColor[task.priority]} hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 ease-out ${showBoardIndicator && !isCurrentBoard ? 'hover:bg-accent/50 hover:border-l-accent-foreground/30' : ''
-          } focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2`}
+        className={`task-card ${showBoardIndicator && !isCurrentBoard ? 'cursor-pointer hover:bg-surface-2' : ''
+          }`}
         role="article"
         aria-labelledby={`task-title-${task.id}`}
         aria-describedby={`task-meta-${task.id} task-priority-${task.id}`}
@@ -122,7 +123,7 @@ export function TaskCard({
           <div className="flex items-start justify-between gap-2 mb-3">
             <h3
               id={`task-title-${task.id}`}
-              className="font-semibold text-foreground text-sm leading-tight flex-1 tracking-[-0.01em]"
+              className="task-card__title flex-1 tracking-[-0.01em]"
             >
               {task.title}
             </h3>
@@ -131,7 +132,7 @@ export function TaskCard({
 
           {/* Task Description */}
           {task.description && (
-            <p className="text-[0.8125rem] text-muted-foreground mb-3 line-clamp-2 font-normal leading-relaxed">
+            <p className="text-[0.8125rem] text-muted mb-3 line-clamp-2 font-normal leading-relaxed">
               {task.description}
             </p>
           )}

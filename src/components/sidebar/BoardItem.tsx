@@ -37,7 +37,7 @@ export function BoardItem({
     <Card
       className={`
         group cursor-pointer transition-all duration-200 hover:shadow-md
-        ${isActive ? 'ring-2 ring-primary' : 'hover:ring-1 hover:ring-border'}
+        ${isActive ? 'sidebar-item--active' : 'hover:bg-surface-2'}
       `}
       onClick={onSelect}
     >
@@ -91,7 +91,7 @@ export function BoardItem({
                 <ChevronDown className={hasTouch ? 'h-5 w-5' : 'h-4 w-4'} />
               </Button>
             </div>
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant="secondary" className="text-xs bg-surface-2 text-muted border-0">
               {taskCount}
             </Badge>
             <BoardMenu board={board} />

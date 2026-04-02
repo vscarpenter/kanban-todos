@@ -24,18 +24,20 @@ export function TaskCardMetadata({ task }: TaskCardMetadataProps) {
   const dueDateStatus = getDueDateStatus(task);
 
   return (
-    <div id={`task-meta-${task.id}`} className="space-y-2">
-      {/* Priority */}
-      <div className="flex items-center gap-2">
-        <span aria-hidden="true">{getPriorityIcon(task.priority)}</span>
-        <Badge
-          variant="secondary"
-          className={`text-xs ${getPriorityColor(task.priority)}`}
-          aria-label={`Priority: ${task.priority}`}
-        >
-          {task.priority}
-        </Badge>
-      </div>
+    <div id={`task-meta-${task.id}`} className="task-card__metadata">
+      {/* Priority - Only show if not default medium */}
+      {task.priority !== 'medium' && (
+        <div className="flex items-center gap-2">
+          <span aria-hidden="true">{getPriorityIcon(task.priority)}</span>
+          <Badge
+            variant="secondary"
+            className={`text-xs ${getPriorityColor(task.priority)}`}
+            aria-label={`Priority: ${task.priority}`}
+          >
+            {task.priority}
+          </Badge>
+        </div>
+      )}
 
       {/* Tags */}
       {task.tags.length > 0 && (
@@ -77,10 +79,16 @@ export function TaskCardMetadata({ task }: TaskCardMetadataProps) {
         </div>
       )}
 
-      {/* Due Date */}
+      {/* Due Date - Semantic colors only */}
       {dueDateStatus && (
         <div
-          className={`flex items-center gap-1 text-xs ${getDueDateClasses(dueDateStatus.isOverdue, dueDateStatus.isDueSoon)}`}
+          className={`flex items-center gap-1 text-xs ${
+            dueDateStatus.isOverdue 
+              ? 'text-danger' 
+              : dueDateStatus.isDueSoon 
+              ? 'text-warning' 
+              : 'text-muted'
+          }`}
           role={dueDateStatus.isOverdue ? 'alert' : undefined}
           aria-label={`Due date: ${formatDueDate(dueDateStatus.dueDate)}${dueDateStatus.isOverdue ? ' (Overdue)' : dueDateStatus.isDueSoon ? ' (Due soon)' : ''}`}
         >
@@ -90,16 +98,7 @@ export function TaskCardMetadata({ task }: TaskCardMetadataProps) {
         </div>
       )}
 
-      {/* Created/Completed Date */}
-      <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
-        <Calendar className="h-3 w-3" aria-hidden="true" />
-        <span>
-          {task.completedAt
-            ? `Completed ${formatDistanceToNow(new Date(task.completedAt))} ago`
-            : `Created ${formatDistanceToNow(new Date(task.createdAt))} ago`
-          }
-        </span>
-      </div>
+      {/* Hide created timestamp - move to tooltip or details view as per brief */}
     </div>
   );
 }

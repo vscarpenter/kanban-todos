@@ -37,14 +37,15 @@ export function SearchFilterPopover({
         <Button
           variant="outline"
           size="sm"
+          className={hasActiveFilters ? 'border-primary text-primary hover:bg-primary/10' : ''}
           aria-label={`Open filters menu${hasActiveFilters ? ` (${Object.values(filters).filter(Boolean).length} active)` : ''}`}
           aria-expanded={isOpen}
           aria-haspopup="dialog"
         >
-          <Filter className="h-4 w-4 mr-2" aria-hidden="true" />
+          <Filter className={`h-4 w-4 mr-2 ${hasActiveFilters ? 'text-primary' : ''}`} aria-hidden="true" />
           Filters
           {hasActiveFilters && (
-            <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-xs" aria-label={`${Object.values(filters).filter(Boolean).length} active filters`}>
+            <Badge className="ml-2 h-5 px-1.5 text-xs bg-primary text-primary-foreground" aria-label={`${Object.values(filters).filter(Boolean).length} active filters`}>
               {Object.values(filters).filter(Boolean).length}
             </Badge>
           )}
@@ -141,12 +142,12 @@ export function SearchFilterPopover({
               <label className="text-sm font-medium">Active Filters</label>
               <div className="flex flex-wrap gap-2">
                 {filters.status && (
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge className="text-xs bg-primary/10 text-primary border-primary/20">
                     Status: {filters.status}
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-4 w-4 p-0 ml-1 hover:bg-transparent"
+                      className="h-4 w-4 p-0 ml-1 hover:bg-primary/20 text-primary"
                       onClick={() => onFilterChange('status', undefined)}
                     >
                       <X className="h-3 w-3" />
@@ -154,12 +155,12 @@ export function SearchFilterPopover({
                   </Badge>
                 )}
                 {filters.priority && (
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge className="text-xs bg-primary/10 text-primary border-primary/20">
                     Priority: {filters.priority}
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-4 w-4 p-0 ml-1 hover:bg-transparent"
+                      className="h-4 w-4 p-0 ml-1 hover:bg-primary/20 text-primary"
                       onClick={() => onFilterChange('priority', undefined)}
                     >
                       <X className="h-3 w-3" />

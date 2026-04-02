@@ -209,22 +209,18 @@ export function DeveloperSection({
           />
         </div>
 
-        <div className="space-y-2">
-          <Label>Reset Application</Label>
-          <div className="space-y-2">
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={onAppResetClick}
-              className="w-full"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Reset App to Default
-            </Button>
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label htmlFor="keyboardShortcuts">Keyboard shortcuts</Label>
             <p className="text-xs text-muted-foreground">
-              Permanently deletes all data including boards, tasks, settings, and preferences. This action cannot be undone.
+              Enable keyboard shortcuts for faster navigation
             </p>
           </div>
+          <Switch
+            id="keyboardShortcuts"
+            checked={localSettings.enableKeyboardShortcuts}
+            onCheckedChange={(checked) => updateLocalSetting('enableKeyboardShortcuts', checked)}
+          />
         </div>
       </div>
     </div>
