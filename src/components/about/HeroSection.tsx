@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Lock, Monitor, Code2, ArrowRight } from "@/lib/icons";
 import { EnterAppLink } from "./EnterAppLink";
+import { SmoothScrollLink } from "./SmoothScrollLink";
 
 export function HeroSection() {
   return (
@@ -29,7 +30,9 @@ export function HeroSection() {
             </EnterAppLink>
           </Button>
           <Button variant="ghost" size="lg" asChild>
-            <a href="#how-it-works">See how it works</a>
+            <SmoothScrollLink href="#how-it-works">
+              See how it works
+            </SmoothScrollLink>
           </Button>
         </div>
 

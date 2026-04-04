@@ -25,7 +25,7 @@ export function ScrollReveal({ children, className }: ScrollRevealProps) {
           observer.unobserve(element);
         }
       },
-      { threshold: REVEAL_THRESHOLD }
+      { threshold: REVEAL_THRESHOLD, rootMargin: "0px 0px -60px 0px" }
     );
 
     observer.observe(element);

@@ -6,7 +6,13 @@ import { VISITED_KEY } from "./visitedKey";
 
 function hasVisitedBefore(): boolean {
   if (typeof window === "undefined") return true;
-  return localStorage.getItem(VISITED_KEY) !== null;
+  try {
+    return localStorage.getItem(VISITED_KEY) !== null;
+  } catch {
+    // localStorage unavailable (private browsing, disabled storage)
+    // Default to "visited" so the user sees the main app
+    return true;
+  }
 }
 
 /**

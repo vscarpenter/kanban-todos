@@ -11,7 +11,11 @@ interface EnterAppLinkProps {
 
 export function EnterAppLink({ children, className }: EnterAppLinkProps) {
   const markVisited = useCallback(() => {
-    localStorage.setItem(VISITED_KEY, "true");
+    try {
+      localStorage.setItem(VISITED_KEY, "true");
+    } catch {
+      // localStorage unavailable — non-critical, skip silently
+    }
   }, []);
 
   return (
