@@ -10,7 +10,8 @@ import {
   HelpCircle,
   Download,
   Upload,
-  Shield
+  Shield,
+  Info,
 } from "@/lib/icons";
 import { useSettingsStore } from "@/lib/stores/settingsStore";
 
@@ -105,6 +106,14 @@ export function NavigationMenu({
       >
         <Shield className="h-4 w-4 mr-2" />
         Privacy Policy
+      </Button>
+      <Button
+        variant="ghost"
+        className="w-full justify-start"
+        onClick={() => window.open('/about/', '_blank')}
+      >
+        <Info className="h-4 w-4 mr-2" />
+        About Cascade
       </Button>
       <Button
         variant="ghost"
