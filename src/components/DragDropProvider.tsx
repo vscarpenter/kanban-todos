@@ -16,6 +16,7 @@ import {
 } from "@dnd-kit/core";
 import { Task } from "@/lib/types";
 import { useTaskStore } from "@/lib/stores/taskStore";
+import { celebrateTaskCompletion } from "@/lib/utils/celebrateCompletion";
 import TaskCard from "./kanban/TaskCard";
 
 // Cache touch detection once at module level with SSR guard
@@ -77,7 +78,13 @@ export function DragDropProvider({
       const newStatus = over.id as Task['status'];
 
       if (newStatus && ['todo', 'in-progress', 'done'].includes(newStatus)) {
+        // Celebrate only real transitions into 'done' (not done → done drops).
+        const previousStatus = tasks.find((t: Task) => t.id === taskId)?.status;
         moveTask(taskId, newStatus);
+        if (newStatus === 'done' && previousStatus && previousStatus !== 'done') {
+          const completedTitle = tasks.find((t: Task) => t.id === taskId)?.title ?? '';
+          celebrateTaskCompletion(completedTitle);
+        }
       }
     }
 
