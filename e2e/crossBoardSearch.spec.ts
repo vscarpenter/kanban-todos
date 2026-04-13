@@ -318,7 +318,7 @@ async function createLargeDataset(page: any) {
 
 async function deleteBoardWithTasks(page: any, boardName: string) {
   // Navigate to board management and delete a board
-  await page.evaluate((name) => {
+  await page.evaluate((name: string) => {
     // This would trigger board deletion through the app's interface
     console.log(`Deleting board: ${name}`);
   }, boardName);
