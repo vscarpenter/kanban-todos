@@ -69,7 +69,7 @@ describe('Board Reordering iOS Tests', () => {
     vi.clearAllMocks()
 
     // Mock useBoardStore
-    ;(useBoardStore as ReturnType<typeof vi.fn>).mockReturnValue({
+    ;(useBoardStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
       boards: mockBoards,
       currentBoardId: 'board-1',
       selectBoard: mockSelectBoard,
@@ -77,12 +77,12 @@ describe('Board Reordering iOS Tests', () => {
     })
 
     // Mock useTaskStore
-    ;(useTaskStore as ReturnType<typeof vi.fn>).mockReturnValue({
+    ;(useTaskStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
       tasks: [],
     })
 
     // Mock useSettingsStore
-    ;(useSettingsStore as ReturnType<typeof vi.fn>).mockReturnValue({
+    ;(useSettingsStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
       settings: {
         theme: 'light',
         autoArchiveDays: 30,
@@ -231,7 +231,8 @@ describe('Board Reordering iOS Tests', () => {
       const activeBoardCard = screen.getByText('First Board').closest('.group')
       
       if (activeBoardCard) {
-        expect(activeBoardCard.className).toContain('ring-2 ring-primary')
+        // Active board is marked via the `sidebar-item--active` class on the BoardItem root.
+        expect(activeBoardCard.className).toContain('sidebar-item--active')
       }
     })
   })

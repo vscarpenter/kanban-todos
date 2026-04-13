@@ -45,8 +45,9 @@ describe('TaskCard', () => {
 
   it('shows priority badge correctly', () => {
     render(<TaskCard task={mockTask} />)
-    
-    expect(screen.getByText('medium')).toBeInTheDocument()
+
+    // Priority is exposed via a screen-reader-only label in the form "Priority: medium".
+    expect(screen.getByText(/priority:\s*medium/i)).toBeInTheDocument()
   })
 
   it('renders task tags', () => {
