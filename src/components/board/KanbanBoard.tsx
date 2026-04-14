@@ -165,8 +165,6 @@ export function KanbanBoard({ tasks, onNavigateToBoard }: KanbanBoardProps) {
             title="To Do"
             tasks={todoTasks}
             status="todo"
-            color="bg-blue-50 dark:bg-blue-950/20"
-            borderColor="border-blue-200 dark:border-blue-800"
             onNavigateToBoard={onNavigateToBoard}
           />
 
@@ -174,8 +172,6 @@ export function KanbanBoard({ tasks, onNavigateToBoard }: KanbanBoardProps) {
             title="In Progress"
             tasks={inProgressTasks}
             status="in-progress"
-            color="bg-yellow-50 dark:bg-yellow-950/20"
-            borderColor="border-yellow-200 dark:border-yellow-800"
             onNavigateToBoard={onNavigateToBoard}
           />
 
@@ -183,8 +179,6 @@ export function KanbanBoard({ tasks, onNavigateToBoard }: KanbanBoardProps) {
             title="Done"
             tasks={doneTasks}
             status="done"
-            color="bg-green-50 dark:bg-green-950/20"
-            borderColor="border-green-200 dark:border-green-800"
             onNavigateToBoard={onNavigateToBoard}
           />
         </div>

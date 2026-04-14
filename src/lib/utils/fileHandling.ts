@@ -2,6 +2,7 @@ import { ExportData, ImportValidationResult, validateImportData } from './export
 
 // File size limits (in bytes)
 export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const LARGE_FILE_THRESHOLD = 1 * 1024 * 1024; // 1MB — warn when above this
 export const ALLOWED_FILE_TYPES = ['.json'];
 
 export interface FileValidationResult {
@@ -42,7 +43,7 @@ export function validateFile(file: File): FileValidationResult {
   }
 
   // Warn about large files
-  if (file.size > 1024 * 1024) { // 1MB
+  if (file.size > LARGE_FILE_THRESHOLD) {
     warnings.push('Large file detected. Import may take some time to process');
   }
 

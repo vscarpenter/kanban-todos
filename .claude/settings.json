@@ -1,0 +1,37 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /Users/car6408/Projects/kanban-todos && npx next lint --fix \"$CLAUDE_FILE_PATH\" 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat /Users/car6408/Projects/kanban-todos/tasks/todo.md /Users/car6408/Projects/kanban-todos/tasks/lessons.md 2>/dev/null || echo 'No task files found.'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /Users/car6408/Projects/kanban-todos && bun run test --run --passWithNoTests 2>/dev/null && npx tsc --noEmit || exit 1"
+          }
+        ]
+      }
+    ]
+  }
+}

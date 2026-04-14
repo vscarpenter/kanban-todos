@@ -71,6 +71,8 @@ export interface ImportOptions {
 /**
  * Converts Date objects to ISO strings for JSON serialization
  */
+export function serializeDate(date: Date): string;
+export function serializeDate(date: Date | undefined): string | undefined;
 export function serializeDate(date: Date | undefined): string | undefined {
   return date ? date.toISOString() : undefined;
 }
@@ -78,6 +80,8 @@ export function serializeDate(date: Date | undefined): string | undefined {
 /**
  * Converts ISO strings back to Date objects
  */
+export function deserializeDate(dateString: string): Date;
+export function deserializeDate(dateString: string | undefined): Date | undefined;
 export function deserializeDate(dateString: string | undefined): Date | undefined {
   return dateString ? new Date(dateString) : undefined;
 }
@@ -88,8 +92,8 @@ export function deserializeDate(dateString: string | undefined): Date | undefine
 export function serializeTask(task: Task): SerializedTask {
   return {
     ...task,
-    createdAt: serializeDate(task.createdAt)!,
-    updatedAt: serializeDate(task.updatedAt)!,
+    createdAt: serializeDate(task.createdAt),
+    updatedAt: serializeDate(task.updatedAt),
     completedAt: serializeDate(task.completedAt),
     archivedAt: serializeDate(task.archivedAt),
     dueDate: serializeDate(task.dueDate),
@@ -102,8 +106,8 @@ export function serializeTask(task: Task): SerializedTask {
 export function deserializeTask(serializedTask: SerializedTask): Task {
   return {
     ...serializedTask,
-    createdAt: deserializeDate(serializedTask.createdAt)!,
-    updatedAt: deserializeDate(serializedTask.updatedAt)!,
+    createdAt: deserializeDate(serializedTask.createdAt),
+    updatedAt: deserializeDate(serializedTask.updatedAt),
     completedAt: deserializeDate(serializedTask.completedAt),
     archivedAt: deserializeDate(serializedTask.archivedAt),
     dueDate: deserializeDate(serializedTask.dueDate),
@@ -116,8 +120,8 @@ export function deserializeTask(serializedTask: SerializedTask): Task {
 export function serializeBoard(board: Board): SerializedBoard {
   return {
     ...board,
-    createdAt: serializeDate(board.createdAt)!,
-    updatedAt: serializeDate(board.updatedAt)!,
+    createdAt: serializeDate(board.createdAt),
+    updatedAt: serializeDate(board.updatedAt),
     archivedAt: serializeDate(board.archivedAt),
   };
 }
@@ -128,8 +132,8 @@ export function serializeBoard(board: Board): SerializedBoard {
 export function deserializeBoard(serializedBoard: SerializedBoard): Board {
   return {
     ...serializedBoard,
-    createdAt: deserializeDate(serializedBoard.createdAt)!,
-    updatedAt: deserializeDate(serializedBoard.updatedAt)!,
+    createdAt: deserializeDate(serializedBoard.createdAt),
+    updatedAt: deserializeDate(serializedBoard.updatedAt),
     archivedAt: deserializeDate(serializedBoard.archivedAt),
   };
 }

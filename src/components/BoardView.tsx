@@ -154,13 +154,15 @@ export function BoardView() {
         )}
       </div>
 
-      {/* Create Task Dialog */}
-      <TaskDialog
-        mode="create"
-        open={showCreateTask}
-        onOpenChange={setShowCreateTask}
-        boardId={currentBoardId!}
-      />
+      {/* Create Task Dialog — only render when a board is selected */}
+      {currentBoardId && (
+        <TaskDialog
+          mode="create"
+          open={showCreateTask}
+          onOpenChange={setShowCreateTask}
+          boardId={currentBoardId}
+        />
+      )}
     </div>
   );
 }

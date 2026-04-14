@@ -1,4 +1,5 @@
 import { Task } from '@/lib/types';
+import { logger } from './logger';
 
 export class NotificationManager {
   private static instance: NotificationManager;
@@ -13,8 +14,8 @@ export class NotificationManager {
   }
 
   async requestPermission(): Promise<boolean> {
-    if (!('Notification' in window)) {
-      console.warn('Browser does not support notifications');
+    if (!('Notification' in window) || !window.Notification) {
+      logger.warn('Browser does not support notifications');
       return false;
     }
 
@@ -80,7 +81,8 @@ export class NotificationManager {
     // Clean up old notifications for completed/deleted tasks
     const activeTaskIds = new Set(tasks.map(t => t.id));
     this.notifiedTasks.forEach(notificationKey => {
-      const taskId = notificationKey.split('-')[0];
+      // Keys are in the format `{taskId}-due` or `{taskId}-overdue`
+      const taskId = notificationKey.replace(/-(?:due|overdue)$/, '');
       if (!activeTaskIds.has(taskId)) {
         this.notifiedTasks.delete(notificationKey);
       }

@@ -189,8 +189,8 @@ describe('TaskDatabase', () => {
       const retrieved = await db.getSettings();
 
       expect(retrieved).toBeDefined();
-      expect(retrieved!.theme).toBe('dark');
-      expect(retrieved!.autoArchiveDays).toBe(30);
+      expect(retrieved?.theme).toBe('dark');
+      expect(retrieved?.autoArchiveDays).toBe(30);
     });
 
     it('updates existing settings', async () => {
@@ -216,7 +216,7 @@ describe('TaskDatabase', () => {
       await db.updateSettings({ ...settings, theme: 'dark' });
 
       const retrieved = await db.getSettings();
-      expect(retrieved!.theme).toBe('dark');
+      expect(retrieved?.theme).toBe('dark');
     });
   });
 
@@ -297,8 +297,8 @@ describe('TaskDatabase', () => {
       await db.importData({ settings });
 
       const retrieved = await db.getSettings();
-      expect(retrieved!.theme).toBe('dark');
-      expect(retrieved!.accessibility.highContrast).toBe(true);
+      expect(retrieved?.theme).toBe('dark');
+      expect(retrieved?.accessibility.highContrast).toBe(true);
     });
 
     it('handles import with only tasks', async () => {

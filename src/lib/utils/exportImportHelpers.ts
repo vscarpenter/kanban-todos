@@ -130,7 +130,8 @@ export function regenerateTaskIds(
 
     // Update board reference if board ID was changed
     if (boardIdMap.has(task.boardId)) {
-      updatedTask = { ...updatedTask, boardId: boardIdMap.get(task.boardId)! };
+      const newBoardId = boardIdMap.get(task.boardId);
+      if (newBoardId) updatedTask = { ...updatedTask, boardId: newBoardId };
     }
 
     // Generate new task ID if conflicting

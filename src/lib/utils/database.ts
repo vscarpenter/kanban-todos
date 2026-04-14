@@ -64,10 +64,11 @@ export class TaskDatabase {
   }
 
   async getTasks(boardId?: string): Promise<Task[]> {
-    if (!this.db) throw new Error('Database not initialized');
+    const db = this.db;
+    if (!db) throw new Error('Database not initialized');
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['tasks'], 'readonly');
+      const transaction = db.transaction(['tasks'], 'readonly');
       const store = transaction.objectStore('tasks');
 
       // Use the boardId index for efficient filtered lookups
@@ -81,10 +82,11 @@ export class TaskDatabase {
   }
 
   async addTask(task: Task): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
+    const db = this.db;
+    if (!db) throw new Error('Database not initialized');
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['tasks'], 'readwrite');
+      const transaction = db.transaction(['tasks'], 'readwrite');
       const store = transaction.objectStore('tasks');
       const request = store.add(task);
 
@@ -94,10 +96,11 @@ export class TaskDatabase {
   }
 
   async updateTask(task: Task): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
+    const db = this.db;
+    if (!db) throw new Error('Database not initialized');
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['tasks'], 'readwrite');
+      const transaction = db.transaction(['tasks'], 'readwrite');
       const store = transaction.objectStore('tasks');
       const request = store.put(task);
 
@@ -107,10 +110,11 @@ export class TaskDatabase {
   }
 
   async deleteTask(taskId: string): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
+    const db = this.db;
+    if (!db) throw new Error('Database not initialized');
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['tasks'], 'readwrite');
+      const transaction = db.transaction(['tasks'], 'readwrite');
       const store = transaction.objectStore('tasks');
       const request = store.delete(taskId);
 
@@ -120,10 +124,11 @@ export class TaskDatabase {
   }
 
   async getBoards(): Promise<Board[]> {
-    if (!this.db) throw new Error('Database not initialized');
+    const db = this.db;
+    if (!db) throw new Error('Database not initialized');
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['boards'], 'readonly');
+      const transaction = db.transaction(['boards'], 'readonly');
       const store = transaction.objectStore('boards');
       const request = store.getAll();
 
@@ -133,10 +138,11 @@ export class TaskDatabase {
   }
 
   async addBoard(board: Board): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
+    const db = this.db;
+    if (!db) throw new Error('Database not initialized');
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['boards'], 'readwrite');
+      const transaction = db.transaction(['boards'], 'readwrite');
       const store = transaction.objectStore('boards');
       const request = store.add(board);
 
@@ -146,10 +152,11 @@ export class TaskDatabase {
   }
 
   async updateBoard(board: Board): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
+    const db = this.db;
+    if (!db) throw new Error('Database not initialized');
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['boards'], 'readwrite');
+      const transaction = db.transaction(['boards'], 'readwrite');
       const store = transaction.objectStore('boards');
       const request = store.put(board);
 
@@ -159,10 +166,11 @@ export class TaskDatabase {
   }
 
   async deleteBoard(boardId: string): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
+    const db = this.db;
+    if (!db) throw new Error('Database not initialized');
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['boards'], 'readwrite');
+      const transaction = db.transaction(['boards'], 'readwrite');
       const store = transaction.objectStore('boards');
       const request = store.delete(boardId);
 
@@ -172,10 +180,11 @@ export class TaskDatabase {
   }
 
   async getSettings(): Promise<Settings | null> {
-    if (!this.db) throw new Error('Database not initialized');
+    const db = this.db;
+    if (!db) throw new Error('Database not initialized');
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['settings'], 'readonly');
+      const transaction = db.transaction(['settings'], 'readonly');
       const store = transaction.objectStore('settings');
       const request = store.get('default');
 
@@ -185,10 +194,11 @@ export class TaskDatabase {
   }
 
   async updateSettings(settings: Settings): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
+    const db = this.db;
+    if (!db) throw new Error('Database not initialized');
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['settings'], 'readwrite');
+      const transaction = db.transaction(['settings'], 'readwrite');
       const store = transaction.objectStore('settings');
       const request = store.put({ id: 'default', ...settings });
 
@@ -212,11 +222,12 @@ export class TaskDatabase {
   }
 
   async importData(data: { tasks?: Task[]; boards?: Board[]; settings?: Settings; }): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
+    const db = this.db;
+    if (!db) throw new Error('Database not initialized');
 
     // Use a single transaction for atomicity — all-or-nothing
     const storeNames = ['tasks', 'boards', 'settings', 'archive'] as const;
-    const transaction = this.db.transaction([...storeNames], 'readwrite');
+    const transaction = db.transaction([...storeNames], 'readwrite');
 
     return new Promise((resolve, reject) => {
       transaction.onerror = () => reject(transaction.error);
@@ -253,11 +264,12 @@ export class TaskDatabase {
   }
 
   private async clearAll(): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
+    const db = this.db;
+    if (!db) throw new Error('Database not initialized');
 
     // Use a single transaction for atomicity
     const storeNames = ['tasks', 'boards', 'settings', 'archive'];
-    const transaction = this.db.transaction(storeNames, 'readwrite');
+    const transaction = db.transaction(storeNames, 'readwrite');
 
     return new Promise((resolve, reject) => {
       transaction.onerror = () => reject(transaction.error);

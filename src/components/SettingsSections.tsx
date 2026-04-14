@@ -3,9 +3,8 @@
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
 import { Settings } from "@/lib/types";
-import { Palette, Monitor, Archive, Accessibility, Trash2 } from "lucide-react";
+import { Palette, Monitor, Archive, Accessibility } from "lucide-react";
 
 interface SettingSectionProps {
   localSettings: Settings;
@@ -19,9 +18,7 @@ interface AccessibilitySectionProps extends SettingSectionProps {
   ) => void;
 }
 
-interface DeveloperSectionProps extends SettingSectionProps {
-  onAppResetClick: () => void;
-}
+type DeveloperSectionProps = SettingSectionProps;
 
 export function AppearanceSection({ localSettings, updateLocalSetting }: SettingSectionProps) {
   return (
@@ -171,7 +168,6 @@ export function AccessibilitySection({
 export function DeveloperSection({
   localSettings,
   updateLocalSetting,
-  onAppResetClick,
 }: DeveloperSectionProps) {
   return (
     <div className="space-y-4">

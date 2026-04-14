@@ -108,7 +108,7 @@ describe('DragDropProvider iOS TouchSensor Tests', () => {
         </DragDropProvider>
       )
 
-      const dragElement = container.querySelector('[data-task-id="task-1"]')!
+      const dragElement = container.querySelector('[data-task-id="task-1"]') as Element
       
       // Simulate touch start
       fireEvent.touchStart(dragElement, {
@@ -133,7 +133,7 @@ describe('DragDropProvider iOS TouchSensor Tests', () => {
         </DragDropProvider>
       )
 
-      const dragElement = container.querySelector('[data-task-id="task-1"]')!
+      const dragElement = container.querySelector('[data-task-id="task-1"]') as Element
       
       // Start touch
       fireEvent.touchStart(dragElement, {
@@ -172,7 +172,7 @@ describe('DragDropProvider iOS TouchSensor Tests', () => {
         </DragDropProvider>
       )
 
-      const dragElement = container.querySelector('[data-task-id="task-1"]')!
+      const dragElement = container.querySelector('[data-task-id="task-1"]') as Element
 
       // Start drag
       fireEvent.touchStart(dragElement, {
@@ -204,7 +204,7 @@ describe('DragDropProvider iOS TouchSensor Tests', () => {
         </DragDropProvider>
       )
 
-      const dragElement = container.querySelector('[data-task-id="task-1"]')!
+      const dragElement = container.querySelector('[data-task-id="task-1"]') as Element
 
       // Start drag
       fireEvent.touchStart(dragElement, {
@@ -236,7 +236,7 @@ describe('DragDropProvider iOS TouchSensor Tests', () => {
         </DragDropProvider>
       )
 
-      const dragElement = container.querySelector('[data-task-id="task-1"]')!
+      const dragElement = container.querySelector('[data-task-id="task-1"]') as Element
       
       // Check if drag element is properly set up for touch
       expect(dragElement).toBeInTheDocument()
@@ -252,7 +252,7 @@ describe('DragDropProvider iOS TouchSensor Tests', () => {
         </DragDropProvider>
       )
 
-      const dragElement = container.querySelector('[data-task-id="task-1"]')!
+      const dragElement = container.querySelector('[data-task-id="task-1"]') as Element
 
       // Test mouse events still work
       fireEvent.mouseDown(dragElement, { clientX: 100, clientY: 100 })

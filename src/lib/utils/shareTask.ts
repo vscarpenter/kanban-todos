@@ -1,4 +1,5 @@
 import type { Task } from '../types';
+import { logger } from './logger';
 
 export interface TaskShareOptions {
   includeAppLink?: boolean;
@@ -128,7 +129,7 @@ export async function copyToClipboard(text: string): Promise<boolean> {
       return result;
     }
   } catch (error) {
-    console.error('Failed to copy to clipboard:', error);
+    logger.error('Failed to copy to clipboard:', error);
     return false;
   }
 }

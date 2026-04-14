@@ -49,13 +49,13 @@ export function ConflictResolutionStep({
             <p className="font-medium mb-2">Conflicts detected:</p>
             <ul className="list-disc list-inside space-y-1 text-sm">
               {(conflicts.duplicateTaskIds?.length ?? 0) > 0 && (
-                <li>{conflicts.duplicateTaskIds!.length} task(s) with matching IDs</li>
+                <li>{conflicts.duplicateTaskIds?.length} task(s) with matching IDs</li>
               )}
               {(conflicts.duplicateBoardIds?.length ?? 0) > 0 && (
-                <li>{conflicts.duplicateBoardIds!.length} board(s) with matching IDs</li>
+                <li>{conflicts.duplicateBoardIds?.length} board(s) with matching IDs</li>
               )}
               {(conflicts.defaultBoardConflicts?.length ?? 0) > 0 && (
-                <li>{conflicts.defaultBoardConflicts!.length} default board conflict(s)</li>
+                <li>{conflicts.defaultBoardConflicts?.length} default board conflict(s)</li>
               )}
             </ul>
           </AlertDescription>

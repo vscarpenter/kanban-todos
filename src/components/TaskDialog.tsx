@@ -13,69 +13,17 @@ import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import { useTaskStore } from "@/lib/stores/taskStore";
 import { useAsyncOperation } from "@/lib/hooks/useAsyncOperation";
 import { Task } from "@/lib/types";
-
-// Helper to parse comma-separated tags
-function parseTags(tagsString: string): string[] {
-  return tagsString
-    .split(',')
-    .map(tag => tag.trim())
-    .filter(tag => tag.length > 0);
-}
-
-// Helper to format tags for display
-function formatTags(tags: string[]): string {
-  return tags.join(", ");
-}
-
-// Date helper functions for quick picks
-function getToday(): Date {
-  const today = new Date();
-  today.setHours(17, 0, 0, 0); // Default to 5 PM
-  return today;
-}
-
-function getTomorrow(): Date {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(17, 0, 0, 0); // Default to 5 PM
-  return tomorrow;
-}
-
-function getNextWeek(): Date {
-  const nextWeek = new Date();
-  nextWeek.setDate(nextWeek.getDate() + 7);
-  nextWeek.setHours(17, 0, 0, 0); // Default to 5 PM
-  return nextWeek;
-}
-
-function isToday(date: Date): boolean {
-  const today = new Date();
-  return date.toDateString() === today.toDateString();
-}
-
-function isTomorrow(date: Date): boolean {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  return date.toDateString() === tomorrow.toDateString();
-}
-
-function isNextWeek(date: Date): boolean {
-  const nextWeek = new Date();
-  nextWeek.setDate(nextWeek.getDate() + 7);
-  return Math.abs(date.getTime() - nextWeek.getTime()) < 24 * 60 * 60 * 1000;
-}
-
-function formatDueDateQuick(date: Date): string {
-  if (isToday(date)) return 'today';
-  if (isTomorrow(date)) return 'tomorrow';
-  
-  const now = new Date();
-  const diffTime = date.getTime() - now.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
-  if (diffDays <= 7) return `in ${diffDays} days`;
-  return date.toLocaleDateString();
-}
+import {
+  parseTags,
+  formatTags,
+  getToday,
+  getTomorrow,
+  getNextWeek,
+  isToday,
+  isTomorrow,
+  isNextWeek,
+  formatDueDateQuick,
+} from "./taskDialogUtils";
 
 interface TaskDialogProps {
   mode: "create" | "edit";

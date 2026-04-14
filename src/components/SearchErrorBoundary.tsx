@@ -83,7 +83,7 @@ class SearchErrorBoundaryClass extends React.Component<
         const FallbackComponent = this.props.fallback;
         return (
           <FallbackComponent
-            error={this.state.error!}
+            error={this.state.error ?? new Error('An unknown search error occurred')}
             resetError={this.resetError}
             recoverSearch={this.recoverSearch}
           />
@@ -92,7 +92,7 @@ class SearchErrorBoundaryClass extends React.Component<
 
       return (
         <DefaultSearchErrorFallback
-          error={this.state.error!}
+          error={this.state.error ?? new Error('An unknown search error occurred')}
           resetError={this.resetError}
           recoverSearch={this.recoverSearch}
         />

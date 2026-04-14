@@ -103,7 +103,7 @@ describe('TaskCard', () => {
       )
       
       const taskCard = screen.getByText('Test Task').closest('div')
-      fireEvent.click(taskCard!)
+      if (taskCard) fireEvent.click(taskCard)
       
       expect(mockNavigate).toHaveBeenCalledWith('board-2', 'task-1')
     })
@@ -122,7 +122,7 @@ describe('TaskCard', () => {
       )
       
       const taskCard = screen.getByText('Test Task').closest('div')
-      fireEvent.click(taskCard!)
+      if (taskCard) fireEvent.click(taskCard)
       
       expect(mockNavigate).not.toHaveBeenCalled()
     })
@@ -143,7 +143,7 @@ describe('TaskCard', () => {
       // Get the dropdown menu button (the one that's not the draggable container)
       const buttons = screen.getAllByRole('button')
       const menuButton = buttons.find(button => button.getAttribute('aria-haspopup') === 'menu')
-      fireEvent.click(menuButton!)
+      if (menuButton) fireEvent.click(menuButton)
       
       expect(mockNavigate).not.toHaveBeenCalled()
     })

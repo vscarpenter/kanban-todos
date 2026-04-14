@@ -3,6 +3,11 @@
  * Provides comprehensive detection of iOS devices, touch capabilities, and browser features
  */
 
+// Viewport breakpoints for device classification
+const MOBILE_MAX_SHORT_SIDE_PX = 480; // max short-side dimension for mobile phones
+const MOBILE_MAX_LONG_SIDE_PX = 896;  // max long-side dimension for mobile phones
+const TABLET_MIN_SHORT_SIDE_PX = 768; // min short-side dimension for tablets
+
 export interface IOSDetectionResult {
   isIOS: boolean;
   isIPad: boolean;
@@ -173,10 +178,10 @@ export function detectTouchCapabilities(): TouchCapabilityResult {
   const maxDimension = Math.max(screenWidth, screenHeight);
   
   // Mobile: typically 320-480px width, <7" diagonal
-  const isLikelyMobile = hasTouch && minDimension <= 480 && maxDimension <= 896;
+  const isLikelyMobile = hasTouch && minDimension <= MOBILE_MAX_SHORT_SIDE_PX && maxDimension <= MOBILE_MAX_LONG_SIDE_PX;
   
   // Tablet: typically 768px+ width, 7-13" diagonal
-  const isLikelyTablet = hasTouch && minDimension >= 768 && !supportsHover;
+  const isLikelyTablet = hasTouch && minDimension >= TABLET_MIN_SHORT_SIDE_PX && !supportsHover;
   
   return {
     hasTouch,
