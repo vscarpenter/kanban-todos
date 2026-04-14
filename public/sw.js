@@ -4,7 +4,7 @@
 // - Static assets: cache-first with background update
 // - Supports immediate activation via postMessage { type: 'SKIP_WAITING' }
 
-const CACHE_VERSION = 'v1-2025-08-31';
+const CACHE_VERSION = 'v2-2026-04-13';
 const ASSET_CACHE = `assets-${CACHE_VERSION}`;
 const PAGE_CACHE = `pages-${CACHE_VERSION}`;
 
