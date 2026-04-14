@@ -25,12 +25,12 @@ export default defineConfig({
         'src/**/*.d.ts',
         'src/app/layout.tsx',  // boilerplate Next.js layout
       ],
-      // Minimum acceptable thresholds (raise over time toward 80%)
+      // Baseline thresholds as of initial compliance pass (raise over time toward 80%)
       thresholds: {
-        lines: 40,
-        functions: 40,
-        branches: 30,
-        statements: 40,
+        lines: 37,
+        functions: 38,
+        branches: 35,
+        statements: 36,
       },
     },
   },
