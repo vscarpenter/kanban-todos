@@ -18,6 +18,8 @@ Before writing any code in an existing project, YOU MUST understand the landscap
 4. Check for existing utilities, helpers, or shared modules before creating new ones.
 5. Match the existing code style exactly, even if it differs from these standards.
 
+**For resumed sessions:** Read CLAUDE.md and `tasks/lessons.md` first, then `tasks/todo.md` to orient on current state. Check git log for the last 3-5 commits. Do not ask the user to re-explain context that is captured in these files.
+
 > **Rule:** The existing codebase is the primary style guide. These standards apply to greenfield code or when explicitly refactoring.
 
 ### Spec-Driven Development
@@ -49,35 +51,27 @@ When requirements are unclear or incomplete:
 2. **State your assumptions.** If you must proceed without clarification, explicitly list every assumption you are making.
 3. **Prefer reversible choices.** When guessing, choose the option that is easiest to change later.
 4. **Flag scope questions early.** If a task might touch shared code, external APIs, or infrastructure, confirm scope before modifying anything.
+5. **Stop and re-plan when a plan breaks.** Do not push through ambiguity or compounding errors by guessing forward. Stop early, re-plan explicitly, then proceed.
 
 > **Never:** Silently interpret ambiguous requirements and build an entire solution on an assumption that could be wrong.
 
-### Parallel Tool Execution
+### Tool Efficiency
 
-Claude Code fires tool calls in parallel only when the prompt signals that tasks are independent. Ambiguous prompts default to sequential execution, which wastes significant time on large codebases.
+**Signal parallel execution explicitly.** Claude Code fires tool calls in parallel only when the prompt indicates tasks are independent. Ambiguous prompts default to sequential execution.
 
-**Pattern: Signal independence explicitly.**
+Instead of: `"Read the auth module, then read the payment module, then compare them."`
+Use: `"Read the auth module and the payment module simultaneously, then compare their error handling patterns."`
 
-Instead of:
-> "Read the auth module, then read the payment module, then compare them."
+Apply this pattern when scanning multiple files, running tests alongside linting, or fetching multiple log sources at once.
 
-Use:
-> "Read the auth module and the payment module simultaneously, then compare their error handling patterns."
-
-Apply this pattern when scanning multiple files, running tests alongside linting, or fetching multiple log sources at once. The wall-clock difference on large codebases is significant.
-
-> **Rule:** If two tool calls do not depend on each other's output, say so in the prompt. Claude Code will batch them.
-
-### Bash-First for Multi-Step Operations
-
-The bash tool is the most capable in Claude Code's toolbox. For tasks involving multiple files, prefer bash operations over chaining individual read/write tool calls. A single `grep`, `find`, or `sed` across a directory is faster and cleaner than reading files one at a time.
+**Prefer bash for multi-file operations.** A single `grep`, `find`, or `sed` across a directory is faster and cleaner than chaining individual read/write tool calls.
 
 - Use `grep` or `ripgrep` to search across files instead of reading them individually.
 - Use `git log`, `git diff`, and `git status` directly rather than asking Claude to summarize manually.
-- For bulk refactors, instruct Claude to use `sed` or `awk` on multiple files in one pass.
-- For long-running bash operations, set explicit timeouts and expected durations upfront. Claude defaults to blocking-avoidance behavior; if a command is expected to run for 30 seconds, say so.
+- For bulk refactors, use `sed` or `awk` on multiple files in one pass.
+- For long-running bash operations, set explicit timeouts upfront. If a command is expected to run for 30 seconds, say so.
 
-> **Rule:** Prefer one bash command over three chained tool calls. It is faster, cleaner, and produces a more focused context trail.
+> **Rule:** If two tool calls do not depend on each other's output, say so. If multiple files need searching, use one bash command, not three reads.
 
 ### Context Management & Sustained Work
 
@@ -91,17 +85,10 @@ For lengthy tasks, YOU MUST follow these requirements:
 
 > **Critical:** If you find yourself 80% through context with major uncommitted work, stop adding features and commit immediately.
 
-**Define tasks by outcome, not process.**
+**Define tasks by outcome, not process.** Claude Code's agentic loop exits on three signals: an explicit completion signal, an unrecoverable error, or hitting the turn limit. Every multi-step task must have a stated "done" condition Claude can recognize autonomously.
 
-Claude Code's agentic loop exits on three signals: an explicit completion signal, an unrecoverable error, or hitting the turn limit. Without a clear outcome definition, it loops.
-
-Instead of:
-> "Keep checking the logs until you find the error."
-
-Use:
-> "Check the last 100 lines of logs. If you find an error, explain the root cause and propose one fix. If no errors are found, say so and stop."
-
-Every multi-step task must have a stated "done" condition Claude can recognize autonomously.
+Instead of: `"Keep checking the logs until you find the error."`
+Use: `"Check the last 100 lines of logs. If you find an error, explain the root cause and propose one fix. If no errors are found, say so and stop."`
 
 **Compaction Directive:** When compacting, always preserve the full list of modified files, current task status, test commands, and next steps. Do not discard working state during summarization.
 
@@ -115,118 +102,52 @@ Every session must end in a state another session can resume from without asking
 3. Note any assumptions made during the session that future work depends on.
 4. Run the test suite. Do not end with failing tests.
 
-**When starting a new session:**
-1. Read CLAUDE.md and `tasks/lessons.md` before doing anything else.
-2. Read `tasks/todo.md` to orient on current state and next steps.
-3. Check git log for the last 3-5 commits to understand recent context.
-4. Do not ask the user to re-explain context that is captured in these files.
-
 > **Rule:** A clean handoff is as important as clean code. If another session cannot resume without a briefing, the handoff failed.
-
-### Re-Planning Trigger
-
-Plans break. When they do, stop immediately:
-
-- If execution goes sideways at any point, STOP and re-plan before continuing.
-- Do not push through ambiguity or compounding errors by guessing forward.
-- Use plan mode for verification steps, not just initial building.
-
-> **Rule:** A bad plan executed confidently causes more damage than pausing to re-plan. Stop early, re-plan explicitly, then proceed.
 
 ### Self-Improvement Loop
 
-After any correction from the user, YOU MUST:
+After any correction from the user, YOU MUST capture the pattern in `tasks/lessons.md` immediately and write an explicit rule that prevents the same mistake from recurring.
 
-1. Capture the pattern in `tasks/lessons.md` immediately. Do not defer it.
-2. Write an explicit rule that prevents the same mistake from recurring.
-3. Iterate ruthlessly on these lessons until the mistake rate drops.
-4. At the start of each session for a relevant project, review `tasks/lessons.md` before writing any code.
-
-**Two-layer learning — project lessons and persistent rules:**
+**Two-layer memory:**
 - `tasks/lessons.md` captures project-specific learnings: patterns, gotchas, and context that matter for this codebase.
-- `CLAUDE.md` captures persistent behavioral rules that apply across sessions and across projects. After every correction, end with: "Update CLAUDE.md so this mistake does not recur." Claude is effective at writing rules for itself when prompted.
+- `CLAUDE.md` captures persistent behavioral rules that apply across sessions and projects. After every correction, end with: "Update CLAUDE.md so this mistake does not recur."
 
-**Compounding Engineering — learn during code review:**
-When reviewing PRs (or receiving review feedback), tag `@.claude` in PR comments to add learnings directly to `CLAUDE.md` as part of the PR itself. This turns review feedback into permanent, machine-readable rules without a separate manual step.
+When reviewing PRs or receiving review feedback, tag `@claude` in PR comments to add learnings directly to `CLAUDE.md` as part of the PR itself. Enable Claude Code's auto-memory (`/memory`) to capture corrections you forget to write down manually; use `/dream` periodically to consolidate and remove outdated notes.
 
-Example PR comment:
-```
-nit: use a string literal union, not a TS enum
+> **Rule:** Corrections are learning contracts. Every mistake that recurs after being corrected once is a process failure, not a knowledge gap.
 
-@claude add to CLAUDE.md to never use enums, always prefer literal unions
-```
+### Verification Checkpoints
 
-**Auto-Memory as a safety net:**
-Enable Claude Code's auto-memory (`/memory`) to capture preferences and corrections that you forget to write down manually. Use `/dream` periodically to consolidate and clean accumulated memory, removing outdated assumptions and merging overlapping notes.
+**After each tool result,** pause before proceeding: Did the operation succeed? Does the output match expectations? If results are unexpected, diagnose the root cause before attempting fixes. Avoid repeated trial-and-error changes without understanding the underlying issue.
 
-> **Rule:** Corrections are learning contracts. Every mistake that recurs after being corrected once is a process failure, not a knowledge gap. `tasks/lessons.md` is the project memory. `CLAUDE.md` is the behavioral memory. Both must stay current.
-
-### Reflection After Tool Results
-
-After each tool result, pause to evaluate before proceeding:
-
-- Did the operation succeed or fail?
-- Does the output match expectations?
-- Are there edge cases or errors to address?
-- What is the root cause if results are unexpected?
-
-Use extended thinking to analyze results and plan your next action. If results are unexpected, diagnose the root cause before attempting fixes. Avoid repeated trial-and-error changes without understanding the underlying issue.
-
-### Verification-First Development
-
-Verification is not an afterthought; it is the single most important factor in output quality. Before writing any implementation, define how Claude will verify that the work is correct. A feedback loop that Claude can run autonomously will 2-3x the quality of the final result.
-
-1. **Define the verification method before coding.** For every non-trivial task, state upfront how correctness will be proven: a test suite, a bash command, a simulator, a browser check, or a diff against expected output.
-2. **Match verification to the domain.** Different work requires different proof:
-   - **Backend logic:** For backend logic and business rules, the verification method IS the test suite, and it is written first via the red/green/refactor protocol. Defining "how you will verify" and "writing the failing test" are the same step.
-   - **API changes:** curl/httpie commands or integration tests that exercise the endpoint.
-   - **Frontend/UI:** Browser testing (e.g., Claude Chrome extension), screenshot comparison, or accessibility audit.
-   - **Data pipelines:** Row-count checks, sample-output diffs, schema validation.
-   - **Infrastructure:** `terraform plan`, dry-run deploys, or smoke tests against a staging environment.
-3. **Close the loop autonomously.** Claude should run verification without being prompted. If the verification fails, diagnose and fix before presenting results.
-4. **Invest in reusable verification.** If a project lacks a fast feedback loop, building one is a higher priority than the feature itself. A 30-second test suite pays for itself within the first session.
-
-> **Rule:** Code without a verification method is a guess. If Claude cannot prove the work is correct, the task is not done.
-
-### Solution Quality Requirements
-
-Every solution YOU MUST meet these standards:
-
-- Implement robust, general-purpose logic that handles all valid inputs correctly.
-- Avoid hardcoded values, magic numbers, or logic tailored to specific test inputs.
-- Include appropriate error handling and input validation.
-- Use standard tools and language features rather than external workarounds.
-- Code should be maintainable, readable, and follow established conventions.
-
-For non-trivial changes, pause before presenting and ask: "Is there a more elegant way?" If the current solution feels hacky or over-fitted, implement the cleaner version instead. Skip this check for obvious, simple fixes. Apply it whenever the change touches architecture, shared modules, or multiple files.
-
-> **Never:** Create solutions that only work for specific test cases. Always implement the actual algorithm or business logic.
-
-### Self-Review Before Presenting
-
-Before presenting code or marking a task as complete, perform a quick self-review:
-
+**Before presenting code or marking a task complete,** perform a self-review:
 1. Re-read every changed file. Look for typos, leftover debug statements, and TODO comments.
 2. Verify all imports are used and no dead code remains.
 3. Confirm naming is consistent across the changeset.
 4. Check that error paths are handled, not just the happy path.
 5. Ensure the code compiles/runs and tests pass.
-6. Ask yourself: "Would a staff engineer approve this?" If the answer is uncertain, keep improving.
+6. For non-trivial changes touching architecture, shared modules, or multiple files: ask "Is there a more elegant way?" If the solution feels hacky or over-fitted, implement the cleaner version.
+7. Ask yourself: "Would a staff engineer approve this?" If the answer is uncertain, keep improving.
 
-**File edit failures:** Claude Code edits files via exact string matching, not full rewrites. If an edit fails or produces unexpected results, read the full file first, then apply the targeted change. For complex multi-part edits, break changes into smaller, targeted replacements rather than one large substitution.
+**File edit failures:** Claude Code edits files via exact string matching, not full rewrites. If an edit fails, read the full file first, then apply the targeted change. For complex multi-part edits, break changes into smaller, targeted replacements.
 
 > **Rule:** Never present code you have not re-read. A 30-second review catches the majority of avoidable mistakes.
 
-### Autonomous Bug Fixing
+### Verification-First Development
 
-When given a bug report, fix it without requiring hand-holding:
+Verification is not an afterthought; it is the single most important factor in output quality. Before writing any implementation, define how Claude will verify that the work is correct.
 
-- Point at logs, errors, and failing tests. Then resolve them.
-- Zero context switching required from the user.
-- Go fix failing CI tests without being told how.
-- Do not ask for step-by-step guidance on a bug you can diagnose yourself.
+1. **Define the verification method before coding.** State upfront how correctness will be proven: a test suite, a bash command, a simulator, a browser check, or a diff against expected output.
+2. **Match verification to the domain:**
+   - **Backend logic:** The verification method IS the test suite, written first via red/green/refactor (see Part 3). Defining "how you will verify" and "writing the failing test" are the same step.
+   - **API changes:** curl/httpie commands or integration tests that exercise the endpoint.
+   - **Frontend/UI:** Browser testing, screenshot comparison, or accessibility audit.
+   - **Data pipelines:** Row-count checks, sample-output diffs, schema validation.
+   - **Infrastructure:** `terraform plan`, dry-run deploys, or smoke tests against a staging environment.
+3. **Close the loop autonomously.** Run verification without being prompted. If verification fails, diagnose and fix before presenting results.
+4. **Invest in reusable verification.** If a project lacks a fast feedback loop, building one is a higher priority than the feature itself.
 
-> **Rule:** A bug report is a complete work order. Read the signals, identify the root cause, fix it, verify it.
+> **Rule:** Code without a verification method is a guess. If Claude cannot prove the work is correct, the task is not done.
 
 ### Incremental Progress
 
@@ -238,7 +159,7 @@ Build incrementally to ensure quality:
 - Do not assume code is correct without execution.
 - If tests fail, analyze the failure and diagnose root cause before making changes.
 
-> **Rule:** Each increment is one red/green/refactor cycle. Do not write a second function before the first one has a passing test. Incrementalism without TDD is just small batches of unverified code.
+Each increment is one red/green/refactor cycle (see Part 3). Do not write a second function before the first one has a passing test.
 
 ---
 
@@ -251,12 +172,12 @@ Build incrementally to ensure quality:
 3. **Code for humans.** Code must be readable by a junior engineer without needing to scroll to other files.
 4. **Prefer boring tech.** Stability over hype.
 5. **Automate consistency.** Enforce linting, tests, and formatting in CI.
-6. **Standard Lib > External:** Always choose the language's standard library over an external dependency unless the standard library requires >2x the amount of code to achieve the same result.
+6. **Standard Lib > External:** Always choose the language's standard library over an external dependency unless the standard library requires >2x the code to achieve the same result.
 
 ### Naming & Clarity
 
 - Use descriptive names; avoid generic terms like 'data', 'temp', or single letters.
-- Functions should be 30 lines or fewer with single responsibility.
+- Functions should be 40 lines or fewer with single responsibility.
 - Maximum 3 levels of nesting; use early returns.
 - Comments explain WHY, not WHAT.
 - Document public APIs with usage examples.
@@ -272,7 +193,7 @@ Build incrementally to ensure quality:
 
 ### Structure & Abstraction
 
-- Apply DRY only after 3+ repetitions.
+- Apply DRY only after 2+ repetitions.
 - Follow YAGNI: do not build for hypothetical futures.
 - Prefer composition over inheritance.
 - Duplicate if it is clearer than abstracting.
@@ -312,6 +233,10 @@ Do not prematurely optimize, but do not write obviously inefficient code either:
 - Remove unused dependencies promptly; dead packages accumulate security debt.
 - Document why non-obvious dependencies exist (a comment in package.json or requirements.txt is enough).
 - Schedule a recurring dependency audit; do not let major versions drift more than one cycle behind.
+
+**AI-specific supply-chain risk:** When Claude Code installs or suggests new dependencies during agentic sessions, treat those changes with the same scrutiny as any other code change. Floating ranges are especially dangerous when Claude auto-installs packages. If Claude Code is operating in agentic mode with npm/pip access, review its dependency changes before accepting them. Run `npm audit` or `pip-audit` as part of the PostToolUse hook lifecycle, not just in CI.
+
+> **Rule:** Claude Code can install packages autonomously. Every package it adds is your team's responsibility. Review first, accept second.
 
 ### Feature Flags
 
@@ -410,8 +335,6 @@ Do not suggest fixes; report findings only.
 Use Claude Code hooks to enforce standards deterministically rather than relying on discipline alone. Hooks fire at specific points in Claude's lifecycle and run your commands automatically.
 
 **PostToolUse — Auto-Format on Every Write:**
-Claude generates well-formatted code most of the time, but a PostToolUse hook catches edge cases before they reach CI. Configure it to run your project's formatter after every file write or edit:
-
 ```json
 "hooks": {
   "PostToolUse": [
@@ -427,12 +350,9 @@ Claude generates well-formatted code most of the time, but a PostToolUse hook ca
   ]
 }
 ```
-
-Replace the format command with your project's tool (`prettier`, `black`, `gofmt`, etc.). The `|| true` ensures a formatter warning does not block Claude's workflow.
+Replace with your project's formatter (`prettier`, `black`, `gofmt`, etc.). The `|| true` ensures a formatter warning does not block Claude's workflow.
 
 **PostCompact — Re-Inject Critical Context After Compaction:**
-When Claude compresses its conversation context, critical instructions can be lost. Use a PostCompact hook to re-inject essentials automatically. This is the enforcement mechanism for the Compaction Directive above:
-
 ```json
 "hooks": {
   "PostCompact": [
@@ -450,8 +370,6 @@ When Claude compresses its conversation context, critical instructions can be lo
 ```
 
 **Stop Hook — Verification Gate for Long-Running Tasks:**
-For autonomous, long-running work, use a Stop hook to run deterministic checks (test suite, linter, type checker) before Claude declares a task complete. This ensures Claude cannot mark work as done without passing the verification gate:
-
 ```json
 "hooks": {
   "Stop": [
@@ -467,7 +385,6 @@ For autonomous, long-running work, use a Stop hook to run deterministic checks (
   ]
 }
 ```
-
 Replace with your project's test runner and type checker. The `exit 1` blocks Claude from completing until checks pass.
 
 > **Rule:** If a standard can be enforced by a hook, it should be. Human discipline is a backup, not the primary mechanism.
@@ -528,19 +445,7 @@ The TDD cycle applies to every non-trivial piece of logic:
 - Use parameterized queries (no SQL concatenation).
 - Apply least-privilege principles.
 - Never commit secrets; rotate regularly.
-- Keep dependencies patched and scanned.
-
-### Supply-Chain Vigilance for AI-Assisted Development
-
-AI coding tools introduce supply-chain risk vectors that did not exist in manual workflows. When Claude Code installs, updates, or suggests new dependencies, treat those changes with the same scrutiny as any other code change.
-
-- Audit every new dependency immediately: check maintenance status, download trends, and known CVEs before accepting it.
-- Lock versions in the lockfile. Floating ranges are especially dangerous when Claude is auto-installing packages during agentic sessions.
-- After any Claude Code version update, scan lockfiles for unexpected new transitive dependencies.
-- If Claude Code is operating in an agentic mode with npm/pip access, scope its file-system and network permissions to the project directory and review its dependency changes before accepting them.
-- Run `npm audit` or `pip-audit` as part of the PostToolUse hook lifecycle, not just in CI. Catch supply-chain issues before they reach the pipeline.
-
-> **Rule:** Claude Code can install packages autonomously. Every package it adds is your team's responsibility. Review first, accept second.
+- Keep dependencies patched and scanned (see Dependency Management in Part 2 for AI-specific supply-chain rules).
 
 ---
 
@@ -777,7 +682,7 @@ Avoid these patterns; they produce lower-quality outputs:
 
 ### Formalize Repeated Workflows
 
-If you do something more than once a day, it should be a skill or a slash command — not a prompt you retype or copy-paste.
+If you do something more than once a day, it should be a skill or a slash command, not a prompt you retype or copy-paste.
 
 **Slash commands** live in `.claude/commands/` and are checked into git. They are shared with the entire team and executable with a single `/command-name` invocation. Slash commands can include inline Bash to pre-compute context (like `git status` or `git diff --stat`) so Claude has the information it needs without extra model calls.
 
@@ -793,41 +698,17 @@ If you do something more than once a day, it should be a skill or a slash comman
 - Use the `/simplify` pattern after implementation: append a quality-review command to any prompt to run parallel agents that check for reuse, quality, and efficiency in one pass.
 
 **Companion slash commands:**
-This skill ships with `/qspec` (generate a spec), `/qcheck` (skeptical code review), and `/tdd` (start a red/green/refactor cycle) in `.claude/commands/`. These are the formalized, version-controlled replacements for inline prompt shortcuts.
+This skill ships with `/qspec` (generate a spec), `/qcheck` (skeptical code review), and `/tdd` (start a red/green/refactor cycle) in `.claude/commands/`.
 
 ### `/tdd` Slash Command
 
-Start a red/green/refactor cycle for a named behavior.
-
 **Usage:** `/tdd <behavior description>`
 
-Claude will:
-1. Write a failing test stub for the described behavior.
-2. Confirm the test fails for the right reason (not a syntax error or import issue).
-3. Pause for your approval of the test before writing any implementation.
-4. Implement the minimum code to go green.
-5. Propose a refactor pass and await confirmation before committing.
-
-This command enforces the cycle and prevents skipping straight to implementation. Use it at the start of any non-trivial behavior to anchor the work in a verified contract.
+Enforces the red/green/refactor cycle (Part 3) for a named behavior: writes a failing test stub, confirms it fails for the right reason, pauses for approval, implements the minimum code to go green, and proposes a refactor pass before committing. Use it at the start of any non-trivial behavior to prevent skipping straight to implementation.
 
 ---
 
 ## Part 10: Quick Reference
-
-### Prompt Template
-
-Use this template when requesting features:
-
-```
-Build [feature] that:
-  - Follows red/green/refactor: write failing tests first
-  - Uses clear naming
-  - Validates inputs, handles errors
-  - Tests written before implementation (TDD)
-  - Follows [framework] conventions
-  - Avoids premature abstraction
-  - Keeps functions <30 lines
-```
 
 ### Red Flags
 
@@ -846,8 +727,6 @@ Build [feature] that:
 - Catching and ignoring exceptions silently
 - Writing code before reading existing patterns in the codebase
 - Pushing through a broken plan instead of stopping to re-plan
-- Recurring mistakes not captured in `tasks/lessons.md`
-- Asking the user for step-by-step guidance on a diagnosable bug
 - Implementing without a spec for non-trivial work
 - Ending a session with failing tests or uncommitted changes
 - Architectural decisions explained in Slack instead of an ADR
@@ -858,14 +737,9 @@ Build [feature] that:
 - No verification method defined before starting implementation
 - Ad-hoc subagent prompts instead of reusable agent definitions for repeated patterns
 - Standards enforced by discipline alone when a hook could automate them
-- Sequential tool calls for tasks that are clearly independent
-- Multi-step file operations handled by chained reads instead of a single bash command
-- Complex file edits attempted without reading current file state first
-- Agentic tasks defined as a process without a stated outcome condition
 - New dependencies added by Claude in agentic mode without review and lockfile verification
 - Implementation written before any tests existed for non-trivial logic
 - Refactor step skipped after reaching green (technical debt deposited immediately)
-- Test written after implementation to hit a coverage target, not to drive behavior
 - Failing test committed without a corresponding implementation in the same session
 - Acceptance criteria defined in spec but not reflected in any test case
 - Skipping red/green confirmation ("the test would have failed, trust me")
@@ -876,4 +750,4 @@ Build [feature] that:
 
 ---
 
-*Document Version 12.0 | Vinny Carpenter*
+*Document Version 13.0 | Vinny Carpenter*
