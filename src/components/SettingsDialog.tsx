@@ -216,7 +216,6 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
               <DeveloperSection
                 localSettings={localSettings}
                 updateLocalSetting={updateLocalSetting}
-                onAppResetClick={() => setShowAppResetDialog(true)}
               />
             </>
           )}

@@ -41,7 +41,7 @@ export function exportData(
       filteredTasks = filteredTasks.filter(task => !task.archivedAt);
     }
     if (options.boardIds && options.boardIds.length > 0) {
-      filteredTasks = filteredTasks.filter(task => options.boardIds!.includes(task.boardId));
+      filteredTasks = filteredTasks.filter(task => options.boardIds?.includes(task.boardId));
     }
   } else {
     filteredTasks = [];
@@ -53,7 +53,7 @@ export function exportData(
       filteredBoards = filteredBoards.filter(board => !board.archivedAt);
     }
     if (options.boardIds && options.boardIds.length > 0) {
-      filteredBoards = filteredBoards.filter(board => options.boardIds!.includes(board.id));
+      filteredBoards = filteredBoards.filter(board => options.boardIds?.includes(board.id));
     }
   } else {
     filteredBoards = [];

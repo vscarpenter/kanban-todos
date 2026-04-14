@@ -194,10 +194,14 @@ function sanitizeImportData(
     return { data: sanitizedData, log };
   }
 
+  // exportDataSchema.properties is always defined — it's a compile-time constant.
+  // Use a local reference to avoid repeated property access and suppress lint noise.
+  const schemaProperties = exportDataSchema.properties ?? {};
+
   // Sanitize tasks
   const taskSanitization = sanitizeData(
     sanitizedData.tasks,
-    exportDataSchema.properties!.tasks as ValidationSchema,
+    schemaProperties.tasks as ValidationSchema,
     sanitizationOptions
   );
   sanitizedData.tasks = taskSanitization.sanitized as SerializedTask[];
@@ -206,7 +210,7 @@ function sanitizeImportData(
   // Sanitize boards
   const boardSanitization = sanitizeData(
     importData.boards,
-    exportDataSchema.properties!.boards as ValidationSchema,
+    schemaProperties.boards as ValidationSchema,
     sanitizationOptions
   );
   sanitizedData.boards = boardSanitization.sanitized as SerializedBoard[];
@@ -216,7 +220,7 @@ function sanitizeImportData(
   if (importData.settings) {
     const settingsSanitization = sanitizeData(
       importData.settings,
-      exportDataSchema.properties!.settings as ValidationSchema,
+      schemaProperties.settings as ValidationSchema,
       sanitizationOptions
     );
     sanitizedData.settings = settingsSanitization.sanitized as Settings;

@@ -577,7 +577,7 @@ describe('boardStore', () => {
       // The copy should have "(Copy)" in the name
       const copy = boards.find((b) => b.name.includes('(Copy)'));
       expect(copy).toBeDefined();
-      expect(copy!.isDefault).toBe(false);
+      expect(copy?.isDefault).toBe(false);
     });
 
     it('does nothing when board ID does not exist', async () => {

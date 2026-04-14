@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 import { Board } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
-import { exportBoards, ExportData } from '@/lib/utils/exportImport';
+import { ExportData } from '@/lib/utils/exportImport';
 import { sanitizeBoardData } from '@/lib/utils/security';
+import { logger } from '@/lib/utils/logger';
 import {
   validateBoardName,
   checkDuplicateBoardName,
@@ -16,6 +17,11 @@ import {
   deserializeBoardDates,
   selectCurrentBoard,
 } from '@/lib/utils/boardHelpers';
+import {
+  createExportBoards,
+  createImportBoards,
+  createBulkAddBoards,
+} from './boardStore.importActions';
 
 /**
  * Loads boards from database, creating default board if none exist
@@ -130,7 +136,7 @@ export const useBoardStore = create<BoardState & BoardActions>((set, get) => ({
             };
             await taskDB.updateSettings(updatedSettings);
           } catch (error) {
-            console.warn('Failed to persist current board selection:', error);
+            logger.warn('Failed to persist current board selection:', error);
           }
         },
         setLoading: (isLoading) => set({ isLoading }),
@@ -308,84 +314,9 @@ export const useBoardStore = create<BoardState & BoardActions>((set, get) => ({
         },
 
         // Export/Import operations
-        exportBoards: (options = { includeArchived: true }) => {
-          const { boards } = get();
-          return exportBoards(boards, options);
-        },
-
-        importBoards: async (boards: Board[]) => {
-          try {
-            set({ isLoading: true, error: null });
-            
-            const { boards: existingBoards } = get();
-            const existingIds = new Set(existingBoards.map(b => b.id));
-            
-            // Add or update boards in database
-            for (const board of boards) {
-              if (existingIds.has(board.id)) {
-                // Update existing board
-                await taskDB.updateBoard(board);
-              } else {
-                // Add new board
-                await taskDB.addBoard(board);
-              }
-            }
-            
-            // Update store state
-            set((state) => {
-              const boardMap = new Map(state.boards.map(b => [b.id, b]));
-              
-              // Add or update imported boards
-              boards.forEach(board => {
-                boardMap.set(board.id, board);
-              });
-              
-              const newBoards = Array.from(boardMap.values());
-              return {
-                boards: newBoards,
-                isLoading: false,
-              };
-            });
-          } catch (error) {
-            set({ 
-              error: error instanceof Error ? error.message : 'Failed to import boards',
-              isLoading: false 
-            });
-            throw error;
-          }
-        },
-
-        bulkAddBoards: async (boards: Board[]) => {
-          try {
-            set({ isLoading: true, error: null });
-            
-            // Process boards in batches
-            const batchSize = 20;
-            const batches = [];
-            for (let i = 0; i < boards.length; i += batchSize) {
-              batches.push(boards.slice(i, i + batchSize));
-            }
-            
-            for (const batch of batches) {
-              await Promise.all(batch.map(board => taskDB.addBoard(board)));
-            }
-            
-            // Update store state
-            set((state) => {
-              const newBoards = [...state.boards, ...boards];
-              return {
-                boards: newBoards,
-                isLoading: false,
-              };
-            });
-          } catch (error) {
-            set({ 
-              error: error instanceof Error ? error.message : 'Failed to bulk add boards',
-              isLoading: false 
-            });
-            throw error;
-          }
-        },
+        exportBoards: createExportBoards(get),
+        importBoards: createImportBoards(get, set),
+        bulkAddBoards: createBulkAddBoards(set),
 
         initializeBoards: async () => {
           try {

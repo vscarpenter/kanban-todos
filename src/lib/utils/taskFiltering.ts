@@ -58,7 +58,8 @@ export function checkCache(
 ): Task[] | null {
   if (!searchCache.has(cacheKey)) return null;
 
-  const cached = searchCache.get(cacheKey)!;
+  const cached = searchCache.get(cacheKey);
+  if (!cached) return null;
   const now = Date.now();
 
   // Check if cache is expired

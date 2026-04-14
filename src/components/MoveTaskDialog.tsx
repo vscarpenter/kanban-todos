@@ -93,8 +93,8 @@ export function MoveTaskDialog({ task, open, onOpenChange }: MoveTaskDialogProps
     if (currentBoard?.isDefault) {
       return `Are you sure you want to move this task away from the default board "${currentBoard.name}"?`;
     }
-    if (getTaskCount(selectedBoardId!) > 20) {
-      return `The "${targetBoard?.name}" board has many tasks (${getTaskCount(selectedBoardId!)}). Are you sure you want to add this task there?`;
+    if (getTaskCount(selectedBoardId ?? '') > 20) {
+      return `The "${targetBoard?.name}" board has many tasks (${getTaskCount(selectedBoardId ?? '')}). Are you sure you want to add this task there?`;
     }
     return 'Are you sure you want to move this task?';
   };

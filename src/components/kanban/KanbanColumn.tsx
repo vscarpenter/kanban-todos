@@ -6,7 +6,6 @@ import isEqual from "fast-deep-equal";
 import { Task } from "@/lib/types";
 import TaskCard from "./TaskCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Circle, Loader2, CheckCircle2, Plus } from "@/lib/icons";
 import { useBoardStore } from "@/lib/stores/boardStore";
 import { useTaskStore } from "@/lib/stores/taskStore";
@@ -30,12 +29,10 @@ interface KanbanColumnProps {
   title: string;
   tasks: Task[];
   status: Task['status'];
-  color: string;
-  borderColor: string;
   onNavigateToBoard?: (boardId: string, taskId: string) => void;
 }
 
-export function KanbanColumn({ title, tasks, status, color, borderColor, onNavigateToBoard }: KanbanColumnProps) {
+export function KanbanColumn({ title, tasks, status, onNavigateToBoard }: KanbanColumnProps) {
   const { boards, currentBoardId } = useBoardStore();
   const { filters: { search: searchQuery, crossBoardSearch }, searchState: { highlightedTaskId } } = useTaskStore();
 
@@ -55,7 +52,6 @@ export function KanbanColumn({ title, tasks, status, color, borderColor, onNavig
   const isCrossBoardSearch = crossBoardSearch && isSearchActive;
 
   const config = columnConfig[status];
-  const StatusIcon = config.icon;
 
   return (
     <div

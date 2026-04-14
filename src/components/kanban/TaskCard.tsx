@@ -10,13 +10,6 @@ import { BoardIndicator } from "../BoardIndicator";
 import { TaskCardActions } from "./TaskCardActions";
 import { TaskCardMetadata } from "./TaskCardMetadata";
 
-// Priority colors using semantic tokens (only show if non-default)
-const priorityColors: Record<Task['priority'], string> = {
-  high: 'text-danger',
-  medium: 'text-warning', 
-  low: 'text-success',
-};
-
 interface TaskCardProps {
   task: Task;
   showBoardIndicator?: boolean;

@@ -17,6 +17,7 @@ import {
   type SearchCache,
 } from '@/lib/utils/taskFiltering';
 import { validateTaskCollection } from '@/lib/utils/taskValidation';
+import { logger } from '@/lib/utils/logger';
 
 // ============================================================================
 // Configuration
@@ -123,7 +124,7 @@ async function applyFiltersWithRecovery(
   try {
     return applyFiltersToTasks(tasks, filters);
   } catch (filterError: unknown) {
-    console.error('Filter operation failed:', filterError);
+    logger.error('Filter operation failed:', filterError);
 
     // Attempt recovery with simplified filters
     const simplifiedFilters = { ...filters, search: '', tags: [] };
@@ -209,7 +210,7 @@ export function createSetSearchQuery(get: () => TaskStoreState, set: StoreSetter
       try {
         await get().applyFilters();
       } catch (error: unknown) {
-        console.error('Search operation failed:', error);
+        logger.error('Search operation failed:', error);
         set({
           error: error instanceof Error ? error.message : 'Search failed',
           isSearching: false
@@ -277,7 +278,7 @@ export function createApplyFilters(get: () => TaskStoreState, set: StoreSetter) 
       set({ filteredTasks, isSearching: false, error: get().error, searchCache: updatedCache });
 
     } catch (error: unknown) {
-      console.error('Filter application failed:', error);
+      logger.error('Filter application failed:', error);
       try {
         get().recoverFromSearchError();
       } catch {
@@ -344,7 +345,7 @@ export function createNavigateToTaskBoard(get: () => TaskStoreState, set: StoreS
       return { success: true, boardId: task.boardId };
 
     } catch (error: unknown) {
-      console.error('Navigation to task board failed:', error);
+      logger.error('Navigation to task board failed:', error);
       return { success: false, error: 'Failed to navigate to task. Please try again.' };
     }
   };
@@ -364,7 +365,7 @@ export function createLoadSearchPreferences(get: () => TaskStoreState, set: Stor
         }));
       }
     } catch (error: unknown) {
-      console.warn('Failed to load search preferences:', error);
+      logger.warn('Failed to load search preferences:', error);
     }
   };
 }
@@ -380,7 +381,7 @@ export function createSaveSearchScope() {
         });
       }
     } catch (error: unknown) {
-      console.warn('Failed to save search scope preference:', error);
+      logger.warn('Failed to save search scope preference:', error);
     }
   };
 }

@@ -2,15 +2,13 @@
 
 import { Task } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
-import { Tag, Calendar } from "@/lib/icons";
-import { formatDistanceToNow } from "date-fns";
+import { Tag } from "@/lib/icons";
 import {
   getPriorityColor,
   getPriorityIcon,
   getDueDateStatus,
   formatDueDate,
   getDueDateIcon,
-  getDueDateClasses
 } from "@/lib/utils/taskCardHelpers";
 
 interface TaskCardMetadataProps {

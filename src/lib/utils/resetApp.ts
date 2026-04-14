@@ -1,4 +1,5 @@
 import { taskDB } from './database';
+import { logger } from './logger';
 
 /**
  * Completely resets the application to its default state by:
@@ -43,17 +44,17 @@ export async function resetApplication(): Promise<void> {
         await new Promise<void>((resolve) => {
           deleteRequest.onsuccess = () => resolve();
           deleteRequest.onerror = () => {
-            console.warn('Error deleting IndexedDB database:', deleteRequest.error);
+            logger.warn('Error deleting IndexedDB database:', deleteRequest.error);
             resolve(); // Continue anyway
           };
           deleteRequest.onblocked = () => {
-            console.warn('Database deletion blocked, continuing anyway');
+            logger.warn('Database deletion blocked, continuing anyway');
             // Database deletion is blocked, resolve anyway
             resolve();
           };
         });
       } catch (error) {
-        console.warn('Could not delete IndexedDB database:', error);
+        logger.warn('Could not delete IndexedDB database:', error);
       }
     }
 
@@ -76,7 +77,7 @@ export async function resetApplication(): Promise<void> {
       }, 100);
     }
   } catch (error) {
-    console.error('Failed to reset application:', error);
+    logger.error('Failed to reset application:', error);
     // Even if there's an error, try to reload the page
     if (typeof window !== 'undefined') {
       setTimeout(() => {
