@@ -37,7 +37,7 @@ describe('DragDropProvider iOS TouchSensor Tests', () => {
     vi.clearAllMocks()
     
     // Mock useTaskStore implementation
-    ;(useTaskStore as ReturnType<typeof vi.fn>).mockReturnValue({
+    ;(useTaskStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
       tasks: mockTasks,
       moveTask: mockMoveTask,
     })

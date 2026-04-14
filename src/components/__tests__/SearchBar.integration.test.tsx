@@ -79,7 +79,7 @@ interface MockTaskStore {
 }
 
 interface MockSettingsStore {
-  settings: Settings;
+  settings: Pick<Settings, 'searchPreferences'>;
   updateSettings: ReturnType<typeof vi.fn>;
 }
 
@@ -120,9 +120,9 @@ describe('SearchBar Integration Tests', () => {
 
     // Mock the getState method to return the mock store
     mockGetState.mockReturnValue(mockTaskStore);
-    (useTaskStore as ReturnType<typeof vi.fn>).mockReturnValue(mockTaskStore);
-    (useTaskStore as ReturnType<typeof vi.fn>).getState = mockGetState;
-    (useSettingsStore as ReturnType<typeof vi.fn>).mockReturnValue(mockSettingsStore);
+    (useTaskStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockTaskStore);
+    (useTaskStore as unknown as ReturnType<typeof vi.fn> & { getState: typeof mockGetState }).getState = mockGetState;
+    (useSettingsStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockSettingsStore);
 
     vi.clearAllMocks();
   });

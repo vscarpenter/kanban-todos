@@ -80,6 +80,8 @@ const mockBoard: Board = {
   id: 'board-1',
   name: 'Test Board',
   color: '#3b82f6',
+  isDefault: false,
+  order: 0,
   createdAt: new Date(),
   updatedAt: new Date(),
 };

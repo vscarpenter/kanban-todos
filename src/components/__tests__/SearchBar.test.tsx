@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SearchBar } from '../SearchBar';
+import type { TaskFilters } from '@/lib/types';
 
 // Mock the stores
 const mockSetFilters = vi.fn();
@@ -16,7 +17,7 @@ const mockTaskStore = {
     crossBoardSearch: false,
     status: undefined,
     priority: undefined,
-  },
+  } as TaskFilters,
   setFilters: mockSetFilters,
   setCrossBoardSearch: mockSetCrossBoardSearch,
   clearFilters: mockClearFilters,
