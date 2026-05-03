@@ -111,7 +111,16 @@ export function DragDropProvider({
       {children}
       <DragOverlay>
         {activeTask ? (
-          <div className="drag-overlay drag-preview opacity-80 rotate-3 scale-105">
+          // Editorial drag preview: rotate(-1.4deg) + slight Y lift +
+          // shadow-lift token, per the redesign spec.
+          <div
+            className="drag-overlay"
+            style={{
+              transform: "rotate(-1.4deg) translateY(-2px)",
+              boxShadow: "var(--shadow-lift)",
+              borderRadius: "10px",
+            }}
+          >
             <TaskCard task={activeTask} />
           </div>
         ) : null}

@@ -1,11 +1,8 @@
 "use client";
 
 import { Task } from "@/lib/types";
-import { Badge } from "@/components/ui/badge";
-import { Tag } from "@/lib/icons";
 import {
-  getPriorityColor,
-  getPriorityIcon,
+  PRIORITY_BADGE_TOKENS,
   getDueDateStatus,
   formatDueDate,
   getDueDateIcon,
@@ -15,54 +12,91 @@ interface TaskCardMetadataProps {
   task: Task;
 }
 
+interface PriorityBadgeProps {
+  priority: Task["priority"];
+}
+
+function PriorityBadge({ priority }: PriorityBadgeProps) {
+  const tokens = PRIORITY_BADGE_TOKENS[priority];
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 rounded-full"
+      style={{
+        padding: "3px 8px 3px 7px",
+        background: tokens.bg,
+        color: tokens.fg,
+        border: "1px solid var(--hairline)",
+        fontSize: "11px",
+        fontWeight: 500,
+        lineHeight: 1.4,
+      }}
+      aria-label={`Priority: ${priority}`}
+    >
+      <span
+        className="block h-1.5 w-1.5 rounded-full"
+        style={{ background: tokens.dot }}
+        aria-hidden="true"
+      />
+      {priority}
+    </span>
+  );
+}
+
+interface TagChipProps {
+  label: string;
+}
+
+function TagChip({ label }: TagChipProps) {
+  return (
+    <span
+      className="font-mono inline-flex items-center"
+      style={{
+        padding: "2px 7px",
+        background: "var(--paper-1)",
+        color: "var(--ink-3)",
+        border: "1px solid var(--hairline)",
+        borderRadius: "4px",
+        fontSize: "11px",
+        fontWeight: 500,
+      }}
+      role="listitem"
+    >
+      {label}
+    </span>
+  );
+}
+
 /**
- * Displays task metadata including priority, tags, progress, and dates
+ * Card metadata — priority badge + tags + optional progress + dashed-top
+ * due date footer. Overdue dates render in amber (warn-500) per the
+ * "softer signal" direction, with the AlertTriangle icon.
  */
 export function TaskCardMetadata({ task }: TaskCardMetadataProps) {
   const dueDateStatus = getDueDateStatus(task);
+  const hasBadges = task.priority !== "medium" || task.tags.length > 0;
+  const showProgress = task.status === "in-progress" && task.progress !== undefined;
 
   return (
-    <div id={`task-meta-${task.id}`} className="task-card__metadata">
-      {/* Priority - Only show if not default medium */}
-      {task.priority !== 'medium' && (
-        <div className="flex items-center gap-2">
-          <span aria-hidden="true">{getPriorityIcon(task.priority)}</span>
-          <Badge
-            variant="secondary"
-            className={`text-xs ${getPriorityColor(task.priority)}`}
-            aria-label={`Priority: ${task.priority}`}
-          >
-            {task.priority}
-          </Badge>
-        </div>
-      )}
-
-      {/* Tags */}
-      {task.tags.length > 0 && (
-        <div className="flex items-center gap-1 flex-wrap" role="list" aria-label="Task tags">
-          <Tag className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
-          {task.tags.slice(0, 3).map((tag, index) => (
-            <Badge key={index} variant="outline" className="text-xs" role="listitem">
-              {tag}
-            </Badge>
-          ))}
-          {task.tags.length > 3 && (
-            <span className="text-xs text-muted-foreground" role="listitem">
-              +{task.tags.length - 3} more
+    <div id={`task-meta-${task.id}`}>
+      {showProgress && (
+        <div className="mt-3">
+          <div className="flex items-center justify-between">
+            <span style={{ fontSize: "11px", color: "var(--ink-3)" }}>Progress</span>
+            <span
+              className="font-mono"
+              style={{
+                fontSize: "11px",
+                fontWeight: 600,
+                color: "var(--ink-2)",
+                fontFeatureSettings: '"tnum"',
+              }}
+            >
+              {task.progress}%
             </span>
-          )}
-        </div>
-      )}
-
-      {/* Progress Bar - Only show for in-progress tasks */}
-      {task.status === 'in-progress' && task.progress !== undefined && (
-        <div className="space-y-1">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Progress</span>
-            <span className="font-medium text-foreground">{task.progress}%</span>
           </div>
           <div
-            className="w-full bg-secondary rounded-full h-2"
+            className="mt-1.5 w-full rounded-full overflow-hidden"
+            style={{ background: "var(--paper-2)", height: "4px" }}
             role="progressbar"
             aria-valuenow={task.progress}
             aria-valuemin={0}
@@ -70,33 +104,70 @@ export function TaskCardMetadata({ task }: TaskCardMetadataProps) {
             aria-label={`Task progress: ${task.progress}% complete`}
           >
             <div
-              className="bg-primary h-2 rounded-full transition-all duration-300 ease-in-out"
-              style={{ width: `${task.progress}%` }}
+              className="h-full transition-all duration-300 ease-in-out"
+              style={{
+                width: `${task.progress}%`,
+                background: "linear-gradient(90deg, var(--accent-400), var(--accent-500))",
+              }}
             />
           </div>
         </div>
       )}
 
-      {/* Due Date - Semantic colors only */}
-      {dueDateStatus && (
-        <div
-          className={`flex items-center gap-1 text-xs ${
-            dueDateStatus.isOverdue 
-              ? 'text-danger' 
-              : dueDateStatus.isDueSoon 
-              ? 'text-warning' 
-              : 'text-muted'
-          }`}
-          role={dueDateStatus.isOverdue ? 'alert' : undefined}
-          aria-label={`Due date: ${formatDueDate(dueDateStatus.dueDate)}${dueDateStatus.isOverdue ? ' (Overdue)' : dueDateStatus.isDueSoon ? ' (Due soon)' : ''}`}
-        >
-          {getDueDateIcon(dueDateStatus.isOverdue)}
-          <span>{formatDueDate(dueDateStatus.dueDate)}</span>
-          {dueDateStatus.isOverdue && <span className="font-medium">(Overdue)</span>}
+      {hasBadges && (
+        <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+          {/* Priority always shown except for the default "medium" */}
+          {task.priority !== "medium" && <PriorityBadge priority={task.priority} />}
+          {task.tags.length > 0 && (
+            <div
+              className="flex flex-wrap items-center gap-1.5"
+              role="list"
+              aria-label="Task tags"
+            >
+              {task.tags.slice(0, 3).map((tag, index) => (
+                <TagChip key={`${tag}-${index}`} label={tag} />
+              ))}
+              {task.tags.length > 3 && (
+                <span
+                  role="listitem"
+                  style={{ fontSize: "11px", color: "var(--ink-4)" }}
+                >
+                  +{task.tags.length - 3} more
+                </span>
+              )}
+            </div>
+          )}
         </div>
       )}
 
-      {/* Hide created timestamp - move to tooltip or details view as per brief */}
+      {dueDateStatus && (
+        <div
+          className="mt-2.5 pt-2.5 flex items-center gap-1.5"
+          style={{
+            borderTop: "1px dashed var(--hairline)",
+            color: dueDateStatus.isOverdue ? "var(--warn-500)" : "var(--ink-3)",
+          }}
+          role={dueDateStatus.isOverdue ? "alert" : undefined}
+          aria-label={`Due date: ${formatDueDate(dueDateStatus.dueDate)}${dueDateStatus.isOverdue ? " (Overdue)" : ""}`}
+        >
+          {getDueDateIcon(dueDateStatus.isOverdue)}
+          <span
+            className="font-mono"
+            style={{
+              fontSize: "11.5px",
+              fontWeight: dueDateStatus.isOverdue ? 500 : 400,
+              fontFeatureSettings: '"tnum"',
+            }}
+          >
+            {formatDueDate(dueDateStatus.dueDate)}
+            {dueDateStatus.isOverdue && (
+              <>
+                <span className="mx-1.5">·</span>Overdue
+              </>
+            )}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

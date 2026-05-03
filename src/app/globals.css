@@ -3,7 +3,217 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Accessibility utilities */
+/* ─────────────────────────────────────────────────────────────
+   Cascade — Warm Editorial Design Tokens
+   Source of truth: design_handoff_cascade_redesign/tokens.css
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  /* Paper / surfaces — warm whites */
+  --paper-0: #FBF8F3;
+  --paper-1: #F5F1EA;
+  --paper-2: #EDE7DC;
+  --paper-3: #E4DCCC;
+  --paper-card: #FFFEFB;
+  --hairline: rgba(28, 26, 23, 0.08);
+  --hairline-strong: rgba(28, 26, 23, 0.14);
+
+  /* Ink — warm near-blacks */
+  --ink-1: #1C1A17;
+  --ink-2: #3A352E;
+  --ink-3: #6B6358;
+  --ink-4: #948C7E;
+  --ink-5: #BDB4A4;
+
+  /* Accent — refined plum */
+  --accent-50:  #F6F0FA;
+  --accent-100: #EADDF3;
+  --accent-200: #D6BCE6;
+  --accent-300: #B690CE;
+  --accent-400: #8E62AB;
+  --accent-500: #6B4A87;
+  --accent-600: #553A6C;
+  --accent-700: #402B52;
+  --accent-ink: #FFFEFB;
+
+  /* Status — muted, editorial */
+  --ok-50:  #EDF2EC;
+  --ok-200: #BFD3BC;
+  --ok-500: #4F7A4B;
+  --ok-700: #34522F;
+
+  --warn-50:  #FBF1E1;
+  --warn-200: #EDD3A2;
+  --warn-500: #B07820;
+  --warn-700: #7A5210;
+
+  --danger-50:  #F8E9E5;
+  --danger-200: #E6BBB0;
+  --danger-500: #A8412A;
+  --danger-700: #76281A;
+
+  --info-50:  #E8EEF2;
+  --info-200: #B5C6D2;
+  --info-500: #3F627A;
+
+  /* Per-board accent dots */
+  --dot-blue:  #3F627A;
+  --dot-amber: #B07820;
+  --dot-green: #4F7A4B;
+  --dot-rose:  #A8412A;
+  --dot-plum:  #6B4A87;
+  --dot-clay:  #9A6240;
+  --dot-moss:  #5C6B3C;
+
+  /* Spacing scale (4px base) */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px; --s-5: 20px;
+  --s-6: 24px; --s-7: 32px; --s-8: 40px; --s-9: 56px; --s-10: 72px;
+
+  /* Radius */
+  --r-xs: 4px; --r-sm: 6px; --r-md: 8px; --r-lg: 12px; --r-xl: 16px; --r-2xl: 20px;
+
+  /* Warm, layered, paper-like shadows */
+  --shadow-xs: 0 1px 0 rgba(60, 45, 25, 0.04);
+  --shadow-sm: 0 1px 2px rgba(60, 45, 25, 0.06), 0 1px 1px rgba(60, 45, 25, 0.04);
+  --shadow-md: 0 2px 4px rgba(60, 45, 25, 0.06), 0 4px 12px rgba(60, 45, 25, 0.06);
+  --shadow-lg: 0 4px 8px rgba(60, 45, 25, 0.07), 0 12px 28px rgba(60, 45, 25, 0.10);
+  --shadow-xl: 0 8px 16px rgba(60, 45, 25, 0.10), 0 24px 48px rgba(60, 45, 25, 0.14);
+  --shadow-lift: 0 12px 24px rgba(60, 45, 25, 0.14), 0 32px 60px rgba(60, 45, 25, 0.18);
+
+  --focus: 0 0 0 3px rgba(107, 74, 135, 0.28);
+
+  /* shadcn semantic aliases — point to warm palette so all existing
+     bg-card, text-foreground, border-border, etc. inherit the new look */
+  --radius: 0.625rem;
+
+  --background: var(--paper-0);
+  --foreground: var(--ink-1);
+  --surface: var(--paper-1);
+  --surface-2: var(--paper-2);
+
+  --border: var(--hairline);
+  --border-strong: var(--hairline-strong);
+
+  --primary: var(--accent-500);
+  --primary-foreground: var(--accent-ink);
+  --ring: var(--accent-500);
+
+  --danger: var(--danger-500);
+  --warning: var(--warn-500);
+  --success: var(--ok-500);
+
+  --muted: var(--ink-3);
+  --muted-2: var(--ink-2);
+
+  /* Legacy shadcn compatibility */
+  --card: var(--paper-card);
+  --card-foreground: var(--ink-1);
+  --popover: var(--paper-card);
+  --popover-foreground: var(--ink-1);
+  --secondary: var(--paper-2);
+  --secondary-foreground: var(--ink-1);
+  --muted-foreground: var(--ink-3);
+  --accent: var(--paper-2);
+  --accent-foreground: var(--ink-1);
+  --destructive: var(--danger-500);
+  --input: var(--hairline-strong);
+
+  /* Chart colors — drawn from the per-board dot palette so charts
+     read as part of the same editorial system */
+  --chart-1: var(--dot-blue);
+  --chart-2: var(--dot-amber);
+  --chart-3: var(--dot-green);
+  --chart-4: var(--dot-rose);
+  --chart-5: var(--dot-plum);
+
+  /* Sidebar (consistent with main tokens) */
+  --sidebar: var(--paper-1);
+  --sidebar-foreground: var(--ink-1);
+  --sidebar-primary: var(--accent-500);
+  --sidebar-primary-foreground: var(--accent-ink);
+  --sidebar-accent: var(--paper-2);
+  --sidebar-accent-foreground: var(--ink-1);
+  --sidebar-border: var(--hairline-strong);
+  --sidebar-ring: var(--accent-500);
+}
+
+/* ─── Dark mode ─── */
+.dark {
+  --paper-0: #14130F;
+  --paper-1: #1B1915;
+  --paper-2: #221F1A;
+  --paper-3: #2D2A23;
+  --paper-card: #1F1D18;
+  --hairline: rgba(255, 250, 240, 0.07);
+  --hairline-strong: rgba(255, 250, 240, 0.13);
+
+  --ink-1: #F4EFE5;
+  --ink-2: #D9D3C5;
+  --ink-3: #9C9486;
+  --ink-4: #6E675B;
+  --ink-5: #4A453C;
+
+  --accent-50:  #2A1F36;
+  --accent-100: #3A2A4A;
+  --accent-200: #553A6C;
+  --accent-300: #7A569A;
+  --accent-400: #A586C2;
+  --accent-500: #C2A4DB;
+  --accent-600: #D4BDE8;
+  --accent-700: #E4D2F0;
+  --accent-ink: #14130F;
+
+  --ok-50:  #1B2419; --ok-200: #3A5234; --ok-500: #93B58E; --ok-700: #BFD3BC;
+  --warn-50: #2A2113; --warn-200: #5A4220; --warn-500: #D9A95C; --warn-700: #EDD3A2;
+  --danger-50: #2A1815; --danger-200: #5A2C22; --danger-500: #D88A75; --danger-700: #E6BBB0;
+  --info-50: #15202A; --info-200: #2C4458; --info-500: #94B0C4;
+
+  --shadow-xs: 0 1px 0 rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 1px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.45), 0 12px 28px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.5), 0 24px 48px rgba(0, 0, 0, 0.5);
+  --shadow-lift: 0 12px 24px rgba(0, 0, 0, 0.6), 0 32px 60px rgba(0, 0, 0, 0.7);
+
+  /* Re-bind shadcn aliases for dark — vars above already swapped,
+     but explicit re-bind makes intent crystal clear */
+  --background: var(--paper-0);
+  --foreground: var(--ink-1);
+  --surface: var(--paper-1);
+  --surface-2: var(--paper-2);
+  --border: var(--hairline);
+  --border-strong: var(--hairline-strong);
+  --primary: var(--accent-500);
+  --primary-foreground: var(--accent-ink);
+  --ring: var(--accent-500);
+  --danger: var(--danger-500);
+  --warning: var(--warn-500);
+  --success: var(--ok-500);
+  --muted: var(--ink-3);
+  --muted-2: var(--ink-2);
+  --card: var(--paper-card);
+  --card-foreground: var(--ink-1);
+  --popover: var(--paper-card);
+  --popover-foreground: var(--ink-1);
+  --secondary: var(--paper-2);
+  --secondary-foreground: var(--ink-1);
+  --muted-foreground: var(--ink-3);
+  --accent: var(--paper-2);
+  --accent-foreground: var(--ink-1);
+  --destructive: var(--danger-500);
+  --input: var(--hairline-strong);
+
+  --sidebar: var(--paper-1);
+  --sidebar-foreground: var(--ink-1);
+  --sidebar-primary: var(--accent-500);
+  --sidebar-primary-foreground: var(--accent-ink);
+  --sidebar-accent: var(--paper-2);
+  --sidebar-accent-foreground: var(--ink-1);
+  --sidebar-border: var(--hairline-strong);
+  --sidebar-ring: var(--accent-500);
+}
+
+/* ─── Accessibility utilities ─── */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -16,33 +226,28 @@
   border: 0;
 }
 
-/* High contrast mode (clarity through contrast, not saturation) */
+/* High contrast mode — clarity through contrast, not saturation.
+   Re-binds the same shadcn aliases to a pure black/white palette. */
 .high-contrast {
-  /* Pure contrast foundation */
-  --background: oklch(1 0 0);
-  --foreground: oklch(0 0 0);
-  --surface: oklch(0.95 0 0);
-  --surface-2: oklch(0.90 0 0);
-  
-  /* High contrast borders */
-  --border: oklch(0.15 0 0);
-  --border-strong: oklch(0 0 0);
-  
-  /* High contrast primary */
-  --primary: oklch(0 0 0);
-  --primary-foreground: oklch(1 0 0);
-  --ring: oklch(0 0 0);
-  
-  /* High contrast semantic colors (no saturation increase) */
-  --danger: oklch(0.20 0 0);
-  --warning: oklch(0.25 0 0);
-  --success: oklch(0.20 0 0);
-  
-  /* High contrast text */
-  --muted: oklch(0.40 0 0);
-  --muted-2: oklch(0.25 0 0);
-  
-  /* Legacy compatibility */
+  --background: #FFFFFF;
+  --foreground: #000000;
+  --surface: #F2F2F2;
+  --surface-2: #E5E5E5;
+
+  --border: #262626;
+  --border-strong: #000000;
+
+  --primary: #000000;
+  --primary-foreground: #FFFFFF;
+  --ring: #000000;
+
+  --danger: #333333;
+  --warning: #404040;
+  --success: #333333;
+
+  --muted: #595959;
+  --muted-2: #404040;
+
   --card: var(--surface);
   --card-foreground: var(--foreground);
   --popover: var(--surface);
@@ -65,27 +270,18 @@
 }
 
 /* Font size variations */
-.font-small {
-  font-size: 0.875rem;
-}
-
-.font-medium {
-  font-size: 1rem;
-}
-
-.font-large {
-  font-size: 1.125rem;
-}
+.font-small  { font-size: 0.875rem; }
+.font-medium { font-size: 1rem; }
+.font-large  { font-size: 1.125rem; }
 
 /* Focus indicators */
 .focus-visible:focus-visible {
-  outline: 2px solid oklch(0.5 0.5 0);
+  outline: 2px solid var(--accent-500);
   outline-offset: 2px;
 }
 
-/* High contrast focus indicators */
 .high-contrast .focus-visible:focus-visible {
-  outline: 3px solid oklch(0 0 0);
+  outline: 3px solid #000;
   outline-offset: 3px;
 }
 
@@ -94,29 +290,14 @@
   position: absolute;
   top: -40px;
   left: 6px;
-  background: oklch(0 0 0);
-  color: oklch(1 0 0);
+  background: var(--ink-1);
+  color: var(--paper-card);
   padding: 8px;
   text-decoration: none;
   z-index: 1000;
 }
 
-.skip-link:focus {
-  top: 6px;
-}
-
-/* Screen reader only content */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
+.skip-link:focus { top: 6px; }
 
 /* Live regions for announcements */
 [aria-live] {
@@ -133,46 +314,46 @@
 .keyboard-navigation select:focus,
 .keyboard-navigation textarea:focus,
 .keyboard-navigation [tabindex]:focus {
-  outline: 2px solid oklch(0.5 0.5 0);
+  outline: 2px solid var(--accent-500);
   outline-offset: 2px;
 }
 
-/* High contrast keyboard navigation */
 .high-contrast .keyboard-navigation button:focus,
 .high-contrast .keyboard-navigation input:focus,
 .high-contrast .keyboard-navigation select:focus,
 .high-contrast .keyboard-navigation textarea:focus,
 .high-contrast .keyboard-navigation [tabindex]:focus {
-  outline: 3px solid oklch(0 0 0);
+  outline: 3px solid #000;
   outline-offset: 3px;
 }
 
+/* ─── Tailwind v4 theme aliasing ─── */
 @theme inline {
   /* Foundation */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
-  
+
   /* Borders */
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
-  
+
   /* Primary */
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-ring: var(--ring);
-  
+
   /* Semantic */
   --color-danger: var(--danger);
   --color-warning: var(--warning);
   --color-success: var(--success);
-  
+
   /* Text */
   --color-muted: var(--muted);
   --color-muted-2: var(--muted-2);
-  
-  /* Legacy Compatibility */
+
+  /* Legacy shadcn compatibility */
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
@@ -184,14 +365,14 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-input: var(--input);
-  
+
   /* Charts */
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  
+
   /* Sidebar */
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
@@ -201,11 +382,12 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  
-  /* Fonts */
+
+  /* Fonts — Instrument Sans body, Instrument Serif display, JetBrains Mono numerics */
   --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
   --font-mono: var(--font-mono);
-  
+
   /* Radius */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -213,350 +395,179 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-:root {
-  --radius: 0.625rem;
-  
-  /* Calm Neutral Foundation */
-  --background: oklch(0.99 0.002 285);
-  --foreground: oklch(0.15 0.015 285);
-  --surface: oklch(0.97 0.004 285);
-  --surface-2: oklch(0.94 0.006 285);
-  
-  /* Subtle Borders */
-  --border: oklch(0.92 0.008 285);
-  --border-strong: oklch(0.88 0.012 285);
-  
-  /* Moderate Purple Accent */
-  --primary: oklch(0.55 0.15 285);
-  --primary-foreground: oklch(0.98 0 0);
-  --ring: oklch(0.55 0.15 285);
-  
-  /* Semantic Colors (used only when meaningful) */
-  --danger: oklch(0.60 0.18 25);
-  --warning: oklch(0.70 0.14 75);
-  --success: oklch(0.60 0.14 155);
-  
-  /* Text Hierarchy */
-  --muted: oklch(0.55 0.02 285);
-  --muted-2: oklch(0.45 0.015 285);
-  
-  /* Legacy Compatibility */
-  --card: var(--surface);
-  --card-foreground: var(--foreground);
-  --popover: var(--surface);
-  --popover-foreground: var(--foreground);
-  --secondary: var(--surface-2);
-  --secondary-foreground: var(--foreground);
-  --muted-foreground: var(--muted);
-  --accent: var(--surface-2);
-  --accent-foreground: var(--foreground);
-  --destructive: var(--danger);
-  --input: var(--border);
-  
-  /* Chart colors (calm versions) */
-  --chart-1: oklch(0.60 0.12 45);
-  --chart-2: oklch(0.55 0.10 185);
-  --chart-3: oklch(0.45 0.08 230);
-  --chart-4: oklch(0.75 0.11 85);
-  --chart-5: oklch(0.70 0.10 70);
-  
-  /* Sidebar (consistent with main tokens) */
-  --sidebar: var(--surface);
-  --sidebar-foreground: var(--foreground);
-  --sidebar-primary: var(--primary);
-  --sidebar-primary-foreground: var(--primary-foreground);
-  --sidebar-accent: var(--surface-2);
-  --sidebar-accent-foreground: var(--foreground);
-  --sidebar-border: var(--border);
-  --sidebar-ring: var(--ring);
-}
-
-.dark {
-  /* Soft Charcoal Foundation */
-  --background: oklch(0.15 0.012 285);
-  --foreground: oklch(0.92 0.008 285);
-  --surface: oklch(0.18 0.015 285);
-  --surface-2: oklch(0.22 0.018 285);
-  
-  /* Dark Mode Borders */
-  --border: oklch(0.25 0.015 285);
-  --border-strong: oklch(0.35 0.02 285);
-  
-  /* Moderate Purple (increased lightness for dark mode) */
-  --primary: oklch(0.65 0.15 285);
-  --primary-foreground: oklch(0.15 0.012 285);
-  --ring: oklch(0.65 0.15 285);
-  
-  /* Dark Mode Semantic Colors */
-  --danger: oklch(0.65 0.16 25);
-  --warning: oklch(0.75 0.12 75);
-  --success: oklch(0.65 0.12 155);
-  
-  /* Dark Mode Text Hierarchy */
-  --muted: oklch(0.60 0.015 285);
-  --muted-2: oklch(0.50 0.012 285);
-  
-  /* Legacy Compatibility */
-  --card: var(--surface);
-  --card-foreground: var(--foreground);
-  --popover: var(--surface);
-  --popover-foreground: var(--foreground);
-  --secondary: var(--surface-2);
-  --secondary-foreground: var(--foreground);
-  --muted-foreground: var(--muted);
-  --accent: var(--surface-2);
-  --accent-foreground: var(--foreground);
-  --destructive: var(--danger);
-  --input: var(--border);
-  
-  /* Dark mode chart colors (calm versions) */
-  --chart-1: oklch(0.65 0.12 45);
-  --chart-2: oklch(0.60 0.10 185);
-  --chart-3: oklch(0.55 0.08 230);
-  --chart-4: oklch(0.75 0.11 85);
-  --chart-5: oklch(0.70 0.10 70);
-  
-  /* Sidebar (consistent with main tokens) */
-  --sidebar: var(--surface);
-  --sidebar-foreground: var(--foreground);
-  --sidebar-primary: var(--primary);
-  --sidebar-primary-foreground: var(--primary-foreground);
-  --sidebar-accent: var(--surface-2);
-  --sidebar-accent-foreground: var(--foreground);
-  --sidebar-border: var(--border);
-  --sidebar-ring: var(--ring);
-}
-
+/* ─── Base layer ─── */
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  
+
   body {
     @apply bg-background text-foreground;
-    /* Enhanced OpenType features for Geist */
-    font-feature-settings: 
-      "rlig" 1,     /* Required ligatures */
-      "calt" 1,     /* Contextual alternates */
-      "ss01" 1,     /* Stylistic set 1 - improved punctuation */
-      "ss02" 1,     /* Stylistic set 2 - improved numbers */
-      "tnum" 1,     /* Tabular numbers */
-      "case" 1;     /* Case-sensitive forms */
-    font-variant-numeric: tabular-nums;
+    font-family: var(--font-sans);
+    /* Instrument Sans stylistic sets: ss01 punctuation, cv11 alt forms */
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1,
+      "ss01" 1,
+      "cv11" 1;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  
-  /* Modern typography scale with better proportions */
-  h1, h2, h3, h4, h5, h6 {
+
+  /* Display / page titles use Instrument Serif by default */
+  h1, h2, h3 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    text-wrap: balance;
+  }
+
+  h4, h5, h6 {
+    font-family: var(--font-sans);
     @apply font-semibold tracking-tight;
     text-wrap: balance;
-    font-feature-settings: 
-      "rlig" 1, 
-      "calt" 1, 
-      "ss01" 1,
-      "case" 1;
   }
-  
+
   h1 {
     @apply text-5xl lg:text-6xl;
     line-height: 1.05;
     letter-spacing: -0.025em;
   }
-  
+
   h2 {
     @apply text-4xl lg:text-5xl;
     line-height: 1.1;
     letter-spacing: -0.02em;
   }
-  
+
   h3 {
     @apply text-3xl lg:text-4xl;
     line-height: 1.15;
     letter-spacing: -0.015em;
   }
-  
+
   h4 {
     @apply text-2xl lg:text-3xl;
     line-height: 1.2;
     letter-spacing: -0.01em;
   }
-  
+
   h5 {
     @apply text-xl lg:text-2xl;
     line-height: 1.3;
     letter-spacing: -0.005em;
   }
-  
+
   h6 {
     @apply text-lg lg:text-xl;
     line-height: 1.4;
   }
-  
-  /* Enhanced body text */
+
+  /* Body text */
   p {
     @apply leading-7;
     text-wrap: pretty;
-    font-feature-settings: 
-      "rlig" 1, 
-      "calt" 1,
-      "ss01" 1;
   }
-  
-  /* Improved text sizes with better line heights */
-  .text-xs {
-    @apply leading-5;
-    font-size: 0.75rem;
-  }
-  
-  .text-sm {
-    @apply leading-6;
-    font-size: 0.875rem;
-  }
-  
-  .text-base {
-    line-height: 1.6;
-  }
-  
-  .text-lg {
-    line-height: 1.55;
-  }
-  
-  .text-xl {
-    line-height: 1.5;
-  }
-  
-  /* Enhanced code typography with Geist Mono */
+
+  /* Code / mono — JetBrains Mono with tabular numbers */
   code, pre {
-    @apply font-mono;
-    font-feature-settings: 
-      "liga" 0,     /* Disable ligatures for code */
-      "calt" 0,     /* Disable contextual alternates */
-      "ss01" 1,     /* Enable improved punctuation */
-      "ss02" 1,     /* Enable improved numbers */
-      "zero" 1;     /* Slashed zero for code */
+    font-family: var(--font-mono);
+    font-feature-settings: "tnum" 1, "zero" 1;
     font-variant-numeric: tabular-nums slashed-zero;
   }
-  
+
   code {
-    @apply text-sm px-1.5 py-0.5 rounded-md bg-muted;
+    @apply text-sm px-1.5 py-0.5 rounded-md bg-secondary;
   }
-  
+
   pre {
-    @apply text-sm p-4 rounded-lg bg-muted overflow-x-auto;
+    @apply text-sm p-4 rounded-lg bg-secondary overflow-x-auto;
     line-height: 1.5;
   }
-  
-  /* Focus improvements */
+
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-ring;
   }
-  
-  /* Enhanced button and interactive text */
-  button, .interactive {
-    font-feature-settings: 
-      "rlig" 1, 
-      "calt" 1,
-      "ss01" 1,
-      "case" 1;
+}
+
+/* ─── Utility classes for editorial type ─── */
+@layer utilities {
+  .font-serif {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    letter-spacing: -0.01em;
   }
-  
-  /* Improved small caps when needed */
-  .small-caps {
-    font-variant: small-caps;
-    font-feature-settings: "smcp" 1, "c2sc" 1;
+
+  .font-mono {
+    font-family: var(--font-mono);
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* Eyebrow label — 11px, 600, 0.14em uppercase */
+  .label-eyebrow {
+    font-size: 11px;
+    line-height: 15px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-4);
   }
 }
 
-/* ─── Card & Board Animations ─── */
+/* ─── Card & board animations ─── */
 @keyframes card-enter {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes board-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes drop-zone-pulse {
   0%, 100% {
-    border-color: var(--primary);
-    background-color: oklch(from var(--primary) l c h / 0.04);
+    border-color: var(--accent-400);
+    background-color: color-mix(in oklab, var(--accent-50) 60%, transparent);
   }
   50% {
-    border-color: oklch(from var(--primary) l c h / 0.5);
-    background-color: oklch(from var(--primary) l c h / 0.08);
+    border-color: var(--accent-300);
+    background-color: color-mix(in oklab, var(--accent-100) 70%, transparent);
   }
 }
 
 @keyframes empty-state-breathe {
   0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
+  50%      { opacity: 0.7; }
 }
 
-/* Card entrance animation with staggered delay */
-.card-animate-in {
-  animation: card-enter 0.3s ease-out both;
-}
-
-/* Board content fade-in */
-.board-animate-in {
-  animation: board-fade-in 0.25s ease-out both;
-}
-
-/* Drop zone active pulse */
-.drop-zone-active {
-  animation: drop-zone-pulse 1.5s ease-in-out infinite;
-}
+.card-animate-in   { animation: card-enter 0.3s ease-out both; }
+.board-animate-in  { animation: board-fade-in 0.25s ease-out both; }
+.drop-zone-active  { animation: drop-zone-pulse 1.5s ease-in-out infinite; }
 
 /* Drag ghost placeholder */
 .drag-ghost {
-  border: 2px dashed var(--primary);
-  background: oklch(from var(--primary) l c h / 0.05);
-  border-radius: var(--radius-xl);
+  border: 1.5px dashed var(--accent-300);
+  background: color-mix(in oklab, var(--accent-50) 30%, transparent);
+  border-radius: var(--r-lg);
 }
 
-/* Scrollbar hiding utility */
+/* ─── Layout utilities ─── */
 @layer utilities {
   .scrollbar-hide {
-    /* Firefox */
     scrollbar-width: none;
-    /* Safari and Chrome */
     -ms-overflow-style: none;
   }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
 
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* Mobile scroll performance optimization */
   .mobile-scroll-container {
-    /* Enable momentum scrolling on iOS */
     -webkit-overflow-scrolling: touch;
-    /* Prevent overscroll bounce on iOS - only horizontal */
     overscroll-behavior-x: contain;
     overscroll-behavior-y: auto;
-    /* Optimize scroll performance */
     will-change: scroll-position;
-    /* Allow horizontal panning for column navigation */
     touch-action: pan-x;
   }
 
-  /* Smooth scroll snap for mobile columns */
   .snap-x {
     scroll-snap-type: x mandatory;
     scroll-padding: 0;
@@ -567,7 +578,6 @@
     scroll-snap-stop: always;
   }
 
-  /* Vertical scroll optimization for column content */
   .touch-pan-y {
     touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
@@ -578,222 +588,241 @@
   }
 }
 
-/* iOS Safari Touch Optimizations & Component Recipes */
+/* ─── Component recipes — warm/paper aesthetic ─── */
 @layer components {
-  /* ── Calm Component Recipes ── */
-  
-  /* Kanban Column (Neutral) */
+  /* Kanban Column */
   .kanban-column {
-    @apply bg-surface border border-border rounded-xl flex flex-col;
+    background: var(--paper-2);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 16px 14px;
+    display: flex;
+    flex-direction: column;
   }
-  
+
   .kanban-column__header {
-    @apply flex items-center justify-between p-4 pb-3;
+    @apply flex items-center justify-between;
+    padding-bottom: 12px;
   }
-  
+
   .kanban-column__count {
-    @apply text-xs font-medium bg-surface-2 text-muted px-2 py-1 rounded-full;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ink-3);
+    background: var(--paper-1);
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    padding: 1px 6px;
+    font-feature-settings: "tnum" 1;
   }
-  
-  /* Status Dots (Whisper, Not Shout) */
+
+  /* Status dots */
   .status-dot {
     @apply w-2 h-2 rounded-full flex-shrink-0;
   }
-  
-  .status-dot--todo {
-    background-color: var(--muted-2);
-  }
-  
-  .status-dot--in-progress {
-    background-color: var(--warning);
-  }
-  
-  .status-dot--done {
-    background-color: var(--success);
-  }
-  
-  /* Task Cards (Flat & Text-First) */
+
+  .status-dot--todo        { background-color: var(--info-500); }
+  .status-dot--in-progress { background-color: var(--warn-500); }
+  .status-dot--done        { background-color: var(--ok-500); }
+
+  /* Task card — paper surface, layered warm shadow */
   .task-card {
-    @apply bg-surface border border-border rounded-lg hover:border-border-strong;
-    @apply transition-all duration-200 ease-out;
-    @apply focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2;
+    background: var(--paper-card);
+    border: 1px solid var(--hairline);
+    border-radius: 10px;
+    padding: 14px 14px 12px;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 150ms ease, transform 150ms ease, border-color 150ms ease;
   }
-  
+
   .task-card:hover {
-    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--hairline-strong);
   }
-  
+
+  .task-card:focus-within {
+    box-shadow: var(--shadow-md), var(--focus);
+  }
+
   .task-card__title {
-    @apply font-medium text-foreground text-sm leading-tight;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -0.005em;
+    color: var(--ink-1);
   }
-  
+
   .task-card__metadata {
-    @apply text-xs text-muted space-y-1;
+    @apply text-xs space-y-1;
+    color: var(--ink-3);
   }
-  
-  /* Sidebar Active State (Calm) */
+
+  /* Sidebar active state — 3px plum left border + paper-card surface */
   .sidebar-item--active {
-    @apply bg-surface-2 relative;
+    background: var(--paper-card);
+    border: 1px solid var(--hairline-strong);
+    box-shadow: var(--shadow-xs);
+    position: relative;
   }
-  
+
   .sidebar-item--active::before {
     content: '';
-    @apply absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--accent-500);
+    border-radius: 0 2px 2px 0;
   }
-  
-  /* Standard Focus Ring */
+
+  /* Standard focus ring */
   .focus-ring {
     @apply ring-2 ring-ring ring-offset-2 ring-offset-background;
   }
-  
-  /* Button Variants (Calm) */
+
+  /* Button variants */
   .btn-primary {
-    @apply bg-primary text-primary-foreground hover:bg-primary/90;
-    @apply focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+    background: var(--accent-500);
+    color: var(--accent-ink);
+    border: 1px solid var(--accent-600);
+    box-shadow: var(--shadow-sm);
+    transition: background 150ms ease, box-shadow 150ms ease;
   }
-  
+
+  .btn-primary:hover {
+    background: var(--accent-600);
+    box-shadow: var(--shadow-md);
+  }
+
   .btn-secondary {
-    @apply bg-surface-2 text-foreground hover:bg-surface-2/80;
-    @apply focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+    background: var(--paper-card);
+    color: var(--ink-2);
+    border: 1px solid var(--hairline-strong);
+    box-shadow: var(--shadow-xs);
+    transition: background 150ms ease, box-shadow 150ms ease;
   }
-  
-  /* Input Styling (Calm) */
+
+  .btn-secondary:hover {
+    background: var(--paper-1);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Input styling */
   .input-calm {
-    @apply bg-surface border border-border rounded-md px-3 py-2;
-    @apply focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:border-transparent;
-    @apply text-foreground placeholder:text-muted;
+    background: var(--paper-card);
+    color: var(--ink-1);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 8px;
+    padding: 10px 12px;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
   }
-  
-  /* Base touch optimization for all draggable elements */
+
+  .input-calm:focus {
+    outline: none;
+    border-color: var(--accent-500);
+    box-shadow: var(--focus);
+  }
+
+  /* ─── Touch / iOS optimizations (unchanged) ─── */
   .touch-optimized {
     touch-action: manipulation;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
   }
-  
-  /* iOS-specific optimizations */
+
   .ios-device {
-    /* Improved scrolling performance */
     -webkit-overflow-scrolling: touch;
-    
-    /* Disable iOS bounce effect on drag elements */
     overscroll-behavior: contain;
   }
-  
+
   .ios-device .draggable-element {
-    /* Prevent iOS Safari's default touch behaviors that interfere with drag */
     touch-action: none;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
-    
-    /* Optimize transform performance */
     will-change: transform;
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
   }
-  
+
   .ios-device .draggable-element:active {
-    /* Prevent iOS tap highlight during drag */
     -webkit-tap-highlight-color: transparent;
   }
-  
-  /* iPad-specific optimizations */
-  .ipad-device .touch-target {
-    /* Ensure minimum 44px touch targets per iOS guidelines */
-    min-height: 44px;
-    min-width: 44px;
-  }
-  
-  /* Board reordering button optimizations for iPad */
-  .ipad-device .board-reorder-button {
-    min-height: 44px;
-    min-width: 44px;
-    padding: 8px;
-  }
-  
-  /* Enhanced touch targets for small controls on iPad */
+
+  .ipad-device .touch-target,
+  .ipad-device .board-reorder-button,
   .ipad-device button.touch-target {
     min-height: 44px;
     min-width: 44px;
   }
-  
-  /* iPad Pro specific optimizations for larger screens */
+
+  .ipad-device .board-reorder-button { padding: 8px; }
+
   @media screen and (min-width: 1024px) and (pointer: coarse) {
     .ipad-device button.touch-target {
       min-height: 48px;
       min-width: 48px;
     }
   }
-  
-  /* Safari-specific fixes */
+
   .safari-browser .draggable-element {
-    /* Fix Safari's transform rendering issues */
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
-    
-    /* Ensure proper layer creation for smooth animations */
     -webkit-transform-style: preserve-3d;
     transform-style: preserve-3d;
   }
-  
-  /* iOS 18+ specific optimizations */
+
   .ios-supported {
-    /* Enable modern CSS features for supported iOS versions */
     container-type: inline-size;
   }
-  
+
   .ios-supported .draggable-element {
-    /* Use modern touch-action values */
     touch-action: none;
-    
-    /* Enable CSS containment for better performance */
     contain: layout style paint;
   }
-  
-  /* Drag overlay optimizations for iOS */
+
   .ios-device .drag-overlay {
     pointer-events: none;
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
-    
-    /* Ensure proper z-index stacking */
     isolation: isolate;
   }
-  
-  /* Visual feedback improvements for iOS touch */
+
+  /* Drag visuals — README spec: rotate(-1.4deg) translateY(-2px) + lift shadow */
   .ios-device .drag-active {
-    /* Subtle scale animation for better touch feedback */
-    transform: scale(1.02) translateZ(0);
-    transition: transform 0.1s ease-out;
-  }
-  
-  .ios-device .drag-preview {
-    /* Optimize drag preview for iOS performance */
-    opacity: 0.8;
-    transform: rotate(3deg) scale(1.05) translateZ(0);
-    transition: transform 0.15s ease-out, opacity 0.15s ease-out;
+    transform: rotate(-1.4deg) translateY(-2px) translateZ(0);
+    transition: transform 200ms cubic-bezier(0.2, 0.7, 0.3, 1);
   }
 
-  /* ─── Sidebar Glassmorphism (dark mode) ─── */
+  .ios-device .drag-preview {
+    opacity: 0.95;
+    transform: rotate(-1.4deg) translateY(-2px) translateZ(0);
+    box-shadow: var(--shadow-lift);
+    transition: transform 200ms cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+
+  /* Sidebar (paper-1) — keeps glass treatment subtle in dark mode only */
   .sidebar-glass {
     position: relative;
+    background: var(--paper-1);
   }
 
   .dark .sidebar-glass {
     backdrop-filter: blur(20px) saturate(1.3);
     -webkit-backdrop-filter: blur(20px) saturate(1.3);
-    background: oklch(0.19 0.02 285 / 0.85);
+    background: color-mix(in oklab, var(--paper-1) 92%, transparent);
   }
 
-  /* ─── Grain Texture Overlay ─── */
+  /* Subtle paper grain — kept off by default to preserve clean tone */
   .grain-overlay::after {
     content: "";
     position: absolute;
     inset: 0;
     pointer-events: none;
-    opacity: 0.03;
+    opacity: 0.02;
     mix-blend-mode: multiply;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-repeat: repeat;
@@ -802,34 +831,7 @@
   }
 
   .dark .grain-overlay::after {
-    opacity: 0.06;
+    opacity: 0.04;
     mix-blend-mode: screen;
-  }
-
-  /* ─── Column Top Accent Strip ─── */
-  .column-accent-strip {
-    position: relative;
-  }
-
-  .column-accent-strip::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  }
-
-  .column-accent-blue::before {
-    background: linear-gradient(90deg, oklch(0.6 0.15 250), oklch(0.7 0.12 260));
-  }
-
-  .column-accent-yellow::before {
-    background: linear-gradient(90deg, oklch(0.75 0.15 85), oklch(0.8 0.12 70));
-  }
-
-  .column-accent-green::before {
-    background: linear-gradient(90deg, oklch(0.65 0.16 155), oklch(0.72 0.12 160));
   }
 }

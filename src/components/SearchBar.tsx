@@ -1,7 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
 import { useTaskStore } from "@/lib/stores/taskStore";
 import { useSearchState } from "@/hooks/useSearchState";
 import { SearchInput } from "./search/SearchInput";
@@ -33,26 +31,22 @@ export function SearchBar() {
   } = useSearchState();
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
+    if (e.key === "Enter") {
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       setIsUserTyping(false);
       handleSearch();
-    } else if (e.key === 'Escape') {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
+    } else if (e.key === "Escape") {
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       setIsUserTyping(false);
-      setSearchValue('');
+      setSearchValue("");
       handleClearFilters();
     }
   };
 
   const handleErrorClear = () => {
     setIsUserTyping(false);
-    setSearchValue('');
-    setFilters({ ...localFilters, search: '' });
+    setSearchValue("");
+    setFilters({ ...localFilters, search: "" });
     useTaskStore.getState().recoverFromSearchError();
   };
 
@@ -63,9 +57,11 @@ export function SearchBar() {
   };
 
   return (
-    <div className="border-b border-border bg-background p-4">
-      <div className="flex items-center gap-4 max-w-4xl mx-auto">
-        {/* Search Input */}
+    <div
+      className="px-6 py-4"
+      style={{ borderBottom: "1px solid var(--hairline)", background: "var(--paper-0)" }}
+    >
+      <div className="flex items-center gap-3">
         <SearchInput
           searchValue={searchValue}
           isSearching={isSearching}
@@ -78,7 +74,6 @@ export function SearchBar() {
           onBlur={handleInputBlur}
         />
 
-        {/* Error Display */}
         {error && (
           <SearchErrorDisplay
             error={error}
@@ -87,7 +82,6 @@ export function SearchBar() {
           />
         )}
 
-        {/* Results Summary */}
         {filters.search && !isSearching && !error && (
           <SearchResultsSummary
             resultsCount={filteredTasks.length}
@@ -95,7 +89,8 @@ export function SearchBar() {
           />
         )}
 
-        {/* Filter Popover */}
+        <div className="flex-1" />
+
         <SearchFilterPopover
           filters={filters}
           localFilters={localFilters}
@@ -104,23 +99,6 @@ export function SearchBar() {
           onScopeToggle={handleScopeToggle}
           onClearFilters={handleClearFilters}
         />
-
-        {/* Search Button */}
-        <Button
-          onClick={handleSearch}
-          size="sm"
-          aria-label="Execute search"
-          disabled={isSearching}
-        >
-          {isSearching ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
-              Searching...
-            </>
-          ) : (
-            'Search'
-          )}
-        </Button>
       </div>
     </div>
   );

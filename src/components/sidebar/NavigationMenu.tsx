@@ -1,19 +1,14 @@
 "use client";
 
-import { useTheme } from "next-themes";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import {
   Settings,
   Archive,
-  Palette,
   HelpCircle,
   Download,
   Upload,
   Shield,
   Info,
 } from "@/lib/icons";
-import { useSettingsStore } from "@/lib/stores/settingsStore";
 
 interface NavigationMenuProps {
   onExport: () => void;
@@ -23,111 +18,46 @@ interface NavigationMenuProps {
   onArchive: () => void;
 }
 
+interface NavItemProps {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  onClick: () => void;
+}
+
+function NavItem({ icon: Icon, label, onClick }: NavItemProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full flex items-center gap-2.5 rounded-md px-2.5 py-2 text-left transition-colors hover:bg-[var(--paper-2)]"
+      style={{
+        fontSize: "12.5px",
+        fontWeight: 500,
+        color: "var(--ink-2)",
+      }}
+    >
+      <Icon className="h-4 w-4" />
+      <span>{label}</span>
+    </button>
+  );
+}
+
 export function NavigationMenu({
   onExport,
   onImport,
   onSettings,
   onUserGuide,
-  onArchive
+  onArchive,
 }: NavigationMenuProps) {
-  const { updateSettings } = useSettingsStore();
-  const { theme, setTheme } = useTheme();
-
-  const toggleTheme = () => {
-    const themeOrder = ['light', 'dark', 'system'];
-    const currentIndex = themeOrder.indexOf(theme || 'system');
-    const nextIndex = (currentIndex + 1) % themeOrder.length;
-    const nextTheme = themeOrder[nextIndex];
-
-    setTheme(nextTheme);
-    updateSettings({ theme: nextTheme as 'light' | 'dark' | 'system' });
-  };
-
-  const getThemeIcon = () => {
-    switch (theme) {
-      case 'light':
-        return '☀️';
-      case 'dark':
-        return '🌙';
-      case 'system':
-        return '⚙️';
-      default:
-        return '🎨';
-    }
-  };
-
   return (
-    <div className="space-y-2">
-      <Button
-        variant="ghost"
-        className="w-full justify-start"
-        onClick={onExport}
-      >
-        <Download className="h-4 w-4 mr-2" />
-        Export Data
-      </Button>
-      <Button
-        variant="ghost"
-        className="w-full justify-start"
-        onClick={onImport}
-      >
-        <Upload className="h-4 w-4 mr-2" />
-        Import Data
-      </Button>
-      <Separator className="my-2" />
-      <Button
-        variant="ghost"
-        className="w-full justify-start"
-        onClick={onSettings}
-      >
-        <Settings className="h-4 w-4 mr-2" />
-        Settings
-      </Button>
-      <Button
-        variant="ghost"
-        className="w-full justify-start"
-        onClick={onUserGuide}
-      >
-        <HelpCircle className="h-4 w-4 mr-2" />
-        User Guide
-      </Button>
-      <Button
-        variant="ghost"
-        className="w-full justify-start"
-        onClick={onArchive}
-      >
-        <Archive className="h-4 w-4 mr-2" />
-        Archive
-      </Button>
-      <Button
-        variant="ghost"
-        className="w-full justify-start"
-        onClick={() => window.open('/privacy/', '_blank')}
-      >
-        <Shield className="h-4 w-4 mr-2" />
-        Privacy Policy
-      </Button>
-      <Button
-        variant="ghost"
-        className="w-full justify-start"
-        onClick={() => window.open('/about/', '_blank')}
-      >
-        <Info className="h-4 w-4 mr-2" />
-        About Cascade
-      </Button>
-      <Button
-        variant="ghost"
-        className="w-full justify-start"
-        onClick={toggleTheme}
-      >
-        <Palette className="h-4 w-4 mr-2" />
-        <span className="flex items-center gap-2">
-          Theme
-          <span className="text-xs opacity-70">
-            {getThemeIcon()} {theme}
-          </span>
-        </span>
-      </Button>
+    <div className="flex flex-col gap-0.5">
+      <NavItem icon={Download} label="Export Data" onClick={onExport} />
+      <NavItem icon={Upload} label="Import Data" onClick={onImport} />
+      <NavItem icon={Archive} label="Archive" onClick={onArchive} />
+      <NavItem icon={Settings} label="Settings" onClick={onSettings} />
+      <NavItem icon={HelpCircle} label="User Guide" onClick={onUserGuide} />
+      <NavItem icon={Shield} label="Privacy Policy" onClick={() => window.open("/privacy/", "_blank")} />
+      <NavItem icon={Info} label="About Cascade" onClick={() => window.open("/about/", "_blank")} />
     </div>
   );
 }

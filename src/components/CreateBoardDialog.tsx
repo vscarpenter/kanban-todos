@@ -8,34 +8,35 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useBoardStore } from "@/lib/stores/boardStore";
 import { useAsyncOperation } from "@/lib/hooks/useAsyncOperation";
+import { BoardAppearancePicker } from "@/components/board/BoardAppearancePicker";
+import {
+  DEFAULT_DOT_COLOR,
+  DEFAULT_ICON_KEY,
+  getDotHex,
+  type BoardIconKey,
+  type DotColorKey,
+} from "@/lib/utils/boardIcons";
 
 interface CreateBoardDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-const BOARD_COLORS = [
-  '#3b82f6', // blue
-  '#ef4444', // red
-  '#10b981', // green
-  '#f59e0b', // amber
-  '#8b5cf6', // violet
-  '#ec4899', // pink
-  '#06b6d4', // cyan
-  '#84cc16', // lime
-  '#f97316', // orange
-  '#6366f1', // indigo
-];
-
 export function CreateBoardDialog({ open, onOpenChange }: CreateBoardDialogProps) {
   const { addBoard } = useBoardStore();
   const { execute, isLoading } = useAsyncOperation({
     errorMessage: "Failed to create board",
   });
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    description: string;
+    iconKey: BoardIconKey;
+    dotColor: DotColorKey;
+  }>({
     name: "",
     description: "",
-    color: BOARD_COLORS[0],
+    iconKey: DEFAULT_ICON_KEY,
+    dotColor: DEFAULT_DOT_COLOR,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,25 +48,25 @@ export function CreateBoardDialog({ open, onOpenChange }: CreateBoardDialogProps
       await addBoard({
         name: formData.name.trim(),
         description: formData.description.trim() || undefined,
-        color: formData.color,
+        // Keep `color` populated so legacy export/import flows still work,
+        // but the new visual identity is iconKey + dotColor.
+        color: getDotHex(formData.dotColor),
+        iconKey: formData.iconKey,
+        dotColor: formData.dotColor,
         isDefault: false,
-        order: 0, // Will be automatically assigned by addBoard
+        order: 0,
       });
     });
 
-    // Only reset form and close on success
     if (result !== undefined) {
       setFormData({
         name: "",
         description: "",
-        color: BOARD_COLORS[0],
+        iconKey: DEFAULT_ICON_KEY,
+        dotColor: DEFAULT_DOT_COLOR,
       });
       onOpenChange(false);
     }
-  };
-
-  const handleInputChange = (field: keyof typeof formData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -74,15 +75,14 @@ export function CreateBoardDialog({ open, onOpenChange }: CreateBoardDialogProps
         <DialogHeader>
           <DialogTitle>Create New Board</DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Name */}
           <div className="space-y-2">
             <Label htmlFor="name">Board Name *</Label>
             <Input
               id="name"
               value={formData.name}
-              onChange={(e) => handleInputChange('name', e.target.value)}
+              onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
               placeholder="Enter board name"
               maxLength={100}
               required
@@ -92,13 +92,12 @@ export function CreateBoardDialog({ open, onOpenChange }: CreateBoardDialogProps
             </div>
           </div>
 
-          {/* Description */}
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
               value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
+              onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
               placeholder="Enter board description (optional)"
               rows={3}
               maxLength={200}
@@ -108,30 +107,13 @@ export function CreateBoardDialog({ open, onOpenChange }: CreateBoardDialogProps
             </div>
           </div>
 
-          {/* Color Selection */}
-          <div className="space-y-2">
-            <Label>Board Color</Label>
-            <div className="grid grid-cols-5 gap-2">
-              {BOARD_COLORS.map((color) => (
-                <button
-                  key={color}
-                  type="button"
-                  className={`
-                    w-10 h-10 rounded-full border-2 transition-all
-                    ${formData.color === color 
-                      ? 'border-foreground scale-110' 
-                      : 'border-border hover:border-foreground/50'
-                    }
-                  `}
-                  style={{ backgroundColor: color }}
-                  onClick={() => handleInputChange('color', color)}
-                  aria-label={`Select color ${color}`}
-                />
-              ))}
-            </div>
-          </div>
+          <BoardAppearancePicker
+            iconKey={formData.iconKey}
+            dotColor={formData.dotColor}
+            onIconChange={(iconKey) => setFormData((p) => ({ ...p, iconKey }))}
+            onDotChange={(dotColor) => setFormData((p) => ({ ...p, dotColor }))}
+          />
 
-          {/* Form Actions */}
           <div className="flex justify-end gap-2 pt-4">
             <Button
               type="button"

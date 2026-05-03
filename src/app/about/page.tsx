@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/Logo";
 import { HeroSection } from "@/components/about/HeroSection";
 import { HowItWorksSection } from "@/components/about/HowItWorksSection";
 import { FeaturesSection } from "@/components/about/FeaturesSection";
@@ -32,16 +33,25 @@ export default function AboutPage() {
   return (
     <>
       {/* Navigation Bar */}
-      <nav className="sticky top-0 z-50 border-b border-border bg-white/90 backdrop-blur-sm dark:bg-background/90">
+      <nav
+        className="sticky top-0 z-50 backdrop-blur-sm"
+        style={{
+          background: "color-mix(in oklab, var(--paper-0) 92%, transparent)",
+          borderBottom: "1px solid var(--hairline)",
+        }}
+      >
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
           <Link href="/about" className="flex items-center gap-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/images/cascade-icon.svg"
-              alt="Cascade Logo"
-              className="size-8"
-            />
-            <span className="text-xl font-bold tracking-tighter bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
+            <Logo size={28} />
+            <span
+              className="font-serif"
+              style={{
+                fontSize: "22px",
+                lineHeight: 1,
+                letterSpacing: "-0.02em",
+                color: "var(--ink-1)",
+              }}
+            >
               Cascade
             </span>
           </Link>

@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { Button } from "@/components/ui/button";
 import { Plus } from "@/lib/icons";
 import { Board, Task } from "@/lib/types";
+import { getBoardIcon, getDotCssVar } from "@/lib/utils/boardIcons";
 
 interface BoardHeaderProps {
   board: Board | null;
@@ -20,62 +20,120 @@ export function BoardHeader({
   searchQuery,
   boardGroupsCount,
   tasks = [],
-  onCreateTask
+  onCreateTask,
 }: BoardHeaderProps) {
-  const taskSummary = useMemo(() => {
-    if (!tasks.length) return null;
-    const todo = tasks.filter(t => t.status === 'todo').length;
-    const inProgress = tasks.filter(t => t.status === 'in-progress').length;
-    const done = tasks.filter(t => t.status === 'done').length;
-    return { todo, inProgress, done };
-  }, [tasks]);
+  const openTaskCount = useMemo(
+    () => tasks.filter((t) => t.status !== "done").length,
+    [tasks]
+  );
+
+  const Icon = board ? getBoardIcon(board.iconKey) : null;
+  const dotColor = board ? getDotCssVar(board.dotColor) : "var(--accent-500)";
 
   return (
-    <div
-      className="p-6 border-b border-border relative overflow-hidden board-animate-in"
-      style={board ? {
-        background: `linear-gradient(135deg, ${board.color}10 0%, transparent 60%)`,
-      } : undefined}
-    >
-      <div className="flex items-center justify-between relative z-10">
-        <div>
-          {isCrossBoardSearch ? (
-            <>
-              <h1 className="text-3xl font-bold text-foreground">
-                Cross-Board Search Results
-              </h1>
-              <p className="text-muted-foreground mt-2">
-                Showing results from {boardGroupsCount} board{boardGroupsCount !== 1 ? 's' : ''}
-                {searchQuery && ` for "${searchQuery}"`}
-              </p>
-            </>
-          ) : board ? (
-            <>
-              <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-                <div
-                  className="w-4 h-4 rounded-full ring-4 ring-offset-2 ring-offset-background"
-                  style={{ backgroundColor: board.color, boxShadow: `0 0 12px ${board.color}40` }}
-                />
-                {board.name}
-              </h1>
-              <div className="flex items-center gap-3 mt-2">
-                {board.description && (
-                  <p className="text-muted-foreground">{board.description}</p>
-                )}
-                {taskSummary && (
-                  <p className="text-xs text-muted font-mono tracking-wide">
-                    {board.description && <span className="mx-1 opacity-30">|</span>}
-                    {taskSummary.todo + taskSummary.inProgress + taskSummary.done} tasks · {taskSummary.todo} to do · {taskSummary.inProgress} in progress
-                  </p>
-                )}
-              </div>
-            </>
-          ) : null}
+    <div className="px-8 pt-7 pb-5 board-animate-in" style={{ background: "var(--paper-0)" }}>
+      <div className="flex items-start justify-between gap-6">
+        <div className="flex items-start gap-4 min-w-0">
+          {Icon && !isCrossBoardSearch && (
+            <div
+              className="flex-shrink-0 flex items-center justify-center rounded-[10px]"
+              style={{
+                width: "44px",
+                height: "44px",
+                background: "var(--paper-card)",
+                border: "1px solid var(--hairline-strong)",
+                boxShadow: "var(--shadow-xs)",
+                color: dotColor,
+              }}
+            >
+              <Icon size={22} strokeWidth={1.8} />
+            </div>
+          )}
+
+          <div className="min-w-0">
+            {isCrossBoardSearch ? (
+              <>
+                <h1
+                  className="font-serif"
+                  style={{
+                    fontSize: "36px",
+                    lineHeight: "40px",
+                    fontWeight: 400,
+                    letterSpacing: "-0.02em",
+                    color: "var(--ink-1)",
+                  }}
+                >
+                  Cross-board search
+                  <span style={{ color: "var(--accent-500)" }}>.</span>
+                </h1>
+                <p
+                  className="mt-2"
+                  style={{ fontSize: "13px", color: "var(--ink-3)" }}
+                >
+                  Showing results from{" "}
+                  <span className="font-mono" style={{ fontFeatureSettings: '"tnum"' }}>
+                    {boardGroupsCount}
+                  </span>{" "}
+                  board{boardGroupsCount !== 1 ? "s" : ""}
+                  {searchQuery && (
+                    <>
+                      {" · "}for &ldquo;<span style={{ color: "var(--ink-1)" }}>{searchQuery}</span>&rdquo;
+                    </>
+                  )}
+                </p>
+              </>
+            ) : board ? (
+              <>
+                <h1
+                  className="font-serif truncate"
+                  style={{
+                    fontSize: "36px",
+                    lineHeight: "40px",
+                    fontWeight: 400,
+                    letterSpacing: "-0.02em",
+                    color: "var(--ink-1)",
+                  }}
+                >
+                  {board.name}
+                  <span style={{ color: "var(--accent-500)" }}>.</span>
+                </h1>
+                <p
+                  className="mt-2 truncate"
+                  style={{ fontSize: "13px", color: "var(--ink-3)" }}
+                >
+                  {board.description ? (
+                    <>
+                      {board.description}
+                      <span className="mx-1.5" style={{ color: "var(--ink-4)" }}>·</span>
+                    </>
+                  ) : null}
+                  <span className="font-mono" style={{ fontFeatureSettings: '"tnum"' }}>
+                    {openTaskCount}
+                  </span>{" "}
+                  open task{openTaskCount !== 1 ? "s" : ""}
+                </p>
+              </>
+            ) : null}
+          </div>
         </div>
-        <Button onClick={onCreateTask} disabled={isCrossBoardSearch}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Task
-        </Button>
+
+        <button
+          type="button"
+          onClick={onCreateTask}
+          disabled={isCrossBoardSearch}
+          className="inline-flex items-center gap-2 rounded-lg px-3.5 py-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+          style={{
+            background: "var(--accent-500)",
+            color: "var(--accent-ink)",
+            border: "1px solid var(--accent-600)",
+            boxShadow: "var(--shadow-sm)",
+            fontSize: "12.5px",
+            fontWeight: 600,
+          }}
+        >
+          <Plus className="h-3.5 w-3.5" strokeWidth={2.2} />
+          New Task
+        </button>
       </div>
     </div>
   );

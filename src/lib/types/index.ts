@@ -19,6 +19,8 @@ export interface Board {
   name: string;
   description?: string;
   color: string;
+  iconKey?: string;
+  dotColor?: string;
   isDefault: boolean;
   order: number;
   createdAt: Date;

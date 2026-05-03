@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Instrument_Sans, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -8,18 +8,26 @@ import InstallPWA from "@/components/InstallPWA";
 import { IOSClassProvider } from "@/components/IOSClassProvider";
 import { NotificationProvider } from "@/components/NotificationProvider";
 
-const geist = Geist({ 
+const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
   display: "swap",
-  weight: ["400", "600"],
+  weight: ["400", "500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  variable: "--font-serif",
+  display: "swap",
+  weight: ["400"],
+  style: ["normal", "italic"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
   display: "swap",
-  weight: ["400", "600"],
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
@@ -86,8 +94,8 @@ export const viewport = {
   shrinkToFit: "no", // Prevent iOS Safari from shrinking viewport
   viewportFit: "cover", // For iOS notch handling
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#8B5CF6" },
-    { media: "(prefers-color-scheme: dark)", color: "#6D28D9" },
+    { media: "(prefers-color-scheme: light)", color: "#6B4A87" },
+    { media: "(prefers-color-scheme: dark)", color: "#C2A4DB" },
   ],
 };
 
@@ -106,10 +114,10 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Cascade" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
-        <meta name="msapplication-TileColor" content="#8B5CF6" />
+        <meta name="msapplication-TileColor" content="#6B4A87" />
         <meta name="msapplication-tap-highlight" content="no" />
       </head>
-      <body className={`${geist.variable} ${geistMono.variable} font-sans antialiased`}>
+      <body className={`${instrumentSans.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

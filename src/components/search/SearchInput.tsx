@@ -1,6 +1,5 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
 import { Search, Loader2, AlertTriangle, Globe } from "lucide-react";
 
 interface SearchInputProps {
@@ -19,7 +18,8 @@ interface SearchInputProps {
 }
 
 /**
- * Search input field with loading, error states, and visual indicators
+ * Editorial search input — paper-card surface, ⌘K chip on the right.
+ * Icon left, mono shortcut chip right.
  */
 export function SearchInput({
   searchValue,
@@ -30,54 +30,70 @@ export function SearchInput({
   tasksLength,
   onSearchChange,
   onKeyDown,
-  onBlur
+  onBlur,
 }: SearchInputProps) {
   return (
-    <div className="flex-1 relative">
-      {/* Left icon */}
-      {isSearching ? (
-        <Loader2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />
-      ) : (
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-      )}
-
-      {/* Right side icons */}
-      <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
-        {hasLargeDataset && (
-          <div title={`Large dataset (${tasksLength} tasks) - searches may be slower`}>
-            <AlertTriangle className="h-4 w-4 text-orange-500" />
-          </div>
+    <div className="flex-1 max-w-[540px] relative">
+      <div
+        className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors"
+        style={{
+          background: "var(--paper-card)",
+          border: `1px solid ${error ? "var(--danger-500)" : "var(--hairline-strong)"}`,
+          boxShadow: "var(--shadow-xs)",
+        }}
+      >
+        {isSearching ? (
+          <Loader2 className="h-[15px] w-[15px] animate-spin" style={{ color: "var(--ink-4)" }} />
+        ) : (
+          <Search className="h-[15px] w-[15px]" style={{ color: "var(--ink-4)" }} />
         )}
-        {filters.crossBoardSearch && !isSearching && (
-          <div title="Searching across all boards">
-            <Globe className="h-4 w-4 text-primary" />
-          </div>
-        )}
-      </div>
 
-      <Input
-        placeholder={filters.crossBoardSearch ? "Search across all boards..." : "Search tasks..."}
-        value={searchValue}
-        onChange={(e) => onSearchChange(e.target.value)}
-        onKeyDown={onKeyDown}
-        onBlur={onBlur}
-        className={`pl-10 pr-12 ${error ? 'border-destructive' : ''} ${isSearching ? 'opacity-75' : ''}`}
-        disabled={isSearching}
-        aria-label={filters.crossBoardSearch ? "Search across all boards" : "Search tasks in current board"}
-        aria-describedby={error ? "search-error" : filters.search ? "search-results" : undefined}
-        role="searchbox"
-        aria-autocomplete="list"
-      />
+        <input
+          type="text"
+          placeholder={filters.crossBoardSearch ? "Search across all boards…" : "Search tasks, tags, boards…"}
+          value={searchValue}
+          onChange={(e) => onSearchChange(e.target.value)}
+          onKeyDown={onKeyDown}
+          onBlur={onBlur}
+          disabled={isSearching}
+          aria-label={filters.crossBoardSearch ? "Search across all boards" : "Search tasks in current board"}
+          aria-describedby={error ? "search-error" : filters.search ? "search-results" : undefined}
+          role="searchbox"
+          aria-autocomplete="list"
+          className="flex-1 bg-transparent outline-none border-0 disabled:opacity-75"
+          style={{
+            fontSize: "13px",
+            color: "var(--ink-1)",
+            fontFamily: "var(--font-sans)",
+          }}
+        />
 
-      {/* Loading overlay */}
-      {isSearching && (
-        <div className="absolute inset-0 bg-background/50 rounded-md flex items-center justify-center">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            {filters.crossBoardSearch ? 'Searching all boards...' : 'Searching...'}
-          </div>
+        <div className="flex items-center gap-1.5">
+          {hasLargeDataset && (
+            <div title={`Large dataset (${tasksLength} tasks) - searches may be slower`}>
+              <AlertTriangle className="h-3.5 w-3.5" style={{ color: "var(--warn-500)" }} />
+            </div>
+          )}
+          {filters.crossBoardSearch && !isSearching && (
+            <div title="Searching across all boards">
+              <Globe className="h-3.5 w-3.5" style={{ color: "var(--accent-500)" }} />
+            </div>
+          )}
+
+          <kbd
+            className="font-mono inline-flex items-center px-1.5 py-px rounded"
+            style={{
+              fontSize: "10.5px",
+              color: "var(--ink-4)",
+              background: "var(--paper-1)",
+              border: "1px solid var(--hairline)",
+              fontFeatureSettings: '"tnum"',
+            }}
+          >
+            ⌘K
+          </kbd>
         </div>
-      )}
+      </div>
     </div>
   );
 }

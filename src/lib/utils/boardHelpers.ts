@@ -1,6 +1,11 @@
 import { Board } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
 import { sanitizeBoardData } from '@/lib/utils/security';
+import {
+  legacyColorToDot,
+  DEFAULT_ICON_KEY,
+  DEFAULT_DOT_COLOR,
+} from '@/lib/utils/boardIcons';
 
 /**
  * Validates board name is not empty
@@ -129,12 +134,36 @@ export function createDefaultBoard(): Board {
     name: 'Work Tasks',
     description: 'Default board for work-related tasks',
     color: '#3b82f6',
+    iconKey: 'Briefcase',
+    dotColor: 'blue',
     isDefault: true,
     order: 0,
     createdAt: new Date(),
     updatedAt: new Date(),
     archivedAt: undefined,
   };
+}
+
+/**
+ * Backfills iconKey + dotColor on legacy boards. Existing color is mapped
+ * to the nearest dot in the curated palette; iconKey defaults to Layers.
+ * Mirrors the assignMissingOrders pattern.
+ */
+export function assignMissingIcons(boards: Board[]): { boards: Board[]; needsUpdate: boolean } {
+  let needsUpdate = false;
+
+  const processedBoards = boards.map((board) => {
+    if (board.iconKey && board.dotColor) return board;
+
+    needsUpdate = true;
+    return {
+      ...board,
+      iconKey: board.iconKey ?? DEFAULT_ICON_KEY,
+      dotColor: board.dotColor ?? legacyColorToDot(board.color),
+    };
+  });
+
+  return { boards: processedBoards, needsUpdate };
 }
 
 /**

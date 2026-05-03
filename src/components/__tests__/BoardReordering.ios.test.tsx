@@ -198,8 +198,12 @@ describe('Board Reordering iOS Tests', () => {
       boardCards.forEach(card => {
         const groupElement = card.closest('.group')
         if (groupElement) {
-          // Should have hover styles
-          expect(groupElement.className).toContain('hover:shadow-md')
+          // Inactive board items should provide some hover feedback. The
+          // post-redesign chrome uses a paper-2 hover bg instead of a shadow,
+          // so just assert that *some* hover utility class is present.
+          const hasHoverFeedback = /\bhover:/.test(groupElement.className)
+          const isActive = groupElement.className.includes('sidebar-item--active')
+          expect(hasHoverFeedback || isActive).toBe(true)
         }
       })
     })
