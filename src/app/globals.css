@@ -514,6 +514,68 @@
   }
 }
 
+/* ─── Theme switch crossfade ─────────────────────────────────────
+   When the user toggles light ↔ dark (or system flips), <html> swaps
+   --paper-*, --ink-*, --accent-*, --hairline* all at once. Without a
+   transition the swap is jarring; with a global `*` transition it
+   lags every hover/state change. The compromise: scope the 200ms
+   crossfade to the known token-consuming surfaces — body and the
+   recipe classes / data-slot elements that actually render those
+   tokens directly. Buttons, badges, and hover states keep their
+   existing snappy transitions. */
+body,
+.kanban-column,
+.task-card,
+.sidebar-glass,
+.sidebar-item--active,
+.stats-pill,
+.stats-pill__cell,
+[data-slot="dialog-content"],
+[data-slot="dialog-overlay"],
+[data-slot="popover-content"] {
+  transition-property: background-color, color, border-color;
+  transition-duration: 200ms;
+  transition-timing-function: ease;
+}
+
+/* The .reduce-motion override later in this file zeros transition
+   durations globally, so users with reduced-motion preferences get
+   the instant swap they expect. */
+
+/* ─── Modal enter/exit motion ─── */
+/* Replaces shadcn's zoom-95 default with the editorial spec:
+   backdrop fade 180ms; dialog fade + translateY(8 → 0) over 220ms ease-out.
+   Single keyframe handles both opacity AND transform per phase so we don't
+   race separate Tailwind animate-in/fade-out-0 utilities on the same node. */
+@keyframes cascade-dialog-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 8px));
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes cascade-dialog-out {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 8px));
+  }
+}
+
+.cascade-dialog-content[data-state="open"] {
+  animation: cascade-dialog-in 220ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.cascade-dialog-content[data-state="closed"] {
+  animation: cascade-dialog-out 180ms ease-in;
+}
+
 /* ─── Card & board animations ─── */
 @keyframes card-enter {
   from { opacity: 0; transform: translateY(8px); }
@@ -590,6 +652,41 @@
 
 /* ─── Component recipes — warm/paper aesthetic ─── */
 @layer components {
+  /* Stats pill — single row of cells separated by hairline dividers on
+     wide viewports; collapses to a 2x2 grid (with a hairline cross) on
+     narrow viewports so it never overflows the board column. */
+  .stats-pill {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .stats-pill__cell + .stats-pill__cell {
+    border-left: 1px solid var(--hairline);
+  }
+
+  @media (max-width: 640px) {
+    .stats-pill {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      width: 100%;
+    }
+    .stats-pill__cell + .stats-pill__cell {
+      border-left: none;
+    }
+    /* 2nd cell: divider on left */
+    .stats-pill__cell:nth-child(2) {
+      border-left: 1px solid var(--hairline);
+    }
+    /* 3rd & 4th cells: divider above */
+    .stats-pill__cell:nth-child(n+3) {
+      border-top: 1px solid var(--hairline);
+    }
+    /* 4th cell: divider on left */
+    .stats-pill__cell:nth-child(4) {
+      border-left: 1px solid var(--hairline);
+    }
+  }
+
   /* Kanban Column */
   .kanban-column {
     background: var(--paper-2);

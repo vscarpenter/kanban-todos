@@ -178,8 +178,8 @@ export function ExportDialog({ open, onOpenChange }: ExportDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Download className="h-5 w-5" />
+          <DialogTitle className="flex items-center gap-2.5">
+            <Download className="h-5 w-5" style={{ color: "var(--accent-500)" }} />
             Export Data
           </DialogTitle>
           <DialogDescription>

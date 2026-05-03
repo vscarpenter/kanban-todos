@@ -19,15 +19,11 @@ interface StatCellProps {
   label: string;
   value: number;
   color: string;
-  isFirst?: boolean;
 }
 
-function StatCell({ label, value, color, isFirst }: StatCellProps) {
+function StatCell({ label, value, color }: StatCellProps) {
   return (
-    <div
-      className="flex flex-col items-center justify-center px-5 py-1.5"
-      style={isFirst ? undefined : { borderLeft: "1px solid var(--hairline)" }}
-    >
+    <div className="stats-pill__cell flex flex-col items-center justify-center px-5 py-1.5">
       <span
         className="font-mono"
         style={{
@@ -73,15 +69,16 @@ export function BoardStats({ tasks, isCrossBoardSearch, boardGroups = {} }: Boar
   return (
     <div className="px-8">
       <div
-        className="inline-flex items-center rounded-[10px]"
+        className="stats-pill"
         style={{
           background: "var(--paper-card)",
           border: "1px solid var(--hairline-strong)",
           boxShadow: "var(--shadow-xs)",
           padding: "4px",
+          borderRadius: "10px",
         }}
       >
-        <StatCell label="Total" value={counts.total} color="var(--ink-2)" isFirst />
+        <StatCell label="Total" value={counts.total} color="var(--ink-2)" />
         <StatCell label="To Do" value={counts.todo} color="var(--info-500)" />
         <StatCell label="In Progress" value={counts.inProgress} color="var(--warn-500)" />
         <StatCell label="Done" value={counts.done} color="var(--ok-500)" />

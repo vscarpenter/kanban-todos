@@ -403,9 +403,9 @@ describe('SearchBar Integration Tests', () => {
         expect(screen.getByText('Priority: high')).toBeInTheDocument();
       });
       
-      // Test removing a filter
-      const removeButtons = screen.getAllByRole('button', { name: '' });
-      const statusRemoveButton = removeButtons[0]; // X button
+      // The redesigned active filter chips expose an accessible
+      // "Remove ..." label on the X button.
+      const statusRemoveButton = screen.getByRole('button', { name: /remove status: todo/i });
       fireEvent.click(statusRemoveButton);
       
       expect(mockTaskStore.setFilters).toHaveBeenCalledWith(

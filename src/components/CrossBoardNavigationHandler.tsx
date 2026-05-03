@@ -22,7 +22,7 @@ export function CrossBoardNavigationHandler({ children }: CrossBoardNavigationHa
       const result = await navigateToTaskBoard(taskId);
 
       if (!result.success) {
-        toast.error("Navigation Failed", {
+        toast.error("Couldn't navigate to task", {
           description: result.error,
           action: {
             label: "Dismiss",
@@ -36,7 +36,7 @@ export function CrossBoardNavigationHandler({ children }: CrossBoardNavigationHa
         // Check if board exists in current boards
         const targetBoard = boards.find(b => b.id === result.boardId);
         if (!targetBoard) {
-          toast.error("Board Not Found", {
+          toast.error("Board not found", {
             description: "The board containing this task is no longer available.",
             action: {
               label: "Refresh",
@@ -72,9 +72,7 @@ export function CrossBoardNavigationHandler({ children }: CrossBoardNavigationHa
           }
         }, 100);
 
-        toast.success("Navigation Successful", {
-          description: `Switched to "${targetBoard.name}" board`,
-        });
+        toast.success(`Switched to ${targetBoard.name}`);
 
         return true;
       }
@@ -82,8 +80,8 @@ export function CrossBoardNavigationHandler({ children }: CrossBoardNavigationHa
       return false;
     } catch (error) {
       console.error('Cross-board navigation error:', error);
-      toast.error("Navigation Error", {
-        description: "An unexpected error occurred while navigating to the task.",
+      toast.error("Couldn't navigate to task", {
+        description: "Something went wrong. Try again.",
         action: {
           label: "Try Again",
           onClick: () => { handleNavigationRef.current?.(taskId); },
@@ -117,8 +115,8 @@ export function CrossBoardNavigationHandler({ children }: CrossBoardNavigationHa
       const { handleBoardDeletion } = useTaskStore.getState();
       handleBoardDeletion(event.detail.boardId);
       
-      toast.info("Board Deleted", {
-        description: "Tasks from the deleted board have been removed from search results.",
+      toast.info("Board deleted", {
+        description: "Tasks from that board are no longer in search results.",
       });
     };
 

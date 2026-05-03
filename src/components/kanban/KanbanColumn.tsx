@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import { useDroppable } from "@dnd-kit/core";
+import { useDroppable, useDndContext } from "@dnd-kit/core";
 import isEqual from "fast-deep-equal";
 import { Task } from "@/lib/types";
 import TaskCard from "./TaskCard";
@@ -33,6 +33,15 @@ export function KanbanColumn({ title, tasks, status, onNavigateToBoard }: Kanban
     id: status,
     data: { type: "column", status },
   });
+
+  // The active drag context tells us which task (if any) is being dragged.
+  // We use it to decide whether to render the in-column drop placeholder:
+  // only show when the drop would actually move the task to a new status,
+  // not when a card is being dragged within its own column.
+  const { active } = useDndContext();
+  const activeTask = active?.data?.current?.task as Task | undefined;
+  const showDropPlaceholder =
+    isOver && activeTask !== undefined && activeTask.status !== status;
 
   const isSearchActive = searchQuery.length > 0;
   const isCrossBoardSearch = crossBoardSearch && isSearchActive;
@@ -109,35 +118,67 @@ export function KanbanColumn({ title, tasks, status, onNavigateToBoard }: Kanban
               </p>
             </div>
           ) : (
-            tasks.map((task, index) => {
-              const taskBoard = boards.find((b) => b.id === task.boardId);
-              const isCurrentBoard = task.boardId === currentBoardId;
-              const isHighlighted = highlightedTaskId === task.id;
+            <>
+              {tasks.map((task, index) => {
+                const taskBoard = boards.find((b) => b.id === task.boardId);
+                const isCurrentBoard = task.boardId === currentBoardId;
+                const isHighlighted = highlightedTaskId === task.id;
 
-              return (
-                <div
-                  key={task.id}
-                  className={[
-                    "card-animate-in",
-                    isHighlighted
-                      ? "ring-2 ring-primary ring-offset-2 rounded-[10px] transition-all duration-300"
-                      : "",
-                  ].join(" ")}
-                  style={{ animationDelay: `${index * 40}ms` }}
-                >
-                  <TaskCard
-                    task={task}
-                    showBoardIndicator={isCrossBoardSearch}
-                    board={taskBoard}
-                    isCurrentBoard={isCurrentBoard}
-                    onNavigateToBoard={onNavigateToBoard}
-                  />
-                </div>
-              );
-            })
+                return (
+                  <div
+                    key={task.id}
+                    className={[
+                      "card-animate-in",
+                      isHighlighted
+                        ? "ring-2 ring-primary ring-offset-2 rounded-[10px] transition-all duration-300"
+                        : "",
+                    ].join(" ")}
+                    style={{ animationDelay: `${index * 40}ms` }}
+                  >
+                    <TaskCard
+                      task={task}
+                      showBoardIndicator={isCrossBoardSearch}
+                      board={taskBoard}
+                      isCurrentBoard={isCurrentBoard}
+                      onNavigateToBoard={onNavigateToBoard}
+                    />
+                  </div>
+                );
+              })}
+              {showDropPlaceholder && <DropPlaceholder />}
+            </>
           )}
+          {/* Empty-column case: still show placeholder when dropping into it */}
+          {tasks.length === 0 && showDropPlaceholder && <DropPlaceholder />}
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Editorial drop placeholder card. Renders inside the target column at the
+ * drop position. Spec: dashed accent-300 border, tinted accent-50 bg,
+ * 10px radius, 16px padding, min-height 60px, centered "Drop to move task
+ * here" text in 12/500/accent-600.
+ */
+function DropPlaceholder() {
+  return (
+    <div
+      className="flex items-center justify-center"
+      style={{
+        border: "1.5px dashed var(--accent-300)",
+        background: "color-mix(in oklab, var(--accent-50) 70%, transparent)",
+        borderRadius: "10px",
+        padding: "16px",
+        minHeight: "60px",
+        color: "var(--accent-600)",
+        fontSize: "12px",
+        fontWeight: 500,
+      }}
+      aria-hidden="true"
+    >
+      Drop to move task here
     </div>
   );
 }
