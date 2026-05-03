@@ -1,18 +1,22 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { ChevronUp, ChevronDown } from "@/lib/icons";
 import { Board } from "@/lib/types";
 import { BoardMenu } from "../BoardMenu";
+import { getBoardIcon, getDotCssVar } from "@/lib/utils/boardIcons";
+
+// Touch devices have no hover state, so the reorder controls must always
+// be rendered for them. Read once at module scope (SSR-safe via typeof check).
+const hasTouch =
+  typeof window !== "undefined" &&
+  ("ontouchstart" in window || navigator.maxTouchPoints > 0);
 
 interface BoardItemProps {
   board: Board;
   isActive: boolean;
   taskCount: number;
   onSelect: () => void;
-  onReorder: (direction: 'up' | 'down') => void;
+  onReorder: (direction: "up" | "down") => void;
   canMoveUp: boolean;
   canMoveDown: boolean;
 }
@@ -24,80 +28,113 @@ export function BoardItem({
   onSelect,
   onReorder,
   canMoveUp,
-  canMoveDown
+  canMoveDown,
 }: BoardItemProps) {
-  const hasTouch = 'ontouchstart' in window;
+  const Icon = getBoardIcon(board.iconKey);
+  const dotColor = getDotCssVar(board.dotColor);
 
-  const handleReorder = (direction: 'up' | 'down', e: React.MouseEvent) => {
+  const handleReorder = (direction: "up" | "down", e: React.MouseEvent) => {
     e.stopPropagation();
     onReorder(direction);
   };
 
   return (
-    <Card
-      className={`
-        group cursor-pointer transition-all duration-200 hover:shadow-md
-        ${isActive ? 'sidebar-item--active' : 'hover:bg-surface-2'}
-      `}
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onSelect}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
+      className={[
+        "group relative flex items-center gap-2.5 rounded-lg px-3 py-2.5 cursor-pointer transition-all",
+        isActive ? "sidebar-item--active" : "hover:bg-[var(--paper-2)]",
+      ].join(" ")}
     >
-      <CardContent className={`${hasTouch ? 'p-2 py-1.5' : 'p-2'}`}>
-        <div className={`flex items-center ${hasTouch ? 'gap-1.5' : 'gap-2'}`}>
-          <div
-            className="w-3 h-3 rounded-full flex-shrink-0"
-            style={{ backgroundColor: board.color }}
-          />
-          <div className="flex-1 min-w-0">
-            <div className="font-medium text-foreground truncate tracking-tight">
-              {board.name}
-            </div>
-            {board.description && (
-              <div className={`text-xs text-muted-foreground truncate ${hasTouch ? 'leading-tight mt-0.5' : 'leading-relaxed'}`}>
-                {board.description}
-              </div>
-            )}
-          </div>
-          <div className="flex items-center gap-1">
-            {/* Reorder buttons */}
-            <div className={`flex flex-col ${hasTouch ? 'gap-0.5 opacity-100' : 'gap-1 opacity-0 group-hover:opacity-100'} transition-opacity`}>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`
-                  ${hasTouch ? 'h-8 w-8 min-h-8 min-w-8' : 'h-6 w-6'}
-                  p-0
-                  ${!canMoveUp ? 'opacity-40' : 'active:scale-95 transition-transform hover:bg-accent'}
-                `}
-                onClick={(e) => handleReorder('up', e)}
-                disabled={!canMoveUp}
-                aria-label={`Move ${board.name} up`}
-                title={`Move ${board.name} up`}
-              >
-                <ChevronUp className={hasTouch ? 'h-5 w-5' : 'h-4 w-4'} />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`
-                  ${hasTouch ? 'h-8 w-8 min-h-8 min-w-8' : 'h-6 w-6'}
-                  p-0
-                  ${!canMoveDown ? 'opacity-40' : 'active:scale-95 transition-transform hover:bg-accent'}
-                `}
-                onClick={(e) => handleReorder('down', e)}
-                disabled={!canMoveDown}
-                aria-label={`Move ${board.name} down`}
-                title={`Move ${board.name} down`}
-              >
-                <ChevronDown className={hasTouch ? 'h-5 w-5' : 'h-4 w-4'} />
-              </Button>
-            </div>
-            <Badge variant="secondary" className="text-xs bg-surface-2 text-muted border-0">
-              {taskCount}
-            </Badge>
-            <BoardMenu board={board} />
-          </div>
+      {/* Icon tile */}
+      <div
+        className="flex h-[26px] w-[26px] items-center justify-center rounded-md flex-shrink-0"
+        style={{
+          background: "var(--paper-2)",
+          border: "1px solid var(--hairline)",
+          color: dotColor,
+        }}
+      >
+        <Icon size={14} strokeWidth={1.8} />
+      </div>
+
+      {/* Two-line text */}
+      <div className="flex-1 min-w-0">
+        <div
+          className="truncate"
+          style={{
+            fontSize: "13px",
+            fontWeight: 600,
+            letterSpacing: "-0.005em",
+            color: "var(--ink-1)",
+          }}
+        >
+          {board.name}
         </div>
-      </CardContent>
-    </Card>
+        {board.description && (
+          <div
+            className="truncate mt-px"
+            style={{ fontSize: "11px", color: "var(--ink-4)" }}
+          >
+            {board.description}
+          </div>
+        )}
+      </div>
+
+      {/* Reorder controls — always visible on touch devices, hover-only on
+          pointer devices to keep the rail visually clean. */}
+      <div
+        className={[
+          "flex-col gap-0.5",
+          hasTouch ? "flex" : "hidden group-hover:flex",
+        ].join(" ")}
+      >
+        <button
+          type="button"
+          onClick={(e) => handleReorder("up", e)}
+          disabled={!canMoveUp}
+          aria-label={`Move ${board.name} up`}
+          className="h-4 w-4 inline-flex items-center justify-center rounded text-[var(--ink-4)] hover:text-[var(--ink-2)] disabled:opacity-30"
+        >
+          <ChevronUp className="h-3 w-3" />
+        </button>
+        <button
+          type="button"
+          onClick={(e) => handleReorder("down", e)}
+          disabled={!canMoveDown}
+          aria-label={`Move ${board.name} down`}
+          className="h-4 w-4 inline-flex items-center justify-center rounded text-[var(--ink-4)] hover:text-[var(--ink-2)] disabled:opacity-30"
+        >
+          <ChevronDown className="h-3 w-3" />
+        </button>
+      </div>
+
+      {/* Count badge */}
+      <span
+        className="font-mono inline-flex items-center justify-center px-1.5 rounded-full"
+        style={{
+          fontSize: "11px",
+          fontWeight: 500,
+          color: "var(--ink-3)",
+          background: "var(--paper-1)",
+          border: "1px solid var(--hairline)",
+          minWidth: "20px",
+          height: "16px",
+          fontFeatureSettings: '"tnum"',
+        }}
+      >
+        {taskCount}
+      </span>
+
+      <BoardMenu board={board} />
+    </div>
   );
 }

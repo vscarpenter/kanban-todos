@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Menu, X } from "@/lib/icons";
 import { SidebarHeader } from "./sidebar/SidebarHeader";
 import { BoardsList } from "./sidebar/BoardsList";
@@ -20,58 +19,48 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile toggle button */}
       <Button
         variant="ghost"
         size="sm"
         className="fixed top-4 left-4 z-50 md:hidden"
         onClick={onToggle}
+        aria-label={isOpen ? "Close sidebar" : "Open sidebar"}
       >
         {isOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
       </Button>
 
-      {/* Sidebar */}
-      <div
-        className={`
-          fixed md:relative inset-y-0 left-0 z-40
-          transform transition-transform duration-300 ease-in-out
-          ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-          w-80 bg-card border-r border-border
-          flex flex-col sidebar-glass grain-overlay
-        `}
+      <aside
+        className={[
+          "fixed md:relative inset-y-0 left-0 z-40",
+          "transform transition-transform duration-300 ease-in-out",
+          isOpen ? "translate-x-0" : "-translate-x-full",
+          "w-[280px] flex flex-col sidebar-glass",
+        ].join(" ")}
+        style={{
+          background: "var(--paper-1)",
+          borderRight: "1px solid var(--hairline-strong)",
+        }}
       >
         <SidebarHeader onToggle={onToggle} />
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          <BoardsList onCreateBoard={() => setActiveDialog('createBoard')} />
+        <div className="flex-1 overflow-y-auto px-3 pb-3">
+          <BoardsList onCreateBoard={() => setActiveDialog("createBoard")} />
+        </div>
 
-          <Separator />
-
+        <div
+          className="px-3 pt-3 pb-3 flex flex-col gap-2"
+          style={{ borderTop: "1px solid var(--hairline)" }}
+        >
           <NavigationMenu
-            onExport={() => setActiveDialog('export')}
-            onImport={() => setActiveDialog('import')}
-            onSettings={() => setActiveDialog('settings')}
-            onUserGuide={() => setActiveDialog('userGuide')}
-            onArchive={() => setActiveDialog('archive')}
+            onExport={() => setActiveDialog("export")}
+            onImport={() => setActiveDialog("import")}
+            onSettings={() => setActiveDialog("settings")}
+            onUserGuide={() => setActiveDialog("userGuide")}
+            onArchive={() => setActiveDialog("archive")}
           />
-        </div>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-border">
           <VersionFooter />
-          <div className="text-xs text-muted-foreground text-center mt-2">
-            <a
-              href="https://vinny.dev/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-muted-foreground hover:text-foreground transition-colors underline"
-            >
-              vinny.dev
-            </a>
-          </div>
         </div>
-      </div>
+      </aside>
 
       <SidebarDialogs
         activeDialog={activeDialog}

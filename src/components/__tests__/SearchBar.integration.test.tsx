@@ -135,7 +135,7 @@ describe('SearchBar Integration Tests', () => {
     it('should render search input with correct placeholder', () => {
       render(<SearchBar />);
       
-      const searchInput = screen.getByPlaceholderText('Search tasks...');
+      const searchInput = screen.getByRole('searchbox');
       expect(searchInput).toBeInTheDocument();
     });
 
@@ -144,29 +144,25 @@ describe('SearchBar Integration Tests', () => {
       
       render(<SearchBar />);
       
-      const searchInput = screen.getByPlaceholderText('Search across all boards...');
-      expect(searchInput).toBeInTheDocument();
+      const searchInput = screen.getByRole('searchbox');
+      expect(searchInput).toHaveAttribute(
+        'placeholder',
+        expect.stringMatching(/across all boards/i)
+      );
     });
 
     it('should call setSearchQuery when typing in search input', async () => {
       render(<SearchBar />);
 
-      const searchInput = screen.getByPlaceholderText('Search tasks...');
+      const searchInput = screen.getByRole('searchbox');
       fireEvent.change(searchInput, { target: { value: 'project' } });
 
       // The refactored SearchBar stores input locally until search is triggered
       expect(searchInput).toHaveValue('project');
     });
 
-    it('should show search button and handle click', async () => {
-      render(<SearchBar />);
-      
-      const searchButton = screen.getByRole('button', { name: /search/i });
-      expect(searchButton).toBeInTheDocument();
-      
-      fireEvent.click(searchButton);
-      expect(mockTaskStore.setFilters).toHaveBeenCalled();
-    });
+    // Note: the redesign removed the explicit "Search" execute button — search runs as
+    // the user types (debounced) and on Enter. Other tests cover those flows.
   });
 
   describe('Cross-Board Search Toggle', () => {
@@ -260,27 +256,28 @@ describe('SearchBar Integration Tests', () => {
       
       render(<SearchBar />);
       
-      const searchInput = screen.getByPlaceholderText('Search tasks...');
+      const searchInput = screen.getByRole('searchbox');
       expect(searchInput).toBeDisabled();
     });
 
-    it('should show loading overlay when searching', () => {
+    it('should show a loading spinner when searching', () => {
       mockTaskStore.isSearching = true;
-      
+
       render(<SearchBar />);
-      
-      // Use getAllByText to handle multiple "Searching..." elements
-      const searchingElements = screen.getAllByText(/searching/i);
-      expect(searchingElements.length).toBeGreaterThan(0);
+
+      // The redesigned input shows an inline spinner (no full-overlay text).
+      const spinner = document.querySelector('.animate-spin');
+      expect(spinner).toBeInTheDocument();
     });
 
-    it('should show cross-board loading message', () => {
+    it('should still show a spinner during cross-board searches', () => {
       mockTaskStore.isSearching = true;
       mockTaskStore.filters.crossBoardSearch = true;
-      
+
       render(<SearchBar />);
-      
-      expect(screen.getByText('Searching all boards...')).toBeInTheDocument();
+
+      const spinner = document.querySelector('.animate-spin');
+      expect(spinner).toBeInTheDocument();
     });
   });
 
@@ -445,13 +442,16 @@ describe('SearchBar Integration Tests', () => {
     });
 
 
-    it('should apply error styling to input when there is an error', () => {
+    it('should apply error styling when there is an error', () => {
       mockTaskStore.error = 'Search failed';
-      
+
       render(<SearchBar />);
-      
-      const searchInput = screen.getByPlaceholderText('Search tasks...');
-      expect(searchInput).toHaveClass('border-destructive');
+
+      // The error state is conveyed via inline border color on the input
+      // wrapper. Assert the style attribute references the danger token.
+      const searchInput = screen.getByRole('searchbox');
+      const container = searchInput.parentElement;
+      expect(container?.getAttribute('style') ?? '').toMatch(/danger/);
     });
   });
 
@@ -459,7 +459,7 @@ describe('SearchBar Integration Tests', () => {
     it('should trigger search on Enter key press', async () => {
       render(<SearchBar />);
 
-      const searchInput = screen.getByPlaceholderText('Search tasks...');
+      const searchInput = screen.getByRole('searchbox');
       fireEvent.change(searchInput, { target: { value: 'project' } });
       fireEvent.keyDown(searchInput, { key: 'Enter' });
 
@@ -470,7 +470,7 @@ describe('SearchBar Integration Tests', () => {
     it('should handle focus and blur events', async () => {
       render(<SearchBar />);
       
-      const searchInput = screen.getByPlaceholderText('Search tasks...');
+      const searchInput = screen.getByRole('searchbox');
       
       // Test that the input can receive focus events (even if focus state isn't perfectly tracked in tests)
       fireEvent.focus(searchInput);

@@ -12,9 +12,11 @@ export function HeroSection() {
         </p>
 
         <h1 className="mb-6">
-          Organize your work.
+          Organize your work
+          <span style={{ color: "var(--accent-500)" }}>.</span>
           <br />
-          Own your data.
+          Own your data
+          <span style={{ color: "var(--accent-500)" }}>.</span>
         </h1>
 
         <p className="mx-auto max-w-[52ch] text-lg text-muted-foreground mb-10">

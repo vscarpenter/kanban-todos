@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { Task, Board } from "@/lib/types";
+import { getDotCssVar } from "@/lib/utils/boardIcons";
 
 interface BoardGroup {
   board: Board;
@@ -14,43 +15,99 @@ interface BoardStatsProps {
   boardGroups?: Record<string, BoardGroup>;
 }
 
-export function BoardStats({ tasks, isCrossBoardSearch, boardGroups = {} }: BoardStatsProps) {
-  const todoTasks = useMemo(() => tasks.filter(task => task.status === 'todo'), [tasks]);
-  const inProgressTasks = useMemo(() => tasks.filter(task => task.status === 'in-progress'), [tasks]);
-  const doneTasks = useMemo(() => tasks.filter(task => task.status === 'done'), [tasks]);
+interface StatCellProps {
+  label: string;
+  value: number;
+  color: string;
+  isFirst?: boolean;
+}
 
-  const boardStats = useMemo(() => isCrossBoardSearch ? Object.entries(boardGroups).map(([boardId, group]) => ({
-    boardId,
-    board: group.board,
-    totalTasks: group.tasks.length,
-    todoTasks: group.tasks.filter(t => t.status === 'todo').length,
-    inProgressTasks: group.tasks.filter(t => t.status === 'in-progress').length,
-    doneTasks: group.tasks.filter(t => t.status === 'done').length,
-  })) : [], [isCrossBoardSearch, boardGroups]);
+function StatCell({ label, value, color, isFirst }: StatCellProps) {
+  return (
+    <div
+      className="flex flex-col items-center justify-center px-5 py-1.5"
+      style={isFirst ? undefined : { borderLeft: "1px solid var(--hairline)" }}
+    >
+      <span
+        className="font-mono"
+        style={{
+          fontSize: "16px",
+          fontWeight: 600,
+          color,
+          fontFeatureSettings: '"tnum"',
+          lineHeight: "20px",
+        }}
+      >
+        {value}
+      </span>
+      <span
+        className="mt-0.5"
+        style={{ fontSize: "11.5px", color: "var(--ink-3)" }}
+      >
+        {label}
+      </span>
+    </div>
+  );
+}
+
+export function BoardStats({ tasks, isCrossBoardSearch, boardGroups = {} }: BoardStatsProps) {
+  const counts = useMemo(() => {
+    const todo = tasks.filter((t) => t.status === "todo").length;
+    const inProgress = tasks.filter((t) => t.status === "in-progress").length;
+    const done = tasks.filter((t) => t.status === "done").length;
+    return { total: tasks.length, todo, inProgress, done };
+  }, [tasks]);
+
+  const boardStatsList = useMemo(
+    () =>
+      isCrossBoardSearch
+        ? Object.entries(boardGroups).map(([boardId, group]) => ({
+            boardId,
+            board: group.board,
+            totalTasks: group.tasks.length,
+          }))
+        : [],
+    [isCrossBoardSearch, boardGroups]
+  );
 
   return (
-    <div className="mt-4 space-y-3">
-      {/* Overall Stats */}
-      <div className="flex items-center gap-6 text-sm text-muted-foreground">
-        <span>Total Tasks: {tasks.length}</span>
-        <span>To Do: {todoTasks.length}</span>
-        <span>In Progress: {inProgressTasks.length}</span>
-        <span>Done: {doneTasks.length}</span>
+    <div className="px-8">
+      <div
+        className="inline-flex items-center rounded-[10px]"
+        style={{
+          background: "var(--paper-card)",
+          border: "1px solid var(--hairline-strong)",
+          boxShadow: "var(--shadow-xs)",
+          padding: "4px",
+        }}
+      >
+        <StatCell label="Total" value={counts.total} color="var(--ink-2)" isFirst />
+        <StatCell label="To Do" value={counts.todo} color="var(--info-500)" />
+        <StatCell label="In Progress" value={counts.inProgress} color="var(--warn-500)" />
+        <StatCell label="Done" value={counts.done} color="var(--ok-500)" />
       </div>
 
-      {/* Board-specific Stats for cross-board search */}
-      {isCrossBoardSearch && boardStats.length > 0 && (
-        <div className="flex flex-wrap gap-4 text-xs">
-          {boardStats.map(({ boardId, board, totalTasks, todoTasks: boardTodo, inProgressTasks: boardInProgress, doneTasks: boardDone }) => (
-            <div key={boardId} className="flex items-center gap-2 px-3 py-1 bg-accent/50 rounded-md">
-              <div
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: board.color }}
+      {isCrossBoardSearch && boardStatsList.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {boardStatsList.map(({ boardId, board, totalTasks }) => (
+            <div
+              key={boardId}
+              className="flex items-center gap-2 rounded-md px-2.5 py-1"
+              style={{
+                background: "var(--paper-1)",
+                border: "1px solid var(--hairline)",
+                fontSize: "11.5px",
+                color: "var(--ink-3)",
+              }}
+            >
+              <span
+                className="block h-2 w-2 rounded-full"
+                style={{ background: getDotCssVar(board.dotColor) }}
                 aria-hidden="true"
               />
-              <span className="font-medium">{board.name}:</span>
-              <span className="text-muted-foreground">
-                {totalTasks} ({boardTodo} todo, {boardInProgress} in progress, {boardDone} done)
+              <span style={{ color: "var(--ink-2)", fontWeight: 600 }}>{board.name}</span>
+              <span className="font-mono" style={{ fontFeatureSettings: '"tnum"' }}>
+                {totalTasks}
               </span>
             </div>
           ))}

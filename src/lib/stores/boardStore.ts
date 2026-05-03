@@ -13,6 +13,7 @@ import {
   reorderBoards,
   persistBoardOrders,
   assignMissingOrders,
+  assignMissingIcons,
   createDefaultBoard,
   deserializeBoardDates,
   selectCurrentBoard,
@@ -39,16 +40,18 @@ async function loadAndEnsureDefaultBoard(): Promise<Board[]> {
 }
 
 /**
- * Processes boards by assigning missing orders and deserializing dates
+ * Processes boards by assigning missing orders, backfilling icon/dot
+ * fields on legacy boards, and deserializing dates.
  */
 async function processAndOrderBoards(boardsData: Board[]): Promise<Board[]> {
-  const { boards: boardsWithOrder, needsUpdate } = assignMissingOrders(boardsData);
+  const { boards: boardsWithOrder, needsUpdate: needsOrderUpdate } = assignMissingOrders(boardsData);
+  const { boards: boardsWithIcons, needsUpdate: needsIconUpdate } = assignMissingIcons(boardsWithOrder);
 
-  if (needsUpdate) {
-    await persistBoardOrders(boardsWithOrder);
+  if (needsOrderUpdate || needsIconUpdate) {
+    await persistBoardOrders(boardsWithIcons);
   }
 
-  return boardsWithOrder.map(deserializeBoardDates);
+  return boardsWithIcons.map(deserializeBoardDates);
 }
 
 /**

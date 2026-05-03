@@ -68,7 +68,7 @@ describe('SearchBar - Cross-board Search', () => {
   it('renders search input with correct placeholder for current board', () => {
     render(<SearchBar />);
     
-    expect(screen.getByPlaceholderText('Search tasks...')).toBeInTheDocument();
+    expect(screen.getByRole('searchbox')).toBeInTheDocument();
   });
 
   it('shows cross-board search indicator when enabled', () => {
@@ -77,7 +77,10 @@ describe('SearchBar - Cross-board Search', () => {
 
     render(<SearchBar />);
     
-    expect(screen.getByPlaceholderText('Search across all boards...')).toBeInTheDocument();
+    expect(screen.getByRole('searchbox')).toHaveAttribute(
+      'placeholder',
+      expect.stringMatching(/across all boards/i)
+    );
     
     // Reset for other tests
     mockTaskStore.filters.crossBoardSearch = false;
@@ -86,7 +89,7 @@ describe('SearchBar - Cross-board Search', () => {
   it('calls setSearchQuery when typing in search input', async () => {
     render(<SearchBar />);
 
-    const searchInput = screen.getByPlaceholderText('Search tasks...');
+    const searchInput = screen.getByRole('searchbox');
     fireEvent.change(searchInput, { target: { value: 'test query' } });
 
     // The refactored SearchBar uses useSearchState which debounces input
@@ -214,7 +217,7 @@ describe('SearchBar - Cross-board Search', () => {
   it('calls handleSearch when Enter is pressed', () => {
     render(<SearchBar />);
 
-    const searchInput = screen.getByPlaceholderText('Search tasks...');
+    const searchInput = screen.getByRole('searchbox');
     fireEvent.change(searchInput, { target: { value: 'test' } });
     fireEvent.keyDown(searchInput, { key: 'Enter' });
 
@@ -222,16 +225,6 @@ describe('SearchBar - Cross-board Search', () => {
     expect(mockSetFilters).toHaveBeenCalledWith(expect.objectContaining({ search: 'test' }));
   });
 
-  it('calls handleSearch when search button is clicked', () => {
-    render(<SearchBar />);
-
-    const searchInput = screen.getByPlaceholderText('Search tasks...');
-    fireEvent.change(searchInput, { target: { value: 'test' } });
-
-    const searchButton = screen.getByRole('button', { name: /search/i });
-    fireEvent.click(searchButton);
-
-    // setFilters is called with the complete filters object including the search value
-    expect(mockSetFilters).toHaveBeenCalledWith(expect.objectContaining({ search: 'test' }));
-  });
+  // Note: the redesign removed the explicit "Search" execute button — search runs as
+  // the user types (debounced) and on Enter. The keyboard test above covers Enter.
 });

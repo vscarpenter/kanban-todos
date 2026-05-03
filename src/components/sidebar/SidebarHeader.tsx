@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "@/lib/icons";
+import { Logo } from "@/components/Logo";
 
 interface SidebarHeaderProps {
   onToggle: () => void;
@@ -9,29 +9,30 @@ interface SidebarHeaderProps {
 
 export function SidebarHeader({ onToggle }: SidebarHeaderProps) {
   return (
-    <div className="p-6 border-b border-border relative z-10">
+    <div className="px-5 pt-[18px] pb-[18px] relative z-10">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/cascade-icon.svg"
-            alt="Cascade Logo"
-            className="w-8 h-8"
-          />
-          <h1
-            className="text-2xl font-bold tracking-tighter bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent"
+          <Logo size={28} />
+          <span
+            className="font-serif text-[22px] leading-none"
+            style={{ letterSpacing: "-0.02em", color: "var(--ink-1)" }}
           >
             Cascade
-          </h1>
+          </span>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="hidden md:flex"
+        <button
+          type="button"
           onClick={onToggle}
+          aria-label="Collapse sidebar"
+          className="hidden md:inline-flex h-[26px] w-[26px] items-center justify-center rounded-md transition-colors"
+          style={{
+            border: "1px solid var(--hairline-strong)",
+            color: "var(--ink-3)",
+            background: "transparent",
+          }}
         >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
+          <ChevronLeft className="h-[14px] w-[14px]" />
+        </button>
       </div>
     </div>
   );

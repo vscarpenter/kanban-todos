@@ -331,12 +331,12 @@ describe('Accessibility Tests', () => {
       // Check that interactive elements are focusable
       const searchInput = screen.getByRole('searchbox');
       expect(searchInput).not.toHaveAttribute('tabIndex', '-1');
-      
+
       const filterButton = screen.getByRole('button', { name: /open filters menu/i });
       expect(filterButton).not.toHaveAttribute('tabIndex', '-1');
-      
-      const searchButton = screen.getByRole('button', { name: /execute search/i });
-      expect(searchButton).not.toHaveAttribute('tabIndex', '-1');
+
+      // The redesign removed the explicit "Execute search" button — search
+      // runs as the user types and on Enter — so it's no longer asserted.
     });
 
     it('should have proper focus indicators', () => {

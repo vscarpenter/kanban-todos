@@ -1,41 +1,19 @@
 import { Task } from '@/lib/types';
-import { formatDistanceToNow } from 'date-fns';
-import { Flag, AlertTriangle, Clock } from '@/lib/icons';
+import { format } from 'date-fns';
+import { Calendar, AlertTriangle } from '@/lib/icons';
 
 /**
- * Returns the appropriate color classes for task priority badge
+ * Priority badge token mapping. Each priority gets a muted editorial fill
+ * (status-50 bg + status-700 fg) plus a 6px status-500 dot.
  */
-export function getPriorityColor(priority: Task['priority']): string {
-  switch (priority) {
-    case 'high':
-      return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-    case 'medium':
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-    case 'low':
-      return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-    default:
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-  }
-}
+export const PRIORITY_BADGE_TOKENS = {
+  low:    { bg: 'var(--ok-50)',     fg: 'var(--ok-700)',     dot: 'var(--ok-500)' },
+  medium: { bg: 'var(--warn-50)',   fg: 'var(--warn-700)',   dot: 'var(--warn-500)' },
+  high:   { bg: 'var(--danger-50)', fg: 'var(--danger-700)', dot: 'var(--danger-500)' },
+} as const;
 
 /**
- * Returns the appropriate icon for task priority
- */
-export function getPriorityIcon(priority: Task['priority']) {
-  switch (priority) {
-    case 'high':
-      return <Flag className="h-3 w-3 fill-red-600 text-red-600" />;
-    case 'medium':
-      return <Flag className="h-3 w-3 fill-yellow-600 text-yellow-600" />;
-    case 'low':
-      return <Flag className="h-3 w-3 fill-green-600 text-green-600" />;
-    default:
-      return <Flag className="h-3 w-3" />;
-  }
-}
-
-/**
- * Analyzes task due date status
+ * Analyzes task due date status.
  */
 export function getDueDateStatus(task: Task) {
   if (!task.dueDate) return null;
@@ -49,43 +27,22 @@ export function getDueDateStatus(task: Task) {
 }
 
 /**
- * Formats due date for display
+ * Editorial date format — short month + day, in mono.
+ * Example: "Apr 21" (or "Apr 21 · 2027" if not the current year).
  */
 export function formatDueDate(dueDate: Date): string {
   const now = new Date();
-  const timeDiff = dueDate.getTime() - now.getTime();
-
-  // If due within 24 hours, show relative time
-  if (Math.abs(timeDiff) <= (24 * 60 * 60 * 1000)) {
-    return formatDistanceToNow(dueDate, { addSuffix: true });
-  }
-
-  // Otherwise show date
-  return dueDate.toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: dueDate.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
-  });
+  const sameYear = dueDate.getFullYear() === now.getFullYear();
+  return sameYear
+    ? format(dueDate, 'MMM d')
+    : `${format(dueDate, 'MMM d')} · ${dueDate.getFullYear()}`;
 }
 
 /**
- * Returns the appropriate icon for due date status
+ * Footer icon — Calendar normally, AlertTriangle for overdue.
  */
 export function getDueDateIcon(isOverdue: boolean) {
-  return isOverdue ?
-    <AlertTriangle className="h-3 w-3" aria-hidden="true" /> :
-    <Clock className="h-3 w-3" aria-hidden="true" />;
-}
-
-/**
- * Gets CSS classes for due date display
- */
-export function getDueDateClasses(isOverdue: boolean, isDueSoon: boolean): string {
-  if (isOverdue) {
-    return 'text-red-600 dark:text-red-400';
-  }
-  if (isDueSoon) {
-    return 'text-orange-600 dark:text-orange-400';
-  }
-  return 'text-muted-foreground';
+  return isOverdue
+    ? <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
+    : <Calendar className="h-3.5 w-3.5" aria-hidden="true" />;
 }

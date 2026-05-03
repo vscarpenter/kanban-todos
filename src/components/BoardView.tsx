@@ -109,7 +109,7 @@ export function BoardView() {
         onCreateTask={() => setShowCreateTask(true)}
       />
 
-      <div className="p-6 border-b border-border bg-background">
+      <div className="pb-5" style={{ background: "var(--paper-0)" }}>
         <BoardStats
           tasks={displayTasks}
           isCrossBoardSearch={isCrossBoardSearch}
@@ -118,7 +118,7 @@ export function BoardView() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-6">
+      <div className="flex-1 px-8 pb-8">
         {/* Empty States */}
         {isCrossBoardSearch && displayTasks.length === 0 && (
           <EmptyState

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Filter, Globe, X } from "lucide-react";
+import { Globe, X, SlidersHorizontal } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TaskFilters } from "@/lib/types";
@@ -34,22 +34,40 @@ export function SearchFilterPopover({
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className={hasActiveFilters ? 'border-primary text-primary hover:bg-primary/10' : ''}
+        <button
+          type="button"
           aria-label={`Open filters menu${hasActiveFilters ? ` (${Object.values(filters).filter(Boolean).length} active)` : ''}`}
           aria-expanded={isOpen}
           aria-haspopup="dialog"
+          className="inline-flex items-center gap-2 rounded-lg px-3 py-2 transition-colors"
+          style={{
+            background: "var(--paper-card)",
+            border: "1px solid var(--hairline-strong)",
+            boxShadow: "var(--shadow-xs)",
+            fontSize: "12.5px",
+            fontWeight: 600,
+            color: "var(--ink-2)",
+          }}
         >
-          <Filter className={`h-4 w-4 mr-2 ${hasActiveFilters ? 'text-primary' : ''}`} aria-hidden="true" />
+          <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
           Filters
           {hasActiveFilters && (
-            <Badge className="ml-2 h-5 px-1.5 text-xs bg-primary text-primary-foreground" aria-label={`${Object.values(filters).filter(Boolean).length} active filters`}>
+            <span
+              className="font-mono inline-flex items-center justify-center rounded px-1.5"
+              style={{
+                fontSize: "11px",
+                fontWeight: 600,
+                background: "var(--accent-100)",
+                color: "var(--accent-700)",
+                minWidth: "18px",
+                fontFeatureSettings: '"tnum"',
+              }}
+              aria-label={`${Object.values(filters).filter(Boolean).length} active filters`}
+            >
               {Object.values(filters).filter(Boolean).length}
-            </Badge>
+            </span>
           )}
-        </Button>
+        </button>
       </PopoverTrigger>
       <PopoverContent className="w-80" align="end">
         <div className="space-y-4">

@@ -86,29 +86,32 @@ export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
     }
   };
 
-  const getStatusColor = (status: Task['status']) => {
+  // Editorial palette for archived task badges. Inline styles let us
+  // reference the design tokens directly so light/dark and high-contrast
+  // modes all swap without per-class duplication.
+  const getStatusBadgeStyle = (status: Task['status']): React.CSSProperties => {
     switch (status) {
       case 'todo':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300';
+        return { background: 'var(--info-50)', color: 'var(--info-500)', border: '1px solid var(--hairline)' };
       case 'in-progress':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300';
+        return { background: 'var(--warn-50)', color: 'var(--warn-700)', border: '1px solid var(--hairline)' };
       case 'done':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300';
+        return { background: 'var(--ok-50)', color: 'var(--ok-700)', border: '1px solid var(--hairline)' };
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300';
+        return { background: 'var(--paper-1)', color: 'var(--ink-3)', border: '1px solid var(--hairline)' };
     }
   };
 
-  const getPriorityColor = (priority: Task['priority']) => {
+  const getPriorityBadgeStyle = (priority: Task['priority']): React.CSSProperties => {
     switch (priority) {
       case 'low':
-        return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300';
+        return { background: 'var(--ok-50)', color: 'var(--ok-700)', border: '1px solid var(--hairline)' };
       case 'medium':
-        return 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300';
+        return { background: 'var(--warn-50)', color: 'var(--warn-700)', border: '1px solid var(--hairline)' };
       case 'high':
-        return 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-300';
+        return { background: 'var(--danger-50)', color: 'var(--danger-700)', border: '1px solid var(--hairline)' };
       default:
-        return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300';
+        return { background: 'var(--paper-1)', color: 'var(--ink-3)', border: '1px solid var(--hairline)' };
     }
   };
 
@@ -190,10 +193,10 @@ export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
                           )}
 
                           <div className="flex items-center gap-2 flex-wrap">
-                            <Badge className={`text-xs ${getStatusColor(task.status)}`}>
+                            <Badge className="text-xs" style={getStatusBadgeStyle(task.status)}>
                               {task.status.replace('-', ' ')}
                             </Badge>
-                            <Badge className={`text-xs ${getPriorityColor(task.priority)}`}>
+                            <Badge className="text-xs" style={getPriorityBadgeStyle(task.priority)}>
                               {task.priority}
                             </Badge>
                             {task.tags.map(tag => (
