@@ -6,7 +6,10 @@ export function FooterCTA() {
   return (
     <footer className="bg-surface py-20 lg:py-28">
       <div className="mx-auto max-w-2xl px-6 text-center">
-        <h2 className="mb-4">Ready to get organized?</h2>
+        <h2 className="mb-4">
+          Ready to get organized
+          <span style={{ color: "var(--accent-500)" }}>?</span>
+        </h2>
 
         <p className="text-lg text-muted-foreground mb-10">
           Free. Private. No sign-up. Open your browser and start.

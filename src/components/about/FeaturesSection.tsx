@@ -94,13 +94,13 @@ export function FeaturesSection() {
     <section className="py-20 lg:py-28">
       <div className="mx-auto max-w-6xl px-6">
         <div className="text-center mb-14">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">
-            Features
-          </p>
+          <span className="label-eyebrow block mb-3">Features</span>
           <h2>
-            Everything a task manager needs.
+            Everything a task manager needs
+            <span style={{ color: "var(--accent-500)" }}>.</span>
             <br />
-            Nothing it doesn&apos;t.
+            Nothing it doesn&apos;t
+            <span style={{ color: "var(--accent-500)" }}>.</span>
           </h2>
         </div>
 

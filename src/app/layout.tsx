@@ -118,11 +118,13 @@ export default function RootLayout({
         <meta name="msapplication-tap-highlight" content="no" />
       </head>
       <body className={`${instrumentSans.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
+        {/* disableTransitionOnChange is intentionally OFF — globals.css
+            transitions background-color, color, and border-color over 200ms
+            during the theme swap so light↔dark is a smooth crossfade. */}
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
-          disableTransitionOnChange
         >
           <IOSClassProvider />
           <NotificationProvider />

@@ -25,7 +25,7 @@ export function AppearanceSection({ localSettings, updateLocalSetting }: Setting
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <Palette className="h-5 w-5" />
-        <h3 className="text-lg font-medium">Appearance</h3>
+        <h3 className="text-base font-semibold tracking-tight">Appearance</h3>
       </div>
 
       <div className="space-y-3">
@@ -58,7 +58,7 @@ export function TaskManagementSection({ localSettings, updateLocalSetting }: Set
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <Archive className="h-5 w-5" />
-        <h3 className="text-lg font-medium">Task Management</h3>
+        <h3 className="text-base font-semibold tracking-tight">Task Management</h3>
       </div>
 
       <div className="space-y-3">
@@ -110,7 +110,7 @@ export function AccessibilitySection({
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <Accessibility className="h-5 w-5" />
-        <h3 className="text-lg font-medium">Accessibility</h3>
+        <h3 className="text-base font-semibold tracking-tight">Accessibility</h3>
       </div>
 
       <div className="space-y-3">
@@ -173,7 +173,7 @@ export function DeveloperSection({
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <Monitor className="h-5 w-5" />
-        <h3 className="text-lg font-medium">Developer</h3>
+        <h3 className="text-base font-semibold tracking-tight">Developer</h3>
       </div>
 
       <div className="space-y-3">

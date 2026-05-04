@@ -221,42 +221,26 @@ export function TaskDialog({ mode, open, onOpenChange, boardId, task }: TaskDial
           <div className="space-y-3">
             <Label>Due Date</Label>
             <div className="grid grid-cols-4 gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className={formData.dueDate && isToday(formData.dueDate) ? 'border-primary text-primary' : ''}
+              <DatePresetButton
+                label="Today"
+                isActive={!!(formData.dueDate && isToday(formData.dueDate))}
                 onClick={() => handleDateChange(getToday())}
-              >
-                Today
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className={formData.dueDate && isTomorrow(formData.dueDate) ? 'border-primary text-primary' : ''}
+              />
+              <DatePresetButton
+                label="Tomorrow"
+                isActive={!!(formData.dueDate && isTomorrow(formData.dueDate))}
                 onClick={() => handleDateChange(getTomorrow())}
-              >
-                Tomorrow
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className={formData.dueDate && isNextWeek(formData.dueDate) ? 'border-primary text-primary' : ''}
+              />
+              <DatePresetButton
+                label="Next Week"
+                isActive={!!(formData.dueDate && isNextWeek(formData.dueDate))}
                 onClick={() => handleDateChange(getNextWeek())}
-              >
-                Next Week
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className={!formData.dueDate ? 'border-primary text-primary' : ''}
+              />
+              <DatePresetButton
+                label="No Date"
+                isActive={!formData.dueDate}
                 onClick={() => handleDateChange(undefined)}
-              >
-                No Date
-              </Button>
+              />
             </div>
             {formData.dueDate && (
               <div className="text-xs text-muted text-center">
@@ -404,5 +388,46 @@ export function TaskDialog({ mode, open, onOpenChange, boardId, task }: TaskDial
       onConfirm={handleDiscardChanges}
     />
     </>
+  );
+}
+
+interface DatePresetButtonProps {
+  label: string;
+  isActive: boolean;
+  onClick: () => void;
+}
+
+/**
+ * Editorial date preset button. Inactive: secondary chrome (paper-card,
+ * hairline-strong border, xs shadow). Active: primary plum fill.
+ */
+function DatePresetButton({ label, isActive, onClick }: DatePresetButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={isActive}
+      className="inline-flex items-center justify-center rounded-md transition-colors"
+      style={{
+        padding: "8px 10px",
+        fontSize: "12px",
+        fontWeight: 600,
+        ...(isActive
+          ? {
+              background: "var(--accent-500)",
+              color: "var(--accent-ink)",
+              border: "1px solid var(--accent-600)",
+              boxShadow: "var(--shadow-sm)",
+            }
+          : {
+              background: "var(--paper-card)",
+              color: "var(--ink-2)",
+              border: "1px solid var(--hairline-strong)",
+              boxShadow: "var(--shadow-xs)",
+            }),
+      }}
+    >
+      {label}
+    </button>
   );
 }

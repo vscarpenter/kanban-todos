@@ -1,13 +1,42 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Globe, X, SlidersHorizontal } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TaskFilters } from "@/lib/types";
+
+interface ActiveFilterChipProps {
+  label: string;
+  onRemove: () => void;
+}
+
+function ActiveFilterChip({ label, onRemove }: ActiveFilterChipProps) {
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 rounded"
+      style={{
+        padding: "2px 4px 2px 8px",
+        background: "var(--accent-50)",
+        color: "var(--accent-700)",
+        border: "1px solid var(--accent-100)",
+        fontSize: "11px",
+        fontWeight: 500,
+      }}
+    >
+      {label}
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label={`Remove ${label}`}
+        className="inline-flex h-4 w-4 items-center justify-center rounded transition-colors hover:bg-[var(--accent-100)]"
+      >
+        <X className="h-3 w-3" />
+      </button>
+    </span>
+  );
+}
 
 interface SearchFilterPopoverProps {
   filters: TaskFilters;
@@ -69,56 +98,68 @@ export function SearchFilterPopover({
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-80" align="end">
+      <PopoverContent className="w-[280px] p-4" align="end">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h4 className="font-medium">Filter Tasks</h4>
+            <span className="label-eyebrow">Filter</span>
             {hasActiveFilters && (
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
+                type="button"
                 onClick={onClearFilters}
-                className="h-6 px-2 text-xs"
+                className="transition-colors hover:text-[var(--ink-1)]"
+                style={{
+                  fontSize: "11.5px",
+                  fontWeight: 500,
+                  color: "var(--ink-3)",
+                }}
               >
                 Clear all
-              </Button>
+              </button>
             )}
           </div>
 
           {/* Search Scope Toggle */}
-          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-            <div className="space-y-1">
+          <div
+            className="flex items-center justify-between rounded-lg p-3"
+            style={{
+              background: "var(--paper-1)",
+              border: "1px solid var(--hairline)",
+            }}
+          >
+            <div>
               <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                <Globe className="h-3.5 w-3.5" style={{ color: "var(--ink-3)" }} aria-hidden="true" />
                 <label
                   htmlFor="cross-board-search-toggle"
-                  className="text-sm font-medium cursor-pointer"
+                  className="cursor-pointer"
+                  style={{ fontSize: "12.5px", fontWeight: 600, color: "var(--ink-1)" }}
                 >
                   Search all boards
                 </label>
               </div>
               <p
-                className="text-xs text-muted-foreground"
+                className="mt-1"
                 id="cross-board-search-description"
+                style={{ fontSize: "11px", color: "var(--ink-4)" }}
               >
                 {filters.crossBoardSearch
                   ? "Searching across all boards"
-                  : "Searching current board only"
-                }
+                  : "Searching current board only"}
               </p>
             </div>
             <Switch
               id="cross-board-search-toggle"
               checked={filters.crossBoardSearch}
               onCheckedChange={onScopeToggle}
+              className="data-[state=checked]:bg-[var(--accent-500)]"
               aria-describedby="cross-board-search-description"
               aria-label={`Toggle cross-board search. Currently ${filters.crossBoardSearch ? 'enabled' : 'disabled'}`}
             />
           </div>
 
           {/* Status Filter */}
-          <div className="space-y-2">
-            <label htmlFor="status-filter" className="text-sm font-medium">Status</label>
+          <div className="space-y-1.5">
+            <label htmlFor="status-filter" className="label-eyebrow block">Status</label>
             <Select
               value={localFilters.status || 'all'}
               onValueChange={(value) => onFilterChange('status', value)}
@@ -136,8 +177,8 @@ export function SearchFilterPopover({
           </div>
 
           {/* Priority Filter */}
-          <div className="space-y-2">
-            <label htmlFor="priority-filter" className="text-sm font-medium">Priority</label>
+          <div className="space-y-1.5">
+            <label htmlFor="priority-filter" className="label-eyebrow block">Priority</label>
             <Select
               value={localFilters.priority || 'all'}
               onValueChange={(value) => onFilterChange('priority', value)}
@@ -155,35 +196,21 @@ export function SearchFilterPopover({
           </div>
 
           {/* Active Filters Display */}
-          {hasActiveFilters && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Active Filters</label>
-              <div className="flex flex-wrap gap-2">
+          {hasActiveFilters && (filters.status || filters.priority) && (
+            <div className="space-y-1.5">
+              <span className="label-eyebrow block">Active</span>
+              <div className="flex flex-wrap gap-1.5">
                 {filters.status && (
-                  <Badge className="text-xs bg-primary/10 text-primary border-primary/20">
-                    Status: {filters.status}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-4 w-4 p-0 ml-1 hover:bg-primary/20 text-primary"
-                      onClick={() => onFilterChange('status', undefined)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </Badge>
+                  <ActiveFilterChip
+                    label={`Status: ${filters.status}`}
+                    onRemove={() => onFilterChange('status', undefined)}
+                  />
                 )}
                 {filters.priority && (
-                  <Badge className="text-xs bg-primary/10 text-primary border-primary/20">
-                    Priority: {filters.priority}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-4 w-4 p-0 ml-1 hover:bg-primary/20 text-primary"
-                      onClick={() => onFilterChange('priority', undefined)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </Badge>
+                  <ActiveFilterChip
+                    label={`Priority: ${filters.priority}`}
+                    onRemove={() => onFilterChange('priority', undefined)}
+                  />
                 )}
               </div>
             </div>

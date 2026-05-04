@@ -101,13 +101,13 @@ function StepList() {
 function Explanation() {
   return (
     <div className="order-1 lg:order-2">
-      <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">
-        How Cascade Works
-      </p>
+      <span className="label-eyebrow block mb-3">How Cascade Works</span>
       <h2 className="mb-6">
-        Three columns.
+        Three columns
+        <span style={{ color: "var(--accent-500)" }}>.</span>
         <br />
-        Total clarity.
+        Total clarity
+        <span style={{ color: "var(--accent-500)" }}>.</span>
       </h2>
 
       <div className="space-y-4 text-muted-foreground leading-7 mb-8">

@@ -12,8 +12,19 @@ import {
   Lightbulb,
   CheckCircle,
   Share,
-  Calendar
+  Calendar,
+  Zap,
+  Clock,
+  Target,
 } from "lucide-react";
+
+/**
+ * Small inline glyph used in guide step badges. Replaces the emoji-as-badge
+ * pattern with a curated lucide icon for brand consistency.
+ */
+function Glyph({ icon: Icon }: { icon: React.ComponentType<{ className?: string }> }) {
+  return <Icon className="h-3 w-3" />;
+}
 
 export interface GuideStep {
   title: string;
@@ -247,7 +258,7 @@ export const guideSteps: GuideStep[] = [
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <Badge variant="outline" className="mt-1">💡</Badge>
+            <Badge variant="outline" className="mt-1"><Glyph icon={Lightbulb} /></Badge>
             <div>
               <p className="font-medium">Pro Tip</p>
               <p className="text-sm text-muted-foreground">
@@ -269,28 +280,28 @@ export const guideSteps: GuideStep[] = [
         </p>
         <div className="space-y-3">
           <div className="flex items-start gap-3">
-            <Badge variant="outline" className="mt-1">📅</Badge>
+            <Badge variant="outline" className="mt-1"><Glyph icon={Calendar} /></Badge>
             <div>
               <p className="font-medium">Smart date picker</p>
               <p className="text-sm text-muted-foreground">Click the due date field to open the interactive calendar</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <Badge variant="outline" className="mt-1">⚡</Badge>
+            <Badge variant="outline" className="mt-1"><Glyph icon={Zap} /></Badge>
             <div>
               <p className="font-medium">Quick presets available</p>
               <p className="text-sm text-muted-foreground">Choose &ldquo;Today&rdquo;, &ldquo;Tomorrow&rdquo;, or &ldquo;Next Week&rdquo; for faster scheduling</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <Badge variant="outline" className="mt-1">🕐</Badge>
+            <Badge variant="outline" className="mt-1"><Glyph icon={Clock} /></Badge>
             <div>
               <p className="font-medium">Set specific times</p>
               <p className="text-sm text-muted-foreground">Choose exact times in 15-minute intervals using the time dropdown</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <Badge variant="outline" className="mt-1">🎯</Badge>
+            <Badge variant="outline" className="mt-1"><Glyph icon={Target} /></Badge>
             <div>
               <p className="font-medium">Clear due dates anytime</p>
               <p className="text-sm text-muted-foreground">Use the &ldquo;Clear&rdquo; button to remove due dates if plans change</p>
@@ -354,7 +365,7 @@ export const guideSteps: GuideStep[] = [
         </p>
         <div className="space-y-3">
           <div className="flex items-start gap-3">
-            <Badge variant="outline" className="mt-1">🔍</Badge>
+            <Badge variant="outline" className="mt-1"><Glyph icon={Search} /></Badge>
             <div>
               <p className="font-medium">Search by text</p>
               <p className="text-sm text-muted-foreground">Search task titles and descriptions</p>
@@ -368,21 +379,21 @@ export const guideSteps: GuideStep[] = [
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <Badge variant="outline" className="mt-1">⚡</Badge>
+            <Badge variant="outline" className="mt-1"><Glyph icon={Zap} /></Badge>
             <div>
               <p className="font-medium">Filter by priority</p>
               <p className="text-sm text-muted-foreground">Focus on high, medium, or low priority tasks</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <Badge variant="outline" className="mt-1">📊</Badge>
+            <Badge variant="outline" className="mt-1"><Glyph icon={BarChart3} /></Badge>
             <div>
               <p className="font-medium">Filter by status</p>
               <p className="text-sm text-muted-foreground">View only tasks in specific columns</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <Badge variant="outline" className="mt-1">📅</Badge>
+            <Badge variant="outline" className="mt-1"><Glyph icon={Calendar} /></Badge>
             <div>
               <p className="font-medium">View overdue tasks</p>
               <p className="text-sm text-muted-foreground">Tasks with past due dates are highlighted for easy identification</p>
@@ -450,7 +461,7 @@ export const guideSteps: GuideStep[] = [
             </ul>
           </div>
           <div>
-            <h4 className="font-medium mb-2">🎯 Productivity Tips</h4>
+            <h4 className="font-medium mb-2 flex items-center gap-2"><Target className="h-4 w-4" /> Productivity Tips</h4>
             <ul className="space-y-1 text-sm text-muted-foreground ml-4">
               <li>• Create separate boards for different projects</li>
               <li>• Use the search function to quickly find tasks</li>
