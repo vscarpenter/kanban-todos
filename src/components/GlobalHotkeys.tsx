@@ -1,31 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
+import { useEffect } from "react";
 import { keyboardManager } from "@/lib/utils/keyboard";
 import { useBoardStore } from "@/lib/stores/boardStore";
 import { useSettingsStore } from "@/lib/stores/settingsStore";
 
-// Lazy load the TaskDialog to avoid initial bundle size
-const TaskDialog = dynamic(() => import("./TaskDialog").then(mod => ({ default: mod.TaskDialog })), {
-  loading: () => null
-});
-
 export function GlobalHotkeys() {
-  const [showQuickAdd, setShowQuickAdd] = useState(false);
-  const { boards, currentBoardId, selectBoard } = useBoardStore();
+  const { currentBoardId, boards, selectBoard } = useBoardStore();
   const { settings } = useSettingsStore();
 
   useEffect(() => {
     if (!settings.enableKeyboardShortcuts) return;
 
-    // Global task creation (Ctrl/Cmd + K)
+    // Global task creation (Ctrl/Cmd + K) - trigger BoardView dialog
     keyboardManager.registerShortcut({
       key: 'k',
       ctrl: true,
       action: () => {
         if (currentBoardId) {
-          setShowQuickAdd(true);
+          document.dispatchEvent(new CustomEvent('show-create-task-dialog'));
         }
       },
       description: 'Quick add task',
@@ -38,19 +31,19 @@ export function GlobalHotkeys() {
       meta: true,
       action: () => {
         if (currentBoardId) {
-          setShowQuickAdd(true);
+          document.dispatchEvent(new CustomEvent('show-create-task-dialog'));
         }
       },
       description: 'Quick add task (Mac)',
       category: 'Global'
     });
 
-    // Simple 'n' key for new task
+    // Simple 'n' key for new task - trigger BoardView dialog
     keyboardManager.registerShortcut({
       key: 'n',
       action: () => {
         if (currentBoardId) {
-          setShowQuickAdd(true);
+          document.dispatchEvent(new CustomEvent('show-create-task-dialog'));
         }
       },
       description: 'Create new task',
@@ -139,16 +132,6 @@ export function GlobalHotkeys() {
     };
   }, [settings.enableKeyboardShortcuts, currentBoardId, boards, selectBoard]);
 
-  return (
-    <>
-      {showQuickAdd && currentBoardId && (
-        <TaskDialog
-          mode="create"
-          open={showQuickAdd}
-          onOpenChange={setShowQuickAdd}
-          boardId={currentBoardId}
-        />
-      )}
-    </>
-  );
+  // This component now just registers shortcuts, doesn't render anything
+  return null;
 }

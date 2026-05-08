@@ -20,6 +20,19 @@ export function BoardView() {
 
   const currentBoard = getCurrentBoard();
 
+  // Listen for keyboard shortcut events to open task dialog
+  useEffect(() => {
+    const handleShowCreateTaskDialog = () => {
+      setInitialStatus('todo');
+      setShowCreateTask(true);
+    };
+
+    document.addEventListener('show-create-task-dialog', handleShowCreateTaskDialog);
+    return () => {
+      document.removeEventListener('show-create-task-dialog', handleShowCreateTaskDialog);
+    };
+  }, []);
+
   // Handle board navigation from search results
   const handleNavigateToBoard = useCallback(async (boardId: string, taskId: string) => {
     try {
