@@ -32,7 +32,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
       <aside
         className={[
           "fixed md:relative inset-y-0 left-0 z-40",
-          "transform transition-transform duration-300 ease-in-out",
+          "transform transition-transform duration-200 ease-out",
           isOpen ? "translate-x-0" : "-translate-x-full",
           "w-[280px] flex flex-col sidebar-glass",
         ].join(" ")}

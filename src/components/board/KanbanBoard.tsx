@@ -4,8 +4,7 @@ import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { Task } from "@/lib/types";
 import KanbanColumn from "../kanban/KanbanColumn";
-import { ColumnNavigator } from "./ColumnNavigator";
-import { useSettingsStore } from "@/lib/stores/settingsStore";
+import { ColumnTabs } from "./ColumnTabs";
 
 // Lazy load drag-and-drop functionality
 const DragDropProvider = dynamic(() => import("../DragDropProvider").then(mod => ({ default: mod.DragDropProvider })), {
@@ -16,15 +15,16 @@ const DragDropProvider = dynamic(() => import("../DragDropProvider").then(mod =>
 interface KanbanBoardProps {
   tasks: Task[];
   onNavigateToBoard: (boardId: string, taskId: string) => void;
+  onAddTask?: (status: Task['status']) => void;
 }
 
-export function KanbanBoard({ tasks, onNavigateToBoard }: KanbanBoardProps) {
+export function KanbanBoard({ tasks, onNavigateToBoard, onAddTask }: KanbanBoardProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [activeColumnIndex, setActiveColumnIndex] = useState(0);
+  const [activeColumn, setActiveColumn] = useState<Task['status']>('todo');
   const [isScrolling, setIsScrolling] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const { settings } = useSettingsStore();
 
   // Memoize filtered tasks to avoid unnecessary recalculations
   const todoTasks = useMemo(() => tasks.filter(task => task.status === 'todo'), [tasks]);
@@ -87,28 +87,6 @@ export function KanbanBoard({ tasks, onNavigateToBoard }: KanbanBoardProps) {
     };
   }, [activeColumnIndex, columns, announceColumnChange]);
 
-  // Handle column navigation with smooth animations
-  const handleColumnSelect = useCallback((index: number) => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const columnWidth = container.offsetWidth;
-
-    // Use smooth scrolling unless user has reduced motion preference
-    const scrollBehavior = settings.accessibility.reduceMotion ? 'auto' : 'smooth';
-
-    container.scrollTo({
-      left: columnWidth * index,
-      behavior: scrollBehavior
-    });
-
-    // Announce navigation to screen readers
-    const column = columns[index];
-    if (column) {
-      announceColumnChange(column.title, column.count);
-    }
-  }, [columns, announceColumnChange, settings.accessibility.reduceMotion]);
-
   // Handle drag start - disable scrolling
   const handleDragStart = useCallback(() => {
     setIsDragging(true);
@@ -129,6 +107,16 @@ export function KanbanBoard({ tasks, onNavigateToBoard }: KanbanBoardProps) {
     }
   }, []);
 
+  // Handle column tab change on mobile
+  const handleColumnTabChange = useCallback((column: Task['status']) => {
+    setActiveColumn(column);
+    // Update active column index for consistency
+    const index = columns.findIndex(col => col.status === column);
+    if (index !== -1) {
+      setActiveColumnIndex(index);
+    }
+  }, [columns]);
+
   return (
     <DragDropProvider onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="flex flex-col gap-4 h-full">
@@ -143,10 +131,12 @@ export function KanbanBoard({ tasks, onNavigateToBoard }: KanbanBoardProps) {
 
         {/* Column Navigator - Mobile Only */}
         <div className="md:hidden">
-          <ColumnNavigator
-            columns={columns}
-            activeIndex={activeColumnIndex}
-            onSelectColumn={handleColumnSelect}
+          <ColumnTabs
+            activeColumn={activeColumn}
+            onColumnChange={handleColumnTabChange}
+            todoCount={todoTasks.length}
+            inProgressCount={inProgressTasks.length}
+            doneCount={doneTasks.length}
           />
         </div>
 
@@ -166,6 +156,8 @@ export function KanbanBoard({ tasks, onNavigateToBoard }: KanbanBoardProps) {
             tasks={todoTasks}
             status="todo"
             onNavigateToBoard={onNavigateToBoard}
+            onAddTask={onAddTask}
+            className={activeColumn === 'todo' ? 'flex' : 'hidden md:flex'}
           />
 
           <KanbanColumn
@@ -173,6 +165,8 @@ export function KanbanBoard({ tasks, onNavigateToBoard }: KanbanBoardProps) {
             tasks={inProgressTasks}
             status="in-progress"
             onNavigateToBoard={onNavigateToBoard}
+            onAddTask={onAddTask}
+            className={activeColumn === 'in-progress' ? 'flex' : 'hidden md:flex'}
           />
 
           <KanbanColumn
@@ -180,6 +174,8 @@ export function KanbanBoard({ tasks, onNavigateToBoard }: KanbanBoardProps) {
             tasks={doneTasks}
             status="done"
             onNavigateToBoard={onNavigateToBoard}
+            onAddTask={onAddTask}
+            className={activeColumn === 'done' ? 'flex' : 'hidden md:flex'}
           />
         </div>
       </div>

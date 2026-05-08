@@ -31,6 +31,7 @@ interface TaskDialogProps {
   onOpenChange: (open: boolean) => void;
   boardId: string;
   task?: Task; // Required for edit mode
+  initialStatus?: Task['status']; // Optional initial status for create mode
 }
 
 interface FormData {
@@ -42,7 +43,7 @@ interface FormData {
   dueDate: Date | undefined;
 }
 
-export function TaskDialog({ mode, open, onOpenChange, boardId, task }: TaskDialogProps) {
+export function TaskDialog({ mode, open, onOpenChange, boardId, task, initialStatus }: TaskDialogProps) {
   const { addTask, updateTask } = useTaskStore();
   const { execute, isLoading } = useAsyncOperation({
     errorMessage: `Failed to ${mode} task`,
@@ -144,7 +145,7 @@ export function TaskDialog({ mode, open, onOpenChange, boardId, task }: TaskDial
           description: formData.description.trim() || undefined,
           priority: formData.priority,
           tags,
-          status: 'todo',
+          status: initialStatus || 'todo',
           boardId,
           dueDate: formData.dueDate || undefined,
         });

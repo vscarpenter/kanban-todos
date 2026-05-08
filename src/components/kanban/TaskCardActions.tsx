@@ -16,6 +16,11 @@ import { TaskDialog } from "../TaskDialog";
 import { ShareTaskDialog } from "../ShareTaskDialog";
 import { MoveTaskDialog } from "../MoveTaskDialog";
 import { DeleteTaskDialog } from "../DeleteTaskDialog";
+import {
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface TaskCardActionsProps {
   task: Task;
@@ -29,7 +34,7 @@ export function TaskCardActions({ task }: TaskCardActionsProps) {
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showMoveDialog, setShowMoveDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const { deleteTask, archiveTask } = useTaskStore();
+  const { deleteTask, archiveTask, moveTask } = useTaskStore();
 
   const handleDelete = useCallback(() => {
     setShowDeleteDialog(true);
@@ -43,6 +48,10 @@ export function TaskCardActions({ task }: TaskCardActionsProps) {
     await archiveTask(task.id);
   }, [archiveTask, task.id]);
 
+  const handleMoveToColumn = useCallback(async (status: Task['status']) => {
+    await moveTask(task.id, status);
+  }, [moveTask, task.id]);
+
   return (
     <>
       <DropdownMenu>
@@ -50,7 +59,7 @@ export function TaskCardActions({ task }: TaskCardActionsProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 w-6 p-0 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="h-9 w-9 md:h-6 md:w-6 p-0 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             aria-label={`Task options for ${task.title}`}
           >
             <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
@@ -65,6 +74,23 @@ export function TaskCardActions({ task }: TaskCardActionsProps) {
             <Share className="h-4 w-4 mr-2" />
             Share Task
           </DropdownMenuItem>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <Move className="h-4 w-4 mr-2" />
+              Move to Column
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem onClick={() => handleMoveToColumn('todo')}>
+                To Do
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleMoveToColumn('in-progress')}>
+                In Progress
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleMoveToColumn('done')}>
+                Done
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
           <DropdownMenuItem onClick={() => setShowMoveDialog(true)}>
             <Move className="h-4 w-4 mr-2" />
             Move to Board

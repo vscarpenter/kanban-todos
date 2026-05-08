@@ -30,7 +30,7 @@ function ActiveFilterChip({ label, onRemove }: ActiveFilterChipProps) {
         type="button"
         onClick={onRemove}
         aria-label={`Remove ${label}`}
-        className="inline-flex h-4 w-4 items-center justify-center rounded transition-colors hover:bg-[var(--accent-100)]"
+        className="inline-flex h-6 w-6 items-center justify-center rounded transition-colors hover:bg-[var(--accent-100)]"
       >
         <X className="h-3 w-3" />
       </button>
@@ -68,7 +68,7 @@ export function SearchFilterPopover({
           aria-label={`Open filters menu${hasActiveFilters ? ` (${Object.values(filters).filter(Boolean).length} active)` : ''}`}
           aria-expanded={isOpen}
           aria-haspopup="dialog"
-          className="inline-flex items-center gap-2 rounded-lg px-3 py-2 transition-colors"
+          className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 md:px-3 md:py-2 transition-colors touch-target-mobile"
           style={{
             background: "var(--paper-card)",
             border: "1px solid var(--hairline-strong)",
@@ -106,7 +106,7 @@ export function SearchFilterPopover({
               <button
                 type="button"
                 onClick={onClearFilters}
-                className="transition-colors hover:text-[var(--ink-1)]"
+                className="transition-colors hover:text-[var(--ink-1)] px-2 py-1 touch-target-mobile"
                 style={{
                   fontSize: "11.5px",
                   fontWeight: 500,
