@@ -83,18 +83,20 @@ export function KanbanColumn({ title, tasks, status, onNavigateToBoard, onAddTas
           </span>
           <span className="kanban-column__count">{tasks.length}</span>
         </div>
-        <button
-          type="button"
-          aria-label={`Add task to ${title}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            onAddTask?.(status);
-          }}
-          className="inline-flex h-10 w-10 md:h-6 md:w-6 items-center justify-center rounded-md transition-colors hover:bg-[var(--paper-1)]"
-          style={{ color: "var(--ink-4)" }}
-        >
-          <Plus className="h-5 w-5 md:h-3.5 md:w-3.5" />
-        </button>
+        {status === 'todo' && (
+          <button
+            type="button"
+            aria-label={`Add task to ${title}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddTask?.(status);
+            }}
+            className="inline-flex h-10 w-10 md:h-6 md:w-6 items-center justify-center rounded-md transition-colors hover:bg-[var(--paper-1)]"
+            style={{ color: "var(--ink-4)" }}
+          >
+            <Plus className="h-5 w-5 md:h-3.5 md:w-3.5" />
+          </button>
+        )}
       </div>
 
       <div
@@ -120,9 +122,9 @@ export function KanbanColumn({ title, tasks, status, onNavigateToBoard, onAddTas
                 No tasks yet
               </p>
               <p className="mt-0.5" style={{ fontSize: "11px", color: "var(--ink-4)" }}>
-                Drag one here or create your first task
+                {status === 'todo' ? "Create your first task or drag one here" : "Drag tasks here to update their status"}
               </p>
-              {onAddTask && (
+              {status === 'todo' && onAddTask && (
                 <button
                   type="button"
                   onClick={(e) => {
