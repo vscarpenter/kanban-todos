@@ -136,7 +136,7 @@ export function TaskDialog({ mode, open, onOpenChange, boardId, task, initialSta
 
     if (!formData.title.trim()) return;
 
-    const result = await execute(async () => {
+    await execute(async () => {
       const tags = parseTags(formData.tags);
 
       if (mode === "create") {
@@ -167,10 +167,9 @@ export function TaskDialog({ mode, open, onOpenChange, boardId, task, initialSta
       }
     });
 
-    // Only close dialog on success (result is not undefined)
-    if (result !== undefined) {
-      onOpenChange(false);
-    }
+    // Always close dialog after operation completes
+    // execute handles error display with toasts, so users will be informed of any issues
+    onOpenChange(false);
   };
 
   const handleInputChange = (field: keyof FormData, value: string) => {
