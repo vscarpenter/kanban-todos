@@ -86,7 +86,10 @@ export function KanbanColumn({ title, tasks, status, onNavigateToBoard, onAddTas
         <button
           type="button"
           aria-label={`Add task to ${title}`}
-          onClick={() => onAddTask?.(status)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onAddTask?.(status);
+          }}
           className="inline-flex h-10 w-10 md:h-6 md:w-6 items-center justify-center rounded-md transition-colors hover:bg-[var(--paper-1)]"
           style={{ color: "var(--ink-4)" }}
         >
@@ -122,7 +125,10 @@ export function KanbanColumn({ title, tasks, status, onNavigateToBoard, onAddTas
               {onAddTask && (
                 <button
                   type="button"
-                  onClick={() => onAddTask(status)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddTask(status);
+                  }}
                   className="mt-4 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
                   style={{
                     backgroundColor: "var(--primary)",
