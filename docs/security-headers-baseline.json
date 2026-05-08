@@ -11,6 +11,11 @@
     "permissions-policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()"
   },
   "csp": {
+    "_notes": [
+      "script-src and style-src include 'unsafe-inline' because Next.js App Router static export emits inline <script> tags for next-themes anti-FOUC, RSC payload hydration (self.__next_f.push(...)), and the Next.js error page. Tightening this further (via 'strict-dynamic' + per-page hashes) is tracked as a follow-up.",
+      "worker-src 'self' is required because the PWA registers a service worker (/sw.js).",
+      "upgrade-insecure-requests rewrites any accidental http:// asset URLs to https:// at the browser, blocking mixed-content downgrades."
+    ],
     "requiredDirectives": [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline'",
@@ -20,7 +25,9 @@
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
-      "frame-ancestors 'none'"
+      "frame-ancestors 'none'",
+      "worker-src 'self'",
+      "upgrade-insecure-requests"
     ],
     "disallowedTokens": [
       "'unsafe-eval'",

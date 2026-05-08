@@ -106,28 +106,26 @@ export function generateTaskMailtoLink(task: Task, recipientEmail?: string): str
 }
 
 /**
- * Copy text to clipboard with fallback
+ * Copy text to the clipboard via the async Clipboard API.
+ *
+ * The previous implementation included a `document.execCommand('copy')`
+ * fallback for non-secure contexts and old browsers, but `execCommand` is
+ * deprecated, requires injecting a hidden DOM node, and is unavailable in
+ * every browser our `package.json` browserslist targets — Cascade is also
+ * served exclusively over HTTPS, so the fallback path was unreachable in
+ * practice. Removing it eliminates dead code and drops a vector that
+ * static analysers regularly flag.
  */
 export async function copyToClipboard(text: string): Promise<boolean> {
+  if (!navigator.clipboard || !window.isSecureContext) {
+    logger.error(
+      'Clipboard API unavailable. Cascade requires a secure (https://) context.'
+    );
+    return false;
+  }
   try {
-    if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(text);
-      return true;
-    } else {
-      // Fallback for older browsers or non-HTTPS
-      const textArea = document.createElement('textarea');
-      textArea.value = text;
-      textArea.style.position = 'fixed';
-      textArea.style.left = '-999999px';
-      textArea.style.top = '-999999px';
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      
-      const result = document.execCommand('copy');
-      document.body.removeChild(textArea);
-      return result;
-    }
+    await navigator.clipboard.writeText(text);
+    return true;
   } catch (error) {
     logger.error('Failed to copy to clipboard:', error);
     return false;

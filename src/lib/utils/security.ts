@@ -28,7 +28,21 @@ const ALLOWED_PATTERNS = {
 } as const;
 
 /**
- * Removes dangerous protocols and event handlers from input
+ * Defence-in-depth: strip a few known-dangerous substrings before storing
+ * user-controlled text in IndexedDB.
+ *
+ * **The actual XSS defence** for this app is React's automatic escaping of
+ * any value rendered as a child or attribute (we never use
+ * `dangerouslySetInnerHTML`; this is enforced by the `react/no-danger`
+ * ESLint rule), backed by the `Content-Security-Policy` response header
+ * (see `docs/security-headers-baseline.json`).
+ *
+ * This blacklist is intentionally lightweight — it makes a stored payload
+ * harder to misuse if it ever escapes React (e.g., copied into an
+ * `innerHTML` sink in a downstream tool, or rendered in a non-React export
+ * pipeline). Do NOT treat it as sufficient for any new context. New sinks
+ * MUST go through proper context-aware encoding (DOMPurify for HTML, JSON
+ * encoding for `<script>` data, etc.) instead of relying on this function.
  */
 function removeDangerousContent(input: string): string {
   return input

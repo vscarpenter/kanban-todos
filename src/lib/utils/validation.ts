@@ -107,8 +107,8 @@ function validateStringSchema(
   if (schema.maxLength && data.length > schema.maxLength) {
     warnings.push({ path, message: `String too long. Maximum: ${schema.maxLength}`, value: data.length, suggestion: 'Will be truncated' });
   }
-  if (schema.pattern && !new RegExp(schema.pattern).test(data)) {
-    errors.push({ path, message: `String does not match pattern: ${schema.pattern}`, value: data, severity: 'error' });
+  if (schema.pattern && !schema.pattern.test(data)) {
+    errors.push({ path, message: `String does not match pattern: ${schema.pattern.source}`, value: data, severity: 'error' });
   }
   if (schema.enum && !schema.enum.includes(data)) {
     errors.push({ path, message: `Invalid value. Must be: ${schema.enum.join(', ')}`, value: data, severity: 'error' });
