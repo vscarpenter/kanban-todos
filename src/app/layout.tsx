@@ -89,8 +89,10 @@ export const metadata: Metadata = {
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false, // Prevent zoom on iOS for better touch UX
+  // Intentionally do NOT set maximumScale or userScalable: pinch-to-zoom is
+  // an accessibility requirement (WCAG 2.2 SC 1.4.4 Resize Text) and the iOS
+  // input-zoom annoyance is already handled by setting `font-size: 16px` on
+  // the relevant inputs in globals.css.
   shrinkToFit: "no", // Prevent iOS Safari from shrinking viewport
   viewportFit: "cover", // For iOS notch handling
   themeColor: [

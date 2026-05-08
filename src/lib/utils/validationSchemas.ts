@@ -16,7 +16,12 @@ export interface ValidationSchema {
   maxItems?: number;
   minLength?: number;
   maxLength?: number;
-  pattern?: string;
+  /**
+   * Pre-compiled regular expression. Compiled once at module load instead of
+   * on every `validateSchema(...)` call so importing a large export.json
+   * doesn't pay the parse cost per item.
+   */
+  pattern?: RegExp;
   enum?: unknown[];
   format?: string;
   minimum?: number;
@@ -84,7 +89,7 @@ export const boardSchema: ValidationSchema = {
     id: { type: 'string', minLength: 1 },
     name: { type: 'string', minLength: 1, maxLength: 100 },
     description: { type: ['string', 'undefined'], maxLength: 500 },
-    color: { type: 'string', pattern: '^#[0-9A-Fa-f]{6}$' },
+    color: { type: 'string', pattern: /^#[0-9A-Fa-f]{6}$/ },
     isDefault: { type: 'boolean' },
     order: { type: 'number', minimum: 0 },
     createdAt: { type: 'string', format: 'date-time' },
@@ -133,7 +138,7 @@ export const settingsSchema: ValidationSchema = {
 export const exportDataSchema: ValidationSchema = {
   type: 'object',
   properties: {
-    version: { type: 'string', pattern: '^\\d+\\.\\d+\\.\\d+$' },
+    version: { type: 'string', pattern: /^\d+\.\d+\.\d+$/ },
     exportedAt: { type: 'string', format: 'date-time' },
     tasks: { type: 'array', items: taskSchema },
     boards: { type: 'array', items: boardSchema },

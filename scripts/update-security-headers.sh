@@ -49,8 +49,6 @@ build_csp() {
     fi
     csp="${csp:+$csp; }$directive"
   done < <(jq -r '.csp.requiredDirectives[]' "$BASELINE_FILE")
-  # Add upgrade-insecure-requests as a hardening measure
-  csp="$csp; upgrade-insecure-requests"
   echo "$csp"
 }
 
@@ -108,11 +106,12 @@ for POLICY_ID in $POLICY_IDS; do
       "IncludeSubdomains": true,
       "Preload": false
     }
-    # Set X-XSS-Protection (deprecated but required by CloudFront API)
+    # X-XSS-Protection is deprecated and can introduce its own XSS in legacy
+    # browsers (Edge Legacy, IE). OWASP recommends sending "X-XSS-Protection: 0"
+    # for sites with a strong CSP, which is what `Protection: false` sends.
     | .SecurityHeadersConfig.XSSProtection = {
       "Override": true,
-      "Protection": true,
-      "ModeBlock": true
+      "Protection": false
     }
     '
   )"

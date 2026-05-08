@@ -1,14 +1,21 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Multi-Environment Deployment Script for Cascade Kanban
 # Supports deployment to multiple S3 buckets and CloudFront distributions
 
-set -e  # Exit on any error
+# -e:        exit on any non-zero command
+# -u:        treat unset variables as an error
+# -o pipefail: a pipeline returns the first non-zero exit code, not the last
+set -euo pipefail
 
 # Default configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 CONFIG_FILE="$PROJECT_DIR/deploy-config.json"
+
+# Optional flag controlled by --wait-invalidation. Default to empty so `set -u`
+# doesn't trip when checking it.
+WAIT_FOR_INVALIDATION="${WAIT_FOR_INVALIDATION:-}"
 
 # Colors for output
 RED='\033[0;31m'
@@ -38,28 +45,36 @@ info() {
 # Function to load environment configuration
 load_config() {
     local env_name="$1"
-    
+
     if [ ! -f "$CONFIG_FILE" ]; then
         error "Configuration file not found: $CONFIG_FILE"
     fi
-    
+
     if ! command -v jq &> /dev/null; then
         error "jq is not installed. Please install jq to parse JSON configuration."
     fi
-    
-    # Check if environment exists
-    if ! jq -e ".environments.$env_name" "$CONFIG_FILE" > /dev/null; then
+
+    # Reject anything outside [a-zA-Z0-9_-] before interpolating into the jq
+    # filter. This isn't an exposed-to-the-internet path, but it stops typos
+    # like `--cascade` from being treated as a jq operator.
+    if ! [[ "$env_name" =~ ^[A-Za-z0-9_-]+$ ]]; then
+        error "Invalid environment name: '$env_name' (must match [A-Za-z0-9_-]+)"
+    fi
+
+    # Check if environment exists. Use --arg to interpolate safely.
+    if ! jq -e --arg env "$env_name" '.environments[$env]' "$CONFIG_FILE" > /dev/null; then
         error "Environment '$env_name' not found in configuration"
     fi
-    
+
     # Load environment variables
-    export ENV_NAME=$(jq -r ".environments.$env_name.name" "$CONFIG_FILE")
-    export S3_BUCKET=$(jq -r ".environments.$env_name.s3_bucket" "$CONFIG_FILE")
-    export CLOUDFRONT_DISTRIBUTION_ID=$(jq -r ".environments.$env_name.cloudfront_distribution_id" "$CONFIG_FILE")
-    export DOMAIN=$(jq -r ".environments.$env_name.domain" "$CONFIG_FILE")
-    export SECURITY_HEADERS_POLICY_ID=$(jq -r ".environments.$env_name.security_headers_policy_id" "$CONFIG_FILE")
-    export DESCRIPTION=$(jq -r ".environments.$env_name.description" "$CONFIG_FILE")
-    
+    ENV_NAME="$(jq -r --arg env "$env_name" '.environments[$env].name' "$CONFIG_FILE")"
+    S3_BUCKET="$(jq -r --arg env "$env_name" '.environments[$env].s3_bucket' "$CONFIG_FILE")"
+    CLOUDFRONT_DISTRIBUTION_ID="$(jq -r --arg env "$env_name" '.environments[$env].cloudfront_distribution_id' "$CONFIG_FILE")"
+    DOMAIN="$(jq -r --arg env "$env_name" '.environments[$env].domain' "$CONFIG_FILE")"
+    SECURITY_HEADERS_POLICY_ID="$(jq -r --arg env "$env_name" '.environments[$env].security_headers_policy_id' "$CONFIG_FILE")"
+    DESCRIPTION="$(jq -r --arg env "$env_name" '.environments[$env].description' "$CONFIG_FILE")"
+    export ENV_NAME S3_BUCKET CLOUDFRONT_DISTRIBUTION_ID DOMAIN SECURITY_HEADERS_POLICY_ID DESCRIPTION
+
     info "Loaded configuration for environment: $ENV_NAME"
     info "Target domain: $DOMAIN"
     info "S3 bucket: $S3_BUCKET"
@@ -69,9 +84,10 @@ load_config() {
 # Function to show available environments
 show_environments() {
     echo "Available environments:"
-    jq -r '.environments | keys[]' "$CONFIG_FILE" | while read env; do
-        name=$(jq -r ".environments.$env.name" "$CONFIG_FILE")
-        desc=$(jq -r ".environments.$env.description" "$CONFIG_FILE")
+    jq -r '.environments | keys[]' "$CONFIG_FILE" | while read -r env; do
+        local name desc
+        name="$(jq -r --arg env "$env" '.environments[$env].name' "$CONFIG_FILE")"
+        desc="$(jq -r --arg env "$env" '.environments[$env].description' "$CONFIG_FILE")"
         echo "  $env: $name - $desc"
     done
 }
@@ -124,12 +140,12 @@ build_app() {
 # Deploy to S3
 deploy_to_s3() {
     log "Deploying to S3 ($S3_BUCKET)..."
-    
+
     cd "$PROJECT_DIR"
-    
+
     # Sync static assets with long cache
     info "Uploading static assets..."
-    aws s3 sync ./out $S3_BUCKET \
+    aws s3 sync ./out "$S3_BUCKET" \
         --delete \
         --cache-control "max-age=31536000,public" \
         --exclude "*.html" \
@@ -137,17 +153,17 @@ deploy_to_s3() {
         --exclude "*.txt" \
         --exclude "sw.js" \
         --exclude "manifest.json"
-    
+
     # Sync HTML files with no cache
     info "Uploading HTML files..."
-    aws s3 sync ./out $S3_BUCKET \
+    aws s3 sync ./out "$S3_BUCKET" \
         --delete \
         --cache-control "max-age=0,no-cache,no-store,must-revalidate" \
         --include "*.html"
-    
+
     # Sync other dynamic files with short cache
     info "Uploading dynamic files..."
-    aws s3 sync ./out $S3_BUCKET \
+    aws s3 sync ./out "$S3_BUCKET" \
         --delete \
         --cache-control "max-age=300,public" \
         --include "*.json" \
@@ -156,39 +172,40 @@ deploy_to_s3() {
     # Ensure service worker and manifest are never cached
     if [ -f "out/sw.js" ]; then
         info "Uploading service worker with no-cache..."
-        aws s3 cp ./out/sw.js $S3_BUCKET/sw.js \
+        aws s3 cp ./out/sw.js "$S3_BUCKET/sw.js" \
             --cache-control "max-age=0,no-cache,no-store,must-revalidate" \
             --content-type "application/javascript"
     fi
 
     if [ -f "out/manifest.json" ]; then
         info "Uploading manifest with short/no-cache..."
-        aws s3 cp ./out/manifest.json $S3_BUCKET/manifest.json \
+        aws s3 cp ./out/manifest.json "$S3_BUCKET/manifest.json" \
             --cache-control "max-age=0,no-cache,must-revalidate" \
             --content-type "application/manifest+json"
     fi
-    
+
     info "✓ S3 deployment completed"
 }
 
 # Invalidate CloudFront cache
 invalidate_cloudfront() {
     log "Invalidating CloudFront cache ($CLOUDFRONT_DISTRIBUTION_ID)..."
-    
-    INVALIDATION_ID=$(aws cloudfront create-invalidation \
-        --distribution-id $CLOUDFRONT_DISTRIBUTION_ID \
+
+    local invalidation_id
+    invalidation_id="$(aws cloudfront create-invalidation \
+        --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" \
         --paths "/*" \
         --query 'Invalidation.Id' \
-        --output text)
-    
-    info "✓ CloudFront invalidation created: $INVALIDATION_ID"
-    
+        --output text)"
+
+    info "✓ CloudFront invalidation created: $invalidation_id"
+
     # Wait for invalidation to complete (optional)
     if [ "$WAIT_FOR_INVALIDATION" = "true" ]; then
         info "Waiting for invalidation to complete..."
         aws cloudfront wait invalidation-completed \
-            --distribution-id $CLOUDFRONT_DISTRIBUTION_ID \
-            --id $INVALIDATION_ID
+            --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" \
+            --id "$invalidation_id"
         info "✓ Invalidation completed"
     else
         warn "Invalidation is in progress. It may take 5-15 minutes to complete."
@@ -268,51 +285,54 @@ EOF
 # Verify deployment
 verify_deployment() {
     log "Verifying deployment for $ENV_NAME..."
-    
+
     # Wait a moment for changes to propagate
     sleep 5
-    
+
     # Check if site is accessible
-    HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $DOMAIN)
-    
-    if [ "$HTTP_STATUS" = "200" ]; then
+    local http_status
+    http_status="$(curl -s -o /dev/null -w "%{http_code}" "$DOMAIN")"
+
+    if [ "$http_status" = "200" ]; then
         info "✓ Site is accessible at $DOMAIN"
     else
-        warn "Site returned HTTP status: $HTTP_STATUS"
+        warn "Site returned HTTP status: $http_status"
         warn "This might be due to CloudFront cache. Try again in a few minutes."
     fi
-    
+
     # Check for specific content
-    if curl -s $DOMAIN | grep -q "Cascade"; then
+    if curl -s "$DOMAIN" | grep -q "Cascade"; then
         info "✓ Application content verified"
     else
         warn "Could not verify application content"
     fi
-    
+
     # Test security headers
     test_security_headers
 }
 
 # Deploy to all environments
 deploy_all() {
-    local environments=$(jq -r '.environments | keys[]' "$CONFIG_FILE")
-    
+    local environments
+    environments="$(jq -r '.environments | keys[]' "$CONFIG_FILE")"
+
     info "Deploying to all environments..."
     build_app
-    
-    for env in $environments; do
+
+    while IFS= read -r env; do
+        [ -z "$env" ] && continue
         echo
         log "========================================="
         log "Deploying to environment: $env"
         log "========================================="
-        
+
         load_config "$env"
         deploy_to_s3
         invalidate_cloudfront
         verify_deployment
-        
+
         log "✓ Deployment to $env ($ENV_NAME) completed"
-    done
+    done <<< "$environments"
 }
 
 # Show usage information
