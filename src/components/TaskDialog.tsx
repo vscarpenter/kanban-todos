@@ -31,6 +31,7 @@ interface TaskDialogProps {
   onOpenChange: (open: boolean) => void;
   boardId: string;
   task?: Task; // Required for edit mode
+  initialStatus?: Task['status']; // Optional initial status for create mode
 }
 
 interface FormData {
@@ -42,7 +43,7 @@ interface FormData {
   dueDate: Date | undefined;
 }
 
-export function TaskDialog({ mode, open, onOpenChange, boardId, task }: TaskDialogProps) {
+export function TaskDialog({ mode, open, onOpenChange, boardId, task, initialStatus }: TaskDialogProps) {
   const { addTask, updateTask } = useTaskStore();
   const { execute, isLoading } = useAsyncOperation({
     errorMessage: `Failed to ${mode} task`,
@@ -135,7 +136,7 @@ export function TaskDialog({ mode, open, onOpenChange, boardId, task }: TaskDial
 
     if (!formData.title.trim()) return;
 
-    const result = await execute(async () => {
+    await execute(async () => {
       const tags = parseTags(formData.tags);
 
       if (mode === "create") {
@@ -144,7 +145,7 @@ export function TaskDialog({ mode, open, onOpenChange, boardId, task }: TaskDial
           description: formData.description.trim() || undefined,
           priority: formData.priority,
           tags,
-          status: 'todo',
+          status: initialStatus || 'todo',
           boardId,
           dueDate: formData.dueDate || undefined,
         });
@@ -166,10 +167,9 @@ export function TaskDialog({ mode, open, onOpenChange, boardId, task }: TaskDial
       }
     });
 
-    // Only close dialog on success (result is not undefined)
-    if (result !== undefined) {
-      onOpenChange(false);
-    }
+    // Always close dialog after operation completes
+    // execute handles error display with toasts, so users will be informed of any issues
+    onOpenChange(false);
   };
 
   const handleInputChange = (field: keyof FormData, value: string) => {

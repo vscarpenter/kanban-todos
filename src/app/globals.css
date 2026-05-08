@@ -36,25 +36,25 @@
   --accent-700: #402B52;
   --accent-ink: #FFFEFB;
 
-  /* Status — muted, editorial */
+  /* Status — muted, editorial (darkened for accessibility) */
   --ok-50:  #EDF2EC;
   --ok-200: #BFD3BC;
-  --ok-500: #4F7A4B;
+  --ok-500: #3A6B35; /* Darkened from #4F7A4B for better contrast */
   --ok-700: #34522F;
 
   --warn-50:  #FBF1E1;
   --warn-200: #EDD3A2;
-  --warn-500: #B07820;
+  --warn-500: #9A6B1A; /* Darkened from #B07820 for better contrast */
   --warn-700: #7A5210;
 
   --danger-50:  #F8E9E5;
   --danger-200: #E6BBB0;
-  --danger-500: #A8412A;
+  --danger-500: #8B3A2A; /* Darkened from #A8412A for better contrast */
   --danger-700: #76281A;
 
   --info-50:  #E8EEF2;
   --info-200: #B5C6D2;
-  --info-500: #3F627A;
+  --info-500: #2A4A5A; /* Darkened from #3F627A for better contrast */
 
   /* Per-board accent dots */
   --dot-blue:  #3F627A;
@@ -163,10 +163,10 @@
   --accent-700: #E4D2F0;
   --accent-ink: #14130F;
 
-  --ok-50:  #1B2419; --ok-200: #3A5234; --ok-500: #93B58E; --ok-700: #BFD3BC;
-  --warn-50: #2A2113; --warn-200: #5A4220; --warn-500: #D9A95C; --warn-700: #EDD3A2;
-  --danger-50: #2A1815; --danger-200: #5A2C22; --danger-500: #D88A75; --danger-700: #E6BBB0;
-  --info-50: #15202A; --info-200: #2C4458; --info-500: #94B0C4;
+  --ok-50:  #1B2419; --ok-200: #3A5234; --ok-500: #7A9A75; --ok-700: #BFD3BC;
+  --warn-50: #2A2113; --warn-200: #5A4220; --warn-500: #C49A5C; --warn-700: #EDD3A2;
+  --danger-50: #2A1815; --danger-200: #5A2C22; --danger-500: #C47A65; --danger-700: #E6BBB0;
+  --info-50: #15202A; --info-200: #2C4458; --info-500: #7A90A4;
 
   --shadow-xs: 0 1px 0 rgba(0, 0, 0, 0.3);
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 1px rgba(0, 0, 0, 0.3);
@@ -512,6 +512,46 @@
     text-transform: uppercase;
     color: var(--ink-4);
   }
+
+  /* Touch target utility for mobile */
+  .touch-target-mobile {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  @media (min-width: 768px) {
+    .touch-target-mobile {
+      min-height: auto;
+      min-width: auto;
+    }
+  }
+
+  /* Enhanced button hover states */
+  button:not(:disabled) {
+    transition: background-color 150ms ease, color 150ms ease,
+                transform 100ms ease, box-shadow 150ms ease;
+  }
+
+  button:not(:disabled):hover {
+    transform: translateY(-1px);
+  }
+
+  button:not(:disabled):active {
+    transform: translateY(0);
+  }
+
+  /* Disable hover effects on touch devices */
+  @media (hover: none) {
+    .task-card:hover {
+      transform: none;
+      box-shadow: var(--shadow-sm);
+      border-color: var(--hairline);
+    }
+
+    button:not(:disabled):hover {
+      transform: none;
+    }
+  }
 }
 
 /* ─── Theme switch crossfade ─────────────────────────────────────
@@ -578,13 +618,25 @@ body,
 
 /* ─── Card & board animations ─── */
 @keyframes card-enter {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @keyframes board-fade-in {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @keyframes drop-zone-pulse {
@@ -730,12 +782,19 @@ body,
     border-radius: 10px;
     padding: 14px 14px 12px;
     box-shadow: var(--shadow-sm);
-    transition: box-shadow 150ms ease, transform 150ms ease, border-color 150ms ease;
+    transition: transform 150ms ease, opacity 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+    will-change: transform, opacity;
   }
 
   .task-card:hover {
+    transform: translateY(-2px);
     box-shadow: var(--shadow-md);
     border-color: var(--hairline-strong);
+  }
+
+  .task-card:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
   }
 
   .task-card:focus-within {

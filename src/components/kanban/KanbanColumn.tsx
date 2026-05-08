@@ -20,9 +20,11 @@ interface KanbanColumnProps {
   tasks: Task[];
   status: Task["status"];
   onNavigateToBoard?: (boardId: string, taskId: string) => void;
+  onAddTask?: (status: Task["status"]) => void;
+  className?: string;
 }
 
-export function KanbanColumn({ title, tasks, status, onNavigateToBoard }: KanbanColumnProps) {
+export function KanbanColumn({ title, tasks, status, onNavigateToBoard, onAddTask, className }: KanbanColumnProps) {
   const { boards, currentBoardId } = useBoardStore();
   const {
     filters: { search: searchQuery, crossBoardSearch },
@@ -49,7 +51,7 @@ export function KanbanColumn({ title, tasks, status, onNavigateToBoard }: Kanban
   return (
     <div
       ref={setNodeRef}
-      className="kanban-column min-h-0 min-w-full md:min-w-0 snap-center md:snap-align-none transition-colors duration-200"
+      className={`kanban-column min-h-0 min-w-full md:min-w-0 snap-center md:snap-align-none transition-colors duration-200 ${className || ''}`}
       style={{
         height: "calc(100vh - 280px)",
         ...(isOver
@@ -81,14 +83,20 @@ export function KanbanColumn({ title, tasks, status, onNavigateToBoard }: Kanban
           </span>
           <span className="kanban-column__count">{tasks.length}</span>
         </div>
-        <button
-          type="button"
-          aria-label={`Add task to ${title}`}
-          className="inline-flex h-6 w-6 items-center justify-center rounded-md transition-colors hover:bg-[var(--paper-1)]"
-          style={{ color: "var(--ink-4)" }}
-        >
-          <Plus className="h-3.5 w-3.5" />
-        </button>
+        {status === 'todo' && (
+          <button
+            type="button"
+            aria-label={`Add task to ${title}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddTask?.(status);
+            }}
+            className="inline-flex h-10 w-10 md:h-6 md:w-6 items-center justify-center rounded-md transition-colors hover:bg-[var(--paper-1)]"
+            style={{ color: "var(--ink-4)" }}
+          >
+            <Plus className="h-5 w-5 md:h-3.5 md:w-3.5" />
+          </button>
+        )}
       </div>
 
       <div
@@ -114,8 +122,24 @@ export function KanbanColumn({ title, tasks, status, onNavigateToBoard }: Kanban
                 No tasks yet
               </p>
               <p className="mt-0.5" style={{ fontSize: "11px", color: "var(--ink-4)" }}>
-                Drag one here to start
+                {status === 'todo' ? "Create your first task or drag one here" : "Drag tasks here to update their status"}
               </p>
+              {status === 'todo' && onAddTask && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddTask(status);
+                  }}
+                  className="mt-4 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                  style={{
+                    backgroundColor: "var(--primary)",
+                    color: "var(--primary-foreground)",
+                  }}
+                >
+                  Create task
+                </button>
+              )}
             </div>
           ) : (
             <>

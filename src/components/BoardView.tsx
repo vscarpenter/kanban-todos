@@ -15,8 +15,9 @@ export function BoardView() {
   const { currentBoardId, getCurrentBoard, boards, selectBoard } = useBoardStore();
   const { filteredTasks, filters, searchState, isLoading, error, setHighlightedTask, clearSearch } = useTaskStore();
   const [showCreateTask, setShowCreateTask] = useState(false);
-  
-  
+  const [initialStatus, setInitialStatus] = useState<Task['status']>('todo');
+
+
   const currentBoard = getCurrentBoard();
 
   // Handle board navigation from search results
@@ -49,6 +50,12 @@ export function BoardView() {
       return () => clearTimeout(timer);
     }
   }, [currentBoardId, searchState.highlightedTaskId, setHighlightedTask]);
+
+  // Handle add task from column button
+  const handleAddTask = useCallback((status: Task['status']) => {
+    setInitialStatus(status);
+    setShowCreateTask(true);
+  }, []);
   
   if (!currentBoard) {
     return <EmptyState type="no-board" />;
@@ -106,7 +113,7 @@ export function BoardView() {
         searchQuery={filters.search}
         boardGroupsCount={Object.keys(boardGroups).length}
         tasks={displayTasks}
-        onCreateTask={() => setShowCreateTask(true)}
+        onCreateTask={() => handleAddTask('todo')}
       />
 
       <div className="pb-5" style={{ background: "var(--paper-0)" }}>
@@ -142,6 +149,7 @@ export function BoardView() {
           <KanbanBoard
             tasks={displayTasks}
             onNavigateToBoard={handleNavigateToBoard}
+            onAddTask={handleAddTask}
           />
         )}
 
@@ -161,6 +169,7 @@ export function BoardView() {
           open={showCreateTask}
           onOpenChange={setShowCreateTask}
           boardId={currentBoardId}
+          initialStatus={initialStatus}
         />
       )}
     </div>
