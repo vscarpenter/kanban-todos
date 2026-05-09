@@ -8,7 +8,7 @@ const MOBILE_MAX_SHORT_SIDE_PX = 480; // max short-side dimension for mobile pho
 const MOBILE_MAX_LONG_SIDE_PX = 896;  // max long-side dimension for mobile phones
 const TABLET_MIN_SHORT_SIDE_PX = 768; // min short-side dimension for tablets
 
-export interface IOSDetectionResult {
+interface IOSDetectionResult {
   isIOS: boolean;
   isIPad: boolean;
   isIPhone: boolean;

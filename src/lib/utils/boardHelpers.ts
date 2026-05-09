@@ -4,7 +4,6 @@ import { sanitizeBoardData } from '@/lib/utils/security';
 import {
   legacyColorToDot,
   DEFAULT_ICON_KEY,
-  DEFAULT_DOT_COLOR,
 } from '@/lib/utils/boardIcons';
 
 /**
@@ -74,7 +73,7 @@ export function reorderBoards(
   boardId: string,
   direction: 'up' | 'down'
 ): Board[] | null {
-  const sortedBoards = [...boards].sort((a, b) => a.order - b.order);
+  const sortedBoards = boards.toSorted((a, b) => a.order - b.order);
   const boardIndex = sortedBoards.findIndex(b => b.id === boardId);
 
   if (boardIndex === -1) return null;
@@ -103,9 +102,7 @@ export function reorderBoards(
  * Updates all boards in database
  */
 export async function persistBoardOrders(boards: Board[]): Promise<void> {
-  for (const board of boards) {
-    await taskDB.updateBoard(board);
-  }
+  await Promise.all(boards.map(board => taskDB.updateBoard(board)));
 }
 
 /**

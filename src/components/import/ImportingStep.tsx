@@ -20,7 +20,7 @@ export function ImportingStep({ progress }: ImportingStepProps) {
       <div className="space-y-2">
         <h3 className="text-lg font-medium">Importing Data</h3>
         <p className="text-sm text-muted-foreground">
-          Please wait while we process your import...
+          Please wait while we process your import…
         </p>
       </div>
 

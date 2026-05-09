@@ -241,7 +241,7 @@ export const guideSteps: GuideStep[] = [
             <h4 className="font-medium mb-2">The Three Columns:</h4>
             <div className="space-y-2 text-sm">
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-gray-400 rounded"></div>
+                <div className="w-3 h-3 bg-zinc-400 rounded"></div>
                 <span className="font-medium">To Do:</span>
                 <span className="text-muted-foreground">Tasks waiting to be started</span>
               </div>

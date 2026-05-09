@@ -24,7 +24,7 @@ interface KanbanColumnProps {
   className?: string;
 }
 
-export function KanbanColumn({ title, tasks, status, onNavigateToBoard, onAddTask, className }: KanbanColumnProps) {
+function KanbanColumn({ title, tasks, status, onNavigateToBoard, onAddTask, className }: KanbanColumnProps) {
   const { boards, currentBoardId } = useBoardStore();
   const {
     filters: { search: searchQuery, crossBoardSearch },
@@ -120,6 +120,8 @@ export function KanbanColumn({ title, tasks, status, onNavigateToBoard, onAddTas
                   className="w-14 h-14 rounded-2xl border-2 border-dashed flex items-center justify-center mb-3"
                   style={{
                     borderColor: "var(--hairline-strong)",
+                    // Ambient breathing loop (not a UI feedback transition).
+                    // react-doctor-disable-next-line react-doctor/no-long-transition-duration
                     animation: "empty-state-breathe 3s ease-in-out infinite",
                   }}
                 >

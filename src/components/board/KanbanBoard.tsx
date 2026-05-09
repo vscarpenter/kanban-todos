@@ -8,7 +8,7 @@ import { ColumnTabs } from "./ColumnTabs";
 
 // Lazy load drag-and-drop functionality
 const DragDropProvider = dynamic(() => import("../DragDropProvider").then(mod => ({ default: mod.DragDropProvider })), {
-  loading: () => <div className="flex items-center justify-center h-64"><div className="text-muted-foreground">Loading board...</div></div>,
+  loading: () => <div className="flex items-center justify-center h-64"><div className="text-muted-foreground">Loading board…</div></div>,
   ssr: false
 });
 

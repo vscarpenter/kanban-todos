@@ -45,13 +45,11 @@ export function createImportTasks(get: () => ImportExportState, set: StoreSetter
 
       const existingIds = new Set(get().tasks.map(t => t.id));
 
-      for (const task of tasks) {
-        if (existingIds.has(task.id)) {
-          await taskDB.updateTask(task);
-        } else {
-          await taskDB.addTask(task);
-        }
-      }
+      await Promise.all(
+        tasks.map(task =>
+          existingIds.has(task.id) ? taskDB.updateTask(task) : taskDB.addTask(task)
+        )
+      );
 
       set((state: { tasks: Task[] }) => {
         const taskMap = new Map(state.tasks.map(t => [t.id, t]));
@@ -82,6 +80,7 @@ export function createBulkAddTasks(get: () => ImportExportState, set: StoreSette
       const batchSize = 50;
       for (let i = 0; i < tasks.length; i += batchSize) {
         const batch = tasks.slice(i, i + batchSize);
+        // react-doctor-disable-next-line react-doctor/async-await-in-loop
         await Promise.all(batch.map(task => taskDB.addTask(task)));
       }
 

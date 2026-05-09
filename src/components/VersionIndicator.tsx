@@ -106,7 +106,7 @@ export function VersionFooter() {
 
   return (
     <div
-      className="flex items-center justify-between rounded-lg px-2.5 py-2.5"
+      className="flex items-center justify-between rounded-lg p-2.5"
       style={{
         background: "var(--paper-card)",
         border: "1px solid var(--hairline)",

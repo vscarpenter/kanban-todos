@@ -13,7 +13,7 @@ interface BoardIndicatorProps {
   className?: string;
 }
 
-export function BoardIndicator({ 
+function BoardIndicatorImpl({
   board, 
   isCurrentBoard, 
   size = 'sm', 
@@ -59,7 +59,7 @@ export function BoardIndicator({
   );
 }
 
-export default memo(BoardIndicator, (prevProps, nextProps) => {
+export const BoardIndicator = memo(BoardIndicatorImpl, (prevProps, nextProps) => {
   return (
     prevProps.board.id === nextProps.board.id &&
     prevProps.board.name === nextProps.board.name &&

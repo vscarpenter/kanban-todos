@@ -45,14 +45,11 @@ src/
 │   ├── kanban/        # Kanban-specific components (memoized)
 │   │   ├── KanbanColumn.tsx # Memoized column component
 │   │   └── TaskCard.tsx     # Memoized task card with useCallback
-│   ├── accessibility/ # Accessibility-enhanced components
-│   │   ├── AccessibleButton.tsx # WCAG-compliant button wrapper
-│   │   └── AccessibleInput.tsx  # Screen reader optimized input
 │   ├── DragDropProvider.tsx # Lazy-loaded drag-and-drop wrapper
 │   ├── IOSClassProvider.tsx # iOS device detection and CSS class provider
 │   ├── KanbanBoard.tsx # Main board orchestrator
 │   ├── Sidebar.tsx    # Navigation with lazy-loaded dialogs
-│   ├── UpdateNotification.tsx # Service worker update notifications
+│   ├── PwaUpdater.tsx # Service worker registration + update notifications
 │   ├── VersionIndicator.tsx   # Build version display
 │   ├── ConfirmationDialog.tsx # Styled confirmation dialogs
 │   ├── DeleteTaskDialog.tsx   # Task deletion confirmation
@@ -70,12 +67,9 @@ src/
     ├── types/         # TypeScript type definitions
     ├── utils/         # Utility functions and database layer
     │   ├── database.ts         # IndexedDB wrapper
-    │   ├── memoryOptimization.ts # Memory optimization utilities
     │   ├── resetApp.ts         # App reset functionality
     │   ├── iosDetection.ts     # iOS device detection utilities
-    │   ├── versionManagement.ts # Version comparison and update handling
     │   ├── security.ts         # Input sanitization and XSS prevention
-    │   ├── accessibility.ts    # Accessibility utility functions
     │   └── deploymentValidator.ts # Production deployment validation
     ├── utils.ts       # Common utilities (cn function)
     └── icons.ts       # Centralized icon exports

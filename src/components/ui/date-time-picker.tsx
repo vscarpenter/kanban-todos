@@ -27,20 +27,35 @@ export function DateTimePicker({
   minDate,
 }: DateTimePickerProps) {
   const [open, setOpen] = React.useState(false);
+  // Hybrid controlled/uncontrolled: working draft synced from `value` via the
+  // effect below, so the user can edit time-only without committing date yet.
+  // react-doctor-disable-next-line react-doctor/no-derived-useState
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(value);
+  // react-doctor-disable-next-line react-doctor/no-derived-useState,react-doctor/react-hooks-set-state-in-effect
   const [timeValue, setTimeValue] = React.useState(() => {
     if (value) {
       return format(value, "HH:mm");
     }
     return "09:00";
   });
+  const [today, setToday] = React.useState<Date | null>(null);
 
-  // Update internal state when value prop changes
+  // Client-only mount; calendar header and "today" highlighting must use the
+  // user's clock, not the build-time clock baked into static export.
+  // react-doctor-disable-next-line react-doctor/rendering-hydration-no-flicker
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setToday(new Date());
+  }, []);
+
+  // Sync the working draft when the controlled `value` prop changes externally.
+  React.useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
     setSelectedDate(value);
     if (value) {
       setTimeValue(format(value, "HH:mm"));
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [value]);
 
   const handleDateSelect = (date: Date) => {
@@ -203,9 +218,9 @@ export function DateTimePicker({
           {/* Calendar Grid */}
           <div className="space-y-2">
             <div className="text-sm font-medium text-center">
-              {format(new Date(), 'MMMM yyyy')}
+              {today ? format(today, 'MMMM yyyy') : ''}
             </div>
-            
+
             {/* Day headers */}
             <div className="grid grid-cols-7 gap-1 text-xs text-center text-muted-foreground">
               {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
@@ -214,18 +229,19 @@ export function DateTimePicker({
                 </div>
               ))}
             </div>
-            
+
             {/* Date grid */}
             <div className="grid grid-cols-7 gap-1">
-              {generateDateGrid().map((date, index) => {
-                const isCurrentMonth = date.getMonth() === new Date().getMonth();
-                const isSelected = selectedDate && format(date, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
-                const isToday = format(date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+              {generateDateGrid().map((date) => {
+                const dateKey = format(date, 'yyyy-MM-dd');
+                const isCurrentMonth = today ? date.getMonth() === today.getMonth() : false;
+                const isSelected = selectedDate && dateKey === format(selectedDate, 'yyyy-MM-dd');
+                const isToday = today ? dateKey === format(today, 'yyyy-MM-dd') : false;
                 const disabled = isDateDisabled(date);
-                
+
                 return (
                   <Button
-                    key={index}
+                    key={dateKey}
                     variant={isSelected ? "default" : "ghost"}
                     size="sm"
                     className={cn(
@@ -279,7 +295,7 @@ export function DateTimePicker({
               onClick={() => setOpen(false)}
               className="flex-1"
             >
-              Done
+              Apply date
             </Button>
           </div>
         </div>

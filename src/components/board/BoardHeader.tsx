@@ -14,12 +14,14 @@ interface BoardHeaderProps {
   onCreateTask: () => void;
 }
 
+const EMPTY_TASKS: Task[] = [];
+
 export function BoardHeader({
   board,
   isCrossBoardSearch,
   searchQuery,
   boardGroupsCount,
-  tasks = [],
+  tasks = EMPTY_TASKS,
   onCreateTask,
 }: BoardHeaderProps) {
   const openTaskCount = useMemo(
@@ -27,6 +29,7 @@ export function BoardHeader({
     [tasks]
   );
 
+  // `getBoardIcon` is a referentially stable lookup — same key returns the same lucide component.
   const Icon = board ? getBoardIcon(board.iconKey) : null;
   const dotColor = board ? getDotCssVar(board.dotColor) : "var(--accent-500)";
 
@@ -46,6 +49,7 @@ export function BoardHeader({
                 color: dotColor,
               }}
             >
+              {/* eslint-disable-next-line react-hooks/static-components */}
               <Icon size={22} strokeWidth={1.8} />
             </div>
           )}

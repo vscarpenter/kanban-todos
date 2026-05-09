@@ -15,6 +15,8 @@ interface BoardStatsProps {
   boardGroups?: Record<string, BoardGroup>;
 }
 
+const EMPTY_BOARD_GROUPS: Record<string, BoardGroup> = {};
+
 interface StatCellProps {
   label: string;
   value: number;
@@ -46,7 +48,7 @@ function StatCell({ label, value, color }: StatCellProps) {
   );
 }
 
-export function BoardStats({ tasks, isCrossBoardSearch, boardGroups = {} }: BoardStatsProps) {
+export function BoardStats({ tasks, isCrossBoardSearch, boardGroups = EMPTY_BOARD_GROUPS }: BoardStatsProps) {
   const counts = useMemo(() => {
     const todo = tasks.filter((t) => t.status === "todo").length;
     const inProgress = tasks.filter((t) => t.status === "in-progress").length;

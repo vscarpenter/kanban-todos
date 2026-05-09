@@ -16,6 +16,9 @@ export function GlobalHotkeys() {
   const { boards, currentBoardId, selectBoard } = useBoardStore();
   const { settings } = useSettingsStore();
 
+  // setShowQuickAdd calls live inside shortcut handlers (deferred user input),
+  // not in the effect body — false positive for cascading-set-state.
+  // react-doctor-disable-next-line react-doctor/no-cascading-set-state
   useEffect(() => {
     if (!settings.enableKeyboardShortcuts) return;
 

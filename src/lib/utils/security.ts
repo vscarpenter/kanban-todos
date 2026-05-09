@@ -137,11 +137,15 @@ export function sanitizeTaskData(taskData: {
     { preserveWhitespace: true }
   );
 
-  // Sanitize and limit tags
-  const sanitizedTags = (taskData.tags || [])
-    .map(tag => sanitizeTextInput(tag, 'TAG_LENGTH'))
-    .filter(tag => tag.length > 0)
-    .slice(0, INPUT_LIMITS.MAX_TAGS);
+  // Sanitize and limit tags — single pass, stop once MAX_TAGS reached
+  const sanitizedTags: string[] = [];
+  for (const raw of taskData.tags || []) {
+    const tag = sanitizeTextInput(raw, 'TAG_LENGTH');
+    if (tag.length > 0) {
+      sanitizedTags.push(tag);
+      if (sanitizedTags.length >= INPUT_LIMITS.MAX_TAGS) break;
+    }
+  }
 
   return {
     title: sanitizedTitle,

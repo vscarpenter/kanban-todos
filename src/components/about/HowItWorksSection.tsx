@@ -122,7 +122,7 @@ function Explanation() {
         </p>
         <p>
           Boards keep different projects separate. Create one per area of your
-          work — or one per client, per sprint, per season.
+          work, or one per client, per sprint, per season.
         </p>
       </div>
 

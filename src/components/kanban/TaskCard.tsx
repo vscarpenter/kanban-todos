@@ -62,6 +62,16 @@ export function TaskCard({
     );
   }
 
+  const isNavigable = showBoardIndicator && !isCurrentBoard;
+  const interactiveProps = isNavigable
+    ? {
+        onClick: handleCardClick,
+        onKeyDown: handleCardKeyDown,
+        tabIndex: 0,
+        role: "button" as const,
+      }
+    : { tabIndex: -1, role: "article" as const };
+
   return (
     <div
       ref={setNodeRef}
@@ -70,20 +80,15 @@ export function TaskCard({
       {...listeners}
       className={[
         "task-card cursor-grab active:cursor-grabbing draggable-element touch-optimized",
-        showBoardIndicator && !isCurrentBoard ? "cursor-pointer" : "",
+        isNavigable ? "cursor-pointer" : "",
       ].join(" ")}
-      onClick={handleCardClick}
-      onKeyDown={handleCardKeyDown}
-      tabIndex={showBoardIndicator && !isCurrentBoard ? 0 : -1}
-      role={showBoardIndicator && !isCurrentBoard ? "button" : "article"}
+      {...interactiveProps}
       aria-label={
-        showBoardIndicator && !isCurrentBoard && board
+        isNavigable && board
           ? `Navigate to task "${task.title}" on board "${board.name}"`
           : undefined
       }
-      aria-labelledby={
-        !(showBoardIndicator && !isCurrentBoard) ? `task-title-${task.id}` : undefined
-      }
+      aria-labelledby={!isNavigable ? `task-title-${task.id}` : undefined}
       aria-describedby={`task-meta-${task.id} task-priority-${task.id}`}
       data-task-id={task.id}
     >

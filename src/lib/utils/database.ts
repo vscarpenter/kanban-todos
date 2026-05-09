@@ -208,9 +208,11 @@ export class TaskDatabase {
   }
 
   async exportData(): Promise<{ version: string; exportedAt: string; tasks: Task[]; boards: Board[]; settings: Settings | null; }> {
-    const tasks = await this.getTasks();
-    const boards = await this.getBoards();
-    const settings = await this.getSettings();
+    const [tasks, boards, settings] = await Promise.all([
+      this.getTasks(),
+      this.getBoards(),
+      this.getSettings(),
+    ]);
 
     return {
       version: '1.0.0',

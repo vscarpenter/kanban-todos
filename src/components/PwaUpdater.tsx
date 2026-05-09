@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 
 export default function PwaUpdater() {
   const [waiting, setWaiting] = useState<ServiceWorker | null>(null);
+  // `show` is read in render (`if (!show) return null`) — false positive for state-only-in-handlers.
+  // react-doctor-disable-next-line react-doctor/rerender-state-only-in-handlers
   const [show, setShow] = useState(false);
 
   // Only attempt to register in supported browsers
@@ -12,6 +14,9 @@ export default function PwaUpdater() {
     []
   );
 
+  // setWaiting + setShow always toggle together; an "update available" event is
+  // a single semantic transition, not cascading state.
+  // react-doctor-disable-next-line react-doctor/no-cascading-set-state
   useEffect(() => {
     if (!canUseSW) return;
     let mounted = true;

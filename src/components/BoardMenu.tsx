@@ -23,6 +23,8 @@ export function BoardMenu({ board }: BoardMenuProps) {
   const { duplicateBoard } = useBoardStore();
   const [showSettings, setShowSettings] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  // Guards an awaited DB write — useTransition is for state transitions, not promises.
+  // react-doctor-disable-next-line react-doctor/rendering-usetransition-loading
   const [isLoading, setIsLoading] = useState(false);
 
   const handleDuplicate = async () => {

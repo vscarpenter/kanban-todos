@@ -60,8 +60,8 @@ export function CompleteStep({
           <AlertDescription>
             <p className="font-medium mb-2">Import completed with warnings:</p>
             <ul className="list-disc list-inside space-y-1 text-sm text-left">
-              {warnings.slice(0, 3).map((warning, index) => (
-                <li key={index}>{warning}</li>
+              {warnings.slice(0, 3).map((warning) => (
+                <li key={warning}>{warning}</li>
               ))}
               {warnings.length > 3 && (
                 <li className="text-muted-foreground">
@@ -74,7 +74,7 @@ export function CompleteStep({
       )}
 
       <Button onClick={onClose} className="w-full">
-        Done
+        Close import
       </Button>
     </div>
   );

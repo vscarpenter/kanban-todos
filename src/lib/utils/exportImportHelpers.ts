@@ -13,9 +13,12 @@ export function findDuplicateTaskIds(
   importTasks: ExportData['tasks'],
   existingTasks: Task[]
 ): string[] {
-  return importTasks
-    .filter(task => existingTasks.some(existing => existing.id === task.id))
-    .map(task => task.id);
+  const existingIds = new Set(existingTasks.map(t => t.id));
+  const duplicates: string[] = [];
+  for (const task of importTasks) {
+    if (existingIds.has(task.id)) duplicates.push(task.id);
+  }
+  return duplicates;
 }
 
 /**
@@ -25,9 +28,12 @@ export function findDuplicateBoardIds(
   importBoards: SerializedBoard[],
   existingBoards: Board[]
 ): string[] {
-  return importBoards
-    .filter(board => existingBoards.some(existing => existing.id === board.id))
-    .map(board => board.id);
+  const existingIds = new Set(existingBoards.map(b => b.id));
+  const duplicates: string[] = [];
+  for (const board of importBoards) {
+    if (existingIds.has(board.id)) duplicates.push(board.id);
+  }
+  return duplicates;
 }
 
 /**
@@ -37,23 +43,18 @@ export function findDefaultBoardConflicts(
   importBoards: SerializedBoard[],
   existingBoards: Board[]
 ): Array<{ importedBoard: SerializedBoard; existingBoard: Board }> {
-  const conflicts: Array<{ importedBoard: SerializedBoard; existingBoard: Board }> = [];
-
-  for (const importedBoard of importBoards) {
-    const existingDefaultBoard = existingBoards.find(existing =>
-      existing.isDefault &&
-      existing.name.toLowerCase() === importedBoard.name.toLowerCase() &&
-      existing.id !== importedBoard.id
-    );
-
-    if (existingDefaultBoard) {
-      conflicts.push({
-        importedBoard,
-        existingBoard: existingDefaultBoard
-      });
-    }
+  const defaultsByLowerName = new Map<string, Board>();
+  for (const existing of existingBoards) {
+    if (existing.isDefault) defaultsByLowerName.set(existing.name.toLowerCase(), existing);
   }
 
+  const conflicts: Array<{ importedBoard: SerializedBoard; existingBoard: Board }> = [];
+  for (const importedBoard of importBoards) {
+    const existingDefaultBoard = defaultsByLowerName.get(importedBoard.name.toLowerCase());
+    if (existingDefaultBoard && existingDefaultBoard.id !== importedBoard.id) {
+      conflicts.push({ importedBoard, existingBoard: existingDefaultBoard });
+    }
+  }
   return conflicts;
 }
 
@@ -65,18 +66,24 @@ export function findBoardNameConflicts(
   existingBoards: Board[],
   defaultBoardConflicts: Array<{ importedBoard: SerializedBoard }>
 ): string[] {
-  return importBoards
-    .filter(board => {
-      const hasNameConflict = existingBoards.some(existing =>
-        existing.name.toLowerCase() === board.name.toLowerCase() && existing.id !== board.id
-      );
-      // Exclude boards that are already handled as default board conflicts
-      const isDefaultConflict = defaultBoardConflicts.some(conflict =>
-        conflict.importedBoard.id === board.id
-      );
-      return hasNameConflict && !isDefaultConflict;
-    })
-    .map(board => board.name);
+  const existingByLowerName = new Map<string, Board[]>();
+  for (const existing of existingBoards) {
+    const key = existing.name.toLowerCase();
+    const list = existingByLowerName.get(key);
+    if (list) list.push(existing);
+    else existingByLowerName.set(key, [existing]);
+  }
+  const defaultConflictIds = new Set(defaultBoardConflicts.map(c => c.importedBoard.id));
+
+  const conflicts: string[] = [];
+  for (const board of importBoards) {
+    if (defaultConflictIds.has(board.id)) continue;
+    const existingMatches = existingByLowerName.get(board.name.toLowerCase());
+    if (existingMatches && existingMatches.some(e => e.id !== board.id)) {
+      conflicts.push(board.name);
+    }
+  }
+  return conflicts;
 }
 
 /**
@@ -91,9 +98,11 @@ export function findOrphanedTasks(
     ...importData.boards.map(b => b.id)
   ]);
 
-  return importData.tasks
-    .filter(task => !existingBoardIds.has(task.boardId))
-    .map(task => task.id);
+  const orphaned: string[] = [];
+  for (const task of importData.tasks) {
+    if (!existingBoardIds.has(task.boardId)) orphaned.push(task.id);
+  }
+  return orphaned;
 }
 
 /**
@@ -104,9 +113,10 @@ export function regenerateBoardIds(
   duplicateIds: string[]
 ): { boards: Board[]; idMap: Map<string, string> } {
   const idMap = new Map<string, string>();
+  const duplicateSet = new Set(duplicateIds);
 
   const updatedBoards = boards.map(board => {
-    if (duplicateIds.includes(board.id)) {
+    if (duplicateSet.has(board.id)) {
       const newId = crypto.randomUUID();
       idMap.set(board.id, newId);
       return { ...board, id: newId };
@@ -125,19 +135,17 @@ export function regenerateTaskIds(
   duplicateTaskIds: string[],
   boardIdMap: Map<string, string>
 ): Task[] {
+  const duplicateSet = new Set(duplicateTaskIds);
   return tasks.map(task => {
     let updatedTask = task;
 
-    // Update board reference if board ID was changed
     if (boardIdMap.has(task.boardId)) {
       const newBoardId = boardIdMap.get(task.boardId);
       if (newBoardId) updatedTask = { ...updatedTask, boardId: newBoardId };
     }
 
-    // Generate new task ID if conflicting
-    if (duplicateTaskIds.includes(task.id)) {
-      const newId = crypto.randomUUID();
-      updatedTask = { ...updatedTask, id: newId };
+    if (duplicateSet.has(task.id)) {
+      updatedTask = { ...updatedTask, id: crypto.randomUUID() };
     }
 
     return updatedTask;
@@ -152,14 +160,12 @@ export function filterConflictingItems(
   boards: Board[],
   conflicts: ImportConflicts
 ): { tasks: Task[]; boards: Board[] } {
-  const filteredTasks = tasks.filter(task =>
-    !conflicts.duplicateTaskIds.includes(task.id)
-  );
-  const filteredBoards = boards.filter(board =>
-    !conflicts.duplicateBoardIds.includes(board.id)
-  );
-
-  return { tasks: filteredTasks, boards: filteredBoards };
+  const dupTaskIds = new Set(conflicts.duplicateTaskIds);
+  const dupBoardIds = new Set(conflicts.duplicateBoardIds);
+  return {
+    tasks: tasks.filter(task => !dupTaskIds.has(task.id)),
+    boards: boards.filter(board => !dupBoardIds.has(board.id)),
+  };
 }
 
 /**
@@ -169,5 +175,6 @@ export function removeOrphanedTasks(
   tasks: Task[],
   orphanedTaskIds: string[]
 ): Task[] {
-  return tasks.filter(task => !orphanedTaskIds.includes(task.id));
+  const orphanSet = new Set(orphanedTaskIds);
+  return tasks.filter(task => !orphanSet.has(task.id));
 }
