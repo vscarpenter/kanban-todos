@@ -13,6 +13,7 @@ import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import { useTaskStore } from "@/lib/stores/taskStore";
 import { useAsyncOperation } from "@/lib/hooks/useAsyncOperation";
 import { Task } from "@/lib/types";
+import { DatePresetButton } from "./DatePresetButton";
 import {
   parseTags,
   formatTags,
@@ -45,7 +46,8 @@ interface FormData {
 
 export function TaskDialog({ mode, open, onOpenChange, boardId, task, initialStatus }: TaskDialogProps) {
   const { addTask, updateTask } = useTaskStore();
-  const { execute, isLoading } = useAsyncOperation({
+  // Generic <true> lets the operation return a success sentinel (see handleSubmit).
+  const { execute, isLoading } = useAsyncOperation<true>({
     errorMessage: `Failed to ${mode} task`,
   });
   const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] = useState(false);
@@ -136,7 +138,11 @@ export function TaskDialog({ mode, open, onOpenChange, boardId, task, initialSta
 
     if (!formData.title.trim()) return;
 
-    await execute(async () => {
+    // execute() returns `undefined` on caught failure and the operation's
+    // resolved value on success. Returning `true` from the operation lets us
+    // close the dialog only on success — preserving the user's form input on
+    // failure so they can retry without retyping.
+    const succeeded = await execute(async () => {
       const tags = parseTags(formData.tags);
 
       if (mode === "create") {
@@ -165,11 +171,13 @@ export function TaskDialog({ mode, open, onOpenChange, boardId, task, initialSta
 
         await updateTask(task.id, updates);
       }
+
+      return true as const;
     });
 
-    // Always close dialog after operation completes
-    // execute handles error display with toasts, so users will be informed of any issues
-    onOpenChange(false);
+    if (succeeded) {
+      onOpenChange(false);
+    }
   };
 
   const handleInputChange = (field: keyof FormData, value: string) => {
@@ -180,7 +188,6 @@ export function TaskDialog({ mode, open, onOpenChange, boardId, task, initialSta
     setFormData(prev => ({ ...prev, dueDate: date }));
   };
 
-  // Conditional rendering helpers
   const dialogTitle = mode === "create" ? "Create New Task" : "Edit Task";
   const submitButtonText = mode === "create"
     ? (isLoading ? "Creating..." : "Create Task")
@@ -391,43 +398,3 @@ export function TaskDialog({ mode, open, onOpenChange, boardId, task, initialSta
   );
 }
 
-interface DatePresetButtonProps {
-  label: string;
-  isActive: boolean;
-  onClick: () => void;
-}
-
-/**
- * Editorial date preset button. Inactive: secondary chrome (paper-card,
- * hairline-strong border, xs shadow). Active: primary plum fill.
- */
-function DatePresetButton({ label, isActive, onClick }: DatePresetButtonProps) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={isActive}
-      className="inline-flex items-center justify-center rounded-md transition-colors"
-      style={{
-        padding: "8px 10px",
-        fontSize: "12px",
-        fontWeight: 600,
-        ...(isActive
-          ? {
-              background: "var(--accent-500)",
-              color: "var(--accent-ink)",
-              border: "1px solid var(--accent-600)",
-              boxShadow: "var(--shadow-sm)",
-            }
-          : {
-              background: "var(--paper-card)",
-              color: "var(--ink-2)",
-              border: "1px solid var(--hairline-strong)",
-              boxShadow: "var(--shadow-xs)",
-            }),
-      }}
-    >
-      {label}
-    </button>
-  );
-}

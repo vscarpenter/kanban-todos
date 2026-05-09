@@ -5,6 +5,7 @@ export {
   AlertTriangle,
   Archive,
   ArrowRight,
+  ArrowRightLeft,
   BarChart2,
   Calendar,
   CalendarDays,

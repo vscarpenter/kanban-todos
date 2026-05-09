@@ -51,7 +51,7 @@ export function KanbanColumn({ title, tasks, status, onNavigateToBoard, onAddTas
   return (
     <div
       ref={setNodeRef}
-      className={`kanban-column min-h-0 min-w-full md:min-w-0 snap-center md:snap-align-none transition-colors duration-200 ${className || ''}`}
+      className={`kanban-column min-h-0 min-w-full md:min-w-0 transition-colors duration-200 ${className || ''}`}
       style={{
         height: "calc(100vh - 280px)",
         ...(isOver
@@ -105,42 +105,50 @@ export function KanbanColumn({ title, tasks, status, onNavigateToBoard, onAddTas
       >
         <div className="flex flex-col gap-2.5 min-h-[200px] pb-2">
           {tasks.length === 0 ? (
-            <div
-              className="flex flex-col items-center justify-center py-12"
-              style={{ color: "var(--ink-4)" }}
-            >
+            // Empty column. During a cross-column drag we replace the empty
+            // state with the drop placeholder so the user only sees one
+            // affordance at a time — showing both creates competing visuals
+            // for the same intent.
+            showDropPlaceholder ? (
+              <DropPlaceholder />
+            ) : (
               <div
-                className="w-14 h-14 rounded-2xl border-2 border-dashed flex items-center justify-center mb-3"
-                style={{
-                  borderColor: "var(--hairline-strong)",
-                  animation: "empty-state-breathe 3s ease-in-out infinite",
-                }}
+                className="flex flex-col items-center justify-center py-12"
+                style={{ color: "var(--ink-4)" }}
               >
-                <Plus className="h-5 w-5" style={{ color: "var(--ink-5)" }} />
-              </div>
-              <p style={{ fontSize: "12.5px", fontWeight: 500, color: "var(--ink-3)" }}>
-                No tasks yet
-              </p>
-              <p className="mt-0.5" style={{ fontSize: "11px", color: "var(--ink-4)" }}>
-                {status === 'todo' ? "Create your first task or drag one here" : "Drag tasks here to update their status"}
-              </p>
-              {status === 'todo' && onAddTask && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAddTask(status);
-                  }}
-                  className="mt-4 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                <div
+                  className="w-14 h-14 rounded-2xl border-2 border-dashed flex items-center justify-center mb-3"
                   style={{
-                    backgroundColor: "var(--primary)",
-                    color: "var(--primary-foreground)",
+                    borderColor: "var(--hairline-strong)",
+                    animation: "empty-state-breathe 3s ease-in-out infinite",
                   }}
                 >
-                  Create task
-                </button>
-              )}
-            </div>
+                  <Plus className="h-5 w-5" style={{ color: "var(--ink-5)" }} />
+                </div>
+                <p style={{ fontSize: "12.5px", fontWeight: 500, color: "var(--ink-3)" }}>
+                  No tasks yet
+                </p>
+                <p className="mt-0.5" style={{ fontSize: "11px", color: "var(--ink-4)" }}>
+                  {status === 'todo' ? "Create your first task or drag one here" : "Drag tasks here to update their status"}
+                </p>
+                {status === 'todo' && onAddTask && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAddTask(status);
+                    }}
+                    className="mt-4 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                    style={{
+                      backgroundColor: "var(--primary)",
+                      color: "var(--primary-foreground)",
+                    }}
+                  >
+                    Create task
+                  </button>
+                )}
+              </div>
+            )
           ) : (
             <>
               {tasks.map((task, index) => {
@@ -172,8 +180,6 @@ export function KanbanColumn({ title, tasks, status, onNavigateToBoard, onAddTas
               {showDropPlaceholder && <DropPlaceholder />}
             </>
           )}
-          {/* Empty-column case: still show placeholder when dropping into it */}
-          {tasks.length === 0 && showDropPlaceholder && <DropPlaceholder />}
         </div>
       </div>
     </div>
