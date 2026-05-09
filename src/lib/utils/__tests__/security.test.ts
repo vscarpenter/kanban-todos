@@ -50,19 +50,40 @@ describe('security utilities', () => {
       expect(result).not.toContain('>');
     });
 
-    it('removes javascript: protocol', () => {
-      const result = sanitizeTextInput('javascript:alert(1)', 'TASK_TITLE');
-      expect(result).not.toContain('javascript:');
+    // Note: protocol prefixes (`javascript:`, `data:`, etc.) and event-handler
+    // patterns (`on\w+=`) are no longer stripped — see `removeDangerousContent`
+    // in src/lib/utils/security.ts. The XSS threat model relies on React's
+    // auto-escaping plus CSP, not on substring blacklisting that historically
+    // mangled ordinary user input. The angle-bracket strip remains as a
+    // paranoid defence-in-depth.
+    //
+    // The TASK_DESCRIPTION input type is used here because TASK_TITLE applies
+    // an additional whitelist regex (only letters / numbers / a small punctuation
+    // set) that strips colons and equals signs regardless of this function — so
+    // testing the regression there would conflate the two concerns.
+    it('strips lone angle brackets so stored values cannot start an HTML tag', () => {
+      // Complete tag-shaped substrings (`<...>`) are removed by the HTML-tag
+      // strip step; this test asserts that bare `<` or `>` without a closing
+      // partner is also stripped by the defence-in-depth pass that runs after.
+      expect(sanitizeTextInput('value > 0 holds', 'TASK_DESCRIPTION', { preserveWhitespace: true }))
+        .toBe('value  0 holds');
+      expect(sanitizeTextInput('1 < 2 always', 'TASK_DESCRIPTION', { preserveWhitespace: true }))
+        .toBe('1  2 always');
     });
 
-    it('removes event handlers', () => {
-      const result = sanitizeTextInput('onerror=alert(1)', 'TASK_TITLE');
-      expect(result).not.toContain('onerror=');
+    it('preserves "data:" inside ordinary words like "metadata:"', () => {
+      const result = sanitizeTextInput('metadata: see appendix A', 'TASK_DESCRIPTION', { preserveWhitespace: true });
+      expect(result).toBe('metadata: see appendix A');
     });
 
-    it('removes data: protocol', () => {
-      const result = sanitizeTextInput('data:text/html,<h1>test</h1>', 'TASK_TITLE');
-      expect(result).not.toContain('data:');
+    it('preserves identifiers that start with "on" (regression for /on\\w+=/)', () => {
+      const result = sanitizeTextInput('Onion = good', 'TASK_DESCRIPTION', { preserveWhitespace: true });
+      expect(result).toBe('Onion = good');
+    });
+
+    it('preserves "file:" inside ordinary phrases', () => {
+      const result = sanitizeTextInput('open file: README.md', 'TASK_DESCRIPTION', { preserveWhitespace: true });
+      expect(result).toBe('open file: README.md');
     });
 
     it('truncates input exceeding max length', () => {

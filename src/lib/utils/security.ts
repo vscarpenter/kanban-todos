@@ -28,30 +28,28 @@ const ALLOWED_PATTERNS = {
 } as const;
 
 /**
- * Defence-in-depth: strip a few known-dangerous substrings before storing
- * user-controlled text in IndexedDB.
+ * Defence-in-depth: strip raw angle brackets before storing user-controlled
+ * text in IndexedDB. Angle brackets are rare enough in legitimate task
+ * titles/descriptions that removing them is a low-cost paranoia measure.
  *
- * **The actual XSS defence** for this app is React's automatic escaping of
- * any value rendered as a child or attribute (we never use
- * `dangerouslySetInnerHTML`; this is enforced by the `react/no-danger`
- * ESLint rule), backed by the `Content-Security-Policy` response header
- * (see `docs/security-headers-baseline.json`).
+ * The actual XSS defence for this app is React's automatic escaping of any
+ * value rendered as a child or attribute (the `react/no-danger` ESLint rule
+ * forbids the unsafe-html escape hatch), backed by the
+ * `Content-Security-Policy` response header (see
+ * `docs/security-headers-baseline.json`).
  *
- * This blacklist is intentionally lightweight — it makes a stored payload
- * harder to misuse if it ever escapes React (e.g., copied into an
- * `innerHTML` sink in a downstream tool, or rendered in a non-React export
- * pipeline). Do NOT treat it as sufficient for any new context. New sinks
- * MUST go through proper context-aware encoding (DOMPurify for HTML, JSON
- * encoding for `<script>` data, etc.) instead of relying on this function.
+ * Earlier revisions also stripped `javascript:`, `data:`, `file:`,
+ * `vbscript:`, and any `on\w+=` substring. Those were removed because they
+ * silently corrupted ordinary user input — "metadata: foo" became
+ * "meta foo", "Onion = good" became " good", and so on. Since none of the
+ * stored values are rendered as `href`/`src` or as raw HTML, none of the
+ * stripped patterns posed a real XSS risk in this app. Any new sink that
+ * does render user content unescaped MUST add context-aware encoding at
+ * the sink (a sanitiser for HTML output, JSON-encoding for inline script
+ * data, etc.) — not rely on this function.
  */
 function removeDangerousContent(input: string): string {
-  return input
-    .replace(/[<>]/g, '')
-    .replace(/javascript:/gi, '')
-    .replace(/on\w+\s*=/gi, '')
-    .replace(/data:/gi, '')
-    .replace(/vbscript:/gi, '')
-    .replace(/file:/gi, '');
+  return input.replace(/[<>]/g, '');
 }
 
 /**

@@ -4,6 +4,20 @@
  */
 
 import type { ExportData } from './exportImport';
+import {
+  taskSchema,
+  boardSchema,
+  settingsSchema,
+  exportDataSchema,
+  type ValidationSchema,
+  type ValidationError,
+  type ValidationWarning,
+  type SanitizationOptions,
+  type DetailedValidationResult,
+} from './validationSchemas';
+
+// Re-export so callers can `import { taskSchema, ValidationSchema } from
+// './validation'` without reaching into validationSchemas directly.
 export type {
   ValidationSchema,
   DetailedValidationResult,
@@ -12,19 +26,6 @@ export type {
   SanitizationOptions,
 } from './validationSchemas';
 export {
-  taskSchema,
-  boardSchema,
-  settingsSchema,
-  exportDataSchema,
-} from './validationSchemas';
-import type {
-  ValidationSchema,
-  ValidationError,
-  ValidationWarning,
-  SanitizationOptions,
-  DetailedValidationResult,
-} from './validationSchemas';
-import {
   taskSchema,
   boardSchema,
   settingsSchema,
@@ -287,7 +288,10 @@ export function getDefaultValue(schema: ValidationSchema): unknown {
   const type = Array.isArray(schema.type) ? schema.type[0] : schema.type;
   switch (type) {
     case 'string': return schema.enum ? schema.enum[0] : schema.format === 'date-time' ? new Date().toISOString() : '';
-    case 'number': return schema.minimum || 0;
+    // `??` rather than `||` so a schema with `minimum: 0` keeps that intent —
+    // `0 || 0` happens to be `0` today, but the operator should still match
+    // the type semantics (only fall back when the value is truly absent).
+    case 'number': return schema.minimum ?? 0;
     case 'boolean': return false;
     case 'array': return [];
     case 'object': return {};

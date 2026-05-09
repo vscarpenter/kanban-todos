@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import { Task } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Edit, Share, Move, Archive, Trash2 } from "@/lib/icons";
+import { MoreHorizontal, Edit, Share, Move, ArrowRightLeft, Archive, Trash2 } from "@/lib/icons";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -92,7 +92,9 @@ export function TaskCardActions({ task }: TaskCardActionsProps) {
             </DropdownMenuSubContent>
           </DropdownMenuSub>
           <DropdownMenuItem onClick={() => setShowMoveDialog(true)}>
-            <Move className="h-4 w-4 mr-2" />
+            {/* Distinct icon from the "Move to Column" submenu above so the two
+                Move actions don't read as duplicates in the menu. */}
+            <ArrowRightLeft className="h-4 w-4 mr-2" />
             Move to Board
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleArchive}>

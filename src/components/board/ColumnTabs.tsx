@@ -32,8 +32,10 @@ export function ColumnTabs({
     }
   };
 
+  // Visibility (mobile only) is owned by the parent in KanbanBoard; this
+  // component is layout only.
   return (
-    <div className="md:hidden flex gap-2 overflow-x-auto pb-2 px-4 -mx-4 scrollbar-hide">
+    <div className="flex gap-2 overflow-x-auto pb-2 px-4 -mx-4 scrollbar-hide">
       {COLUMNS.map((column) => (
         <button
           key={column.id}

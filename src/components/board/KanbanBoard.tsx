@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { Task } from "@/lib/types";
 import KanbanColumn from "../kanban/KanbanColumn";
@@ -19,11 +19,12 @@ interface KanbanBoardProps {
 }
 
 export function KanbanBoard({ tasks, onNavigateToBoard, onAddTask }: KanbanBoardProps) {
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [activeColumnIndex, setActiveColumnIndex] = useState(0);
+  // Mobile: which column is currently visible. Desktop ignores this — the grid
+  // always shows all three columns side-by-side.
   const [activeColumn, setActiveColumn] = useState<Task['status']>('todo');
-  const [isScrolling, setIsScrolling] = useState(false);
+  // Drag state toggles a temporary "show all 3 columns scaled down" layout on
+  // mobile so a card can be dragged across columns even when only one is
+  // visible. Desktop is unaffected.
   const [isDragging, setIsDragging] = useState(false);
 
   // Memoize filtered tasks to avoid unnecessary recalculations
@@ -38,7 +39,8 @@ export function KanbanBoard({ tasks, onNavigateToBoard, onAddTask }: KanbanBoard
     { title: "Done", tasks: doneTasks, count: doneTasks.length, status: 'done' as const }
   ], [todoTasks, inProgressTasks, doneTasks]);
 
-  // Announce column changes to screen readers
+  // Announce column changes to screen readers via a polite aria-live region.
+  // The region is rendered below the tabs.
   const announceColumnChange = useCallback((columnTitle: string, columnCount: number) => {
     const announcement = `Viewing ${columnTitle} column with ${columnCount} task${columnCount !== 1 ? 's' : ''}`;
     const liveRegion = document.getElementById('mobile-column-announcer');
@@ -47,75 +49,23 @@ export function KanbanBoard({ tasks, onNavigateToBoard, onAddTask }: KanbanBoard
     }
   }, []);
 
-  // Track scroll position to update active column indicator
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      const scrollLeft = container.scrollLeft;
-      const columnWidth = container.offsetWidth;
-      const newIndex = Math.round(scrollLeft / columnWidth);
-
-      // Only update if index changed
-      if (newIndex !== activeColumnIndex) {
-        setActiveColumnIndex(newIndex);
-
-        // Announce to screen readers
-        const column = columns[newIndex];
-        if (column) {
-          announceColumnChange(column.title, column.count);
-        }
-      }
-
-      // Track scrolling state for visual feedback
-      setIsScrolling(true);
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-      scrollTimeoutRef.current = setTimeout(() => {
-        setIsScrolling(false);
-      }, 150);
-    };
-
-    container.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      container.removeEventListener('scroll', handleScroll);
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-    };
-  }, [activeColumnIndex, columns, announceColumnChange]);
-
-  // Handle drag start - disable scrolling
-  const handleDragStart = useCallback(() => {
-    setIsDragging(true);
-    // Disable scroll snap during drag
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.style.scrollSnapType = 'none';
-      scrollContainerRef.current.style.overflow = 'hidden';
-    }
-  }, []);
-
-  // Handle drag end - re-enable scrolling
-  const handleDragEnd = useCallback(() => {
-    setIsDragging(false);
-    // Re-enable scroll snap after drag
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.style.scrollSnapType = '';
-      scrollContainerRef.current.style.overflow = '';
-    }
-  }, []);
-
-  // Handle column tab change on mobile
+  // Handle column tab change on mobile. Announces the change so screen readers
+  // pick it up — without this, tapping a tab is silent for assistive tech.
   const handleColumnTabChange = useCallback((column: Task['status']) => {
     setActiveColumn(column);
-    // Update active column index for consistency
-    const index = columns.findIndex(col => col.status === column);
-    if (index !== -1) {
-      setActiveColumnIndex(index);
+    const target = columns.find(col => col.status === column);
+    if (target) {
+      announceColumnChange(target.title, target.count);
     }
-  }, [columns]);
+  }, [columns, announceColumnChange]);
+
+  const handleDragStart = useCallback(() => {
+    setIsDragging(true);
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    setIsDragging(false);
+  }, []);
 
   return (
     <DragDropProvider onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -140,13 +90,14 @@ export function KanbanBoard({ tasks, onNavigateToBoard, onAddTask }: KanbanBoard
           />
         </div>
 
-        {/* Kanban Columns Container */}
+        {/* Kanban Columns Container.
+            Mobile default: flex with one visible column (others get `hidden`).
+            Mobile during drag: forced 3-col grid with scale-[0.85] so the user
+            can drop into another column without needing to tab first.
+            Desktop: 3-col grid always. */}
         <div
-          ref={scrollContainerRef}
-          className={`flex md:grid md:grid-cols-3 gap-6 min-h-full overflow-x-auto md:overflow-x-visible snap-x snap-mandatory md:snap-none scrollbar-hide mobile-scroll-container transition-all duration-200 ease-out board-animate-in ${
-            isScrolling ? 'opacity-95' : 'opacity-100'
-          } ${
-            isDragging ? 'md:grid-cols-3 !grid grid-cols-3 !overflow-visible !gap-2 scale-[0.85]' : ''
+          className={`flex md:grid md:grid-cols-3 gap-6 min-h-full board-animate-in ${
+            isDragging ? 'md:grid-cols-3 !grid grid-cols-3 !gap-2 scale-[0.85]' : ''
           }`}
           role="region"
           aria-label="Kanban board columns"
