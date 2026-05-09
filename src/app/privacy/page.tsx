@@ -1,11 +1,16 @@
-'use client';
-
+import type { Metadata } from 'next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, Shield, Database, Eye, Lock, FileText, User } from '@/lib/icons';
 import Link from 'next/link';
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy — Cascade',
+  description:
+    "How Cascade handles your data: 100% local-first, no servers, no accounts, no analytics. Your tasks never leave your device.",
+};
 
 export default function PrivacyPolicyPage() {
   return (
@@ -22,7 +27,7 @@ export default function PrivacyPolicyPage() {
           
           <div className="flex items-center gap-3 mb-4">
             <Shield className="h-8 w-8 text-green-600" />
-            <h1 className="text-3xl font-bold">Privacy Policy</h1>
+            <h1 className="text-3xl font-semibold">Privacy Policy</h1>
           </div>
           
           <p className="text-muted-foreground text-lg">

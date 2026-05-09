@@ -39,12 +39,16 @@ const getBrowserTypeServerSnapshot = (): BrowserType => "other";
 
 export default function InstallPWA() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  // `showPrompt` is read in render (`if (... !showPrompt) return null`) — false positive.
+  // react-doctor-disable-next-line react-doctor/rerender-state-only-in-handlers
   const [showPrompt, setShowPrompt] = useState(false);
 
   // Use useSyncExternalStore for hydration-safe detection
   const isStandalone = useSyncExternalStore(emptySubscribe, getStandaloneSnapshot, getServerSnapshot);
   const browserType = useSyncExternalStore(emptySubscribe, getBrowserTypeSnapshot, getBrowserTypeServerSnapshot);
 
+  // setDeferredPrompt + setShowPrompt only fire from event handlers / timers.
+  // react-doctor-disable-next-line react-doctor/no-cascading-set-state
   useEffect(() => {
     if (isStandalone) {
       return; // Don't show prompt if already installed

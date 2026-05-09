@@ -25,13 +25,11 @@ export function createImportBoards(get: GetState, set: SetState) {
       const { boards: existingBoards } = get();
       const existingIds = new Set(existingBoards.map(b => b.id));
 
-      for (const board of boards) {
-        if (existingIds.has(board.id)) {
-          await taskDB.updateBoard(board);
-        } else {
-          await taskDB.addBoard(board);
-        }
-      }
+      await Promise.all(
+        boards.map(board =>
+          existingIds.has(board.id) ? taskDB.updateBoard(board) : taskDB.addBoard(board)
+        )
+      );
 
       set((state) => {
         const boardMap = new Map(state.boards.map(b => [b.id, b]));
@@ -55,6 +53,7 @@ export function createBulkAddBoards(set: SetState) {
 
       const batchSize = 20;
       for (let i = 0; i < boards.length; i += batchSize) {
+        // react-doctor-disable-next-line react-doctor/async-await-in-loop
         await Promise.all(boards.slice(i, i + batchSize).map(board => taskDB.addBoard(board)));
       }
 

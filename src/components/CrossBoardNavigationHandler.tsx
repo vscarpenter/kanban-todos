@@ -56,12 +56,11 @@ export function CrossBoardNavigationHandler({ children }: CrossBoardNavigationHa
             taskElement.focus();
             taskElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-            // Add temporary highlight effect
-            taskElement.style.outline = '2px solid hsl(var(--ring))';
-            taskElement.style.outlineOffset = '2px';
+            // Add temporary highlight effect — batched into one cssText write.
+            const previous = taskElement.style.cssText;
+            taskElement.style.cssText = `${previous}; outline: 2px solid hsl(var(--ring)); outline-offset: 2px;`;
             setTimeout(() => {
-              taskElement.style.outline = '';
-              taskElement.style.outlineOffset = '';
+              taskElement.style.cssText = previous;
             }, 2000);
           } else {
             // Fallback: focus the main content area

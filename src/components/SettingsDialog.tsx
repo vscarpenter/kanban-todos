@@ -60,6 +60,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       ...settings,
       theme: (theme as Settings['theme']) || 'system'
     };
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLocalSettings(currentSettings);
 
     // Only capture initial settings when dialog opens

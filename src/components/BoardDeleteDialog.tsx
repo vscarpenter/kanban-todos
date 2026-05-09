@@ -19,6 +19,8 @@ interface BoardDeleteDialogProps {
 export function BoardDeleteDialog({ open, onOpenChange, board }: BoardDeleteDialogProps) {
   const { deleteBoard } = useBoardStore();
   const { tasks } = useTaskStore();
+  // Guards an awaited DB write — useTransition is for state transitions, not promises.
+  // react-doctor-disable-next-line react-doctor/rendering-usetransition-loading
   const [isLoading, setIsLoading] = useState(false);
   const [confirmationText, setConfirmationText] = useState("");
 

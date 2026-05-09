@@ -1,14 +1,14 @@
 "use client"
 
-import * as React from "react"
 import { cn } from "@/lib/utils"
 
 interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
   value?: number
+  ref?: React.Ref<HTMLDivElement>
 }
 
-const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
-  ({ className, value = 0, ...props }, ref) => (
+function Progress({ className, value = 0, ref, ...props }: ProgressProps) {
+  return (
     <div
       ref={ref}
       className={cn(
@@ -23,7 +23,6 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
       />
     </div>
   )
-)
-Progress.displayName = "Progress"
+}
 
 export { Progress }

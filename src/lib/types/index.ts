@@ -60,13 +60,6 @@ export interface TaskFilters {
   };
 }
 
-export interface ArchiveEntry {
-  task: Task;
-  archivedAt: Date;
-  archivedBy: 'manual' | 'auto';
-  reason?: string;
-}
-
 export type SearchScope = 'current-board' | 'all-boards';
 
 export interface SearchState {

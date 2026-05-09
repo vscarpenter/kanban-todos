@@ -77,8 +77,8 @@ export function PreviewStep({
           <AlertDescription>
             <p className="font-medium mb-2">Warnings:</p>
             <ul className="list-disc list-inside space-y-1 text-sm">
-              {warnings.map((warning, index) => (
-                <li key={index}>{warning}</li>
+              {warnings.map((warning) => (
+                <li key={warning}>{warning}</li>
               ))}
             </ul>
           </AlertDescription>
@@ -97,7 +97,7 @@ export function PreviewStep({
           Back
         </Button>
         <Button onClick={onNext} className="flex-1">
-          Continue
+          Start import
         </Button>
       </div>
     </div>

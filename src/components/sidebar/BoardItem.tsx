@@ -30,6 +30,7 @@ export function BoardItem({
   canMoveUp,
   canMoveDown,
 }: BoardItemProps) {
+  // `getBoardIcon` is a referentially stable lookup — same key returns the same lucide component.
   const Icon = getBoardIcon(board.iconKey);
   const dotColor = getDotCssVar(board.dotColor);
 
@@ -63,6 +64,7 @@ export function BoardItem({
           color: dotColor,
         }}
       >
+        {/* eslint-disable-next-line react-hooks/static-components */}
         <Icon size={14} strokeWidth={1.8} />
       </div>
 

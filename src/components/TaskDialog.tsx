@@ -79,9 +79,17 @@ export function TaskDialog({ mode, open, onOpenChange, boardId, task, initialSta
     };
   }, [mode, task]);
 
-  const [formData, setFormData] = useState<FormData>(getInitialFormData());
+  const [formData, setFormData] = useState<FormData>(getInitialFormData);
   const [showDetails, setShowDetails] = useState(false);
+  const [minDate, setMinDate] = useState<Date | undefined>(undefined);
   const titleInputRef = useRef<HTMLInputElement>(null);
+
+  // Client-only mount effect to avoid SSR/CSR Date divergence in the picker.
+  // react-doctor-disable-next-line react-doctor/rendering-hydration-no-flicker
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMinDate(new Date());
+  }, []);
 
   // Auto-focus title when dialog opens
   useEffect(() => {
@@ -359,7 +367,7 @@ export function TaskDialog({ mode, open, onOpenChange, boardId, task, initialSta
                   value={formData.dueDate}
                   onChange={handleDateChange}
                   placeholder="Pick specific date and time"
-                  minDate={new Date()}
+                  minDate={minDate}
                 />
               </div>
             </div>

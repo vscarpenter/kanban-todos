@@ -192,7 +192,7 @@ export function ExportDialog({ open, onOpenChange }: ExportDialogProps) {
           {isExporting && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Exporting...</span>
+                <span className="text-sm font-medium">Exporting…</span>
                 <span className="text-sm text-muted-foreground">{exportProgress}%</span>
               </div>
               <Progress value={exportProgress} className="w-full" />
@@ -330,8 +330,8 @@ export function ExportDialog({ open, onOpenChange }: ExportDialogProps) {
                     <span className="text-sm font-medium">Errors ({validationResults.errors.length})</span>
                   </div>
                   <div className="bg-destructive/10 p-3 rounded-lg space-y-1">
-                    {validationResults.errors.map((error, index) => (
-                      <p key={index} className="text-xs text-destructive">{error}</p>
+                    {validationResults.errors.map((error) => (
+                      <p key={error} className="text-xs text-destructive">{error}</p>
                     ))}
                   </div>
                 </div>
@@ -344,8 +344,8 @@ export function ExportDialog({ open, onOpenChange }: ExportDialogProps) {
                     <span className="text-sm font-medium">Warnings ({validationResults.warnings.length})</span>
                   </div>
                   <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg space-y-1">
-                    {validationResults.warnings.map((warning, index) => (
-                      <p key={index} className="text-xs text-orange-700 dark:text-orange-400">{warning}</p>
+                    {validationResults.warnings.map((warning) => (
+                      <p key={warning} className="text-xs text-orange-700 dark:text-orange-400">{warning}</p>
                     ))}
                   </div>
                 </div>
@@ -379,7 +379,7 @@ export function ExportDialog({ open, onOpenChange }: ExportDialogProps) {
                 {isExporting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Exporting...
+                    Exporting…
                   </>
                 ) : (
                   <>

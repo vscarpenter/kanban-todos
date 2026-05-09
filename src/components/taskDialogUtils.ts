@@ -3,10 +3,12 @@
  */
 
 export function parseTags(tagsString: string): string[] {
-  return tagsString
-    .split(',')
-    .map(tag => tag.trim())
-    .filter(tag => tag.length > 0);
+  const result: string[] = [];
+  for (const raw of tagsString.split(',')) {
+    const tag = raw.trim();
+    if (tag.length > 0) result.push(tag);
+  }
+  return result;
 }
 
 export function formatTags(tags: string[]): string {

@@ -20,14 +20,17 @@ function hasVisitedBefore(): boolean {
  * First-time visitors are redirected to /about; returning visitors see children immediately.
  */
 export function FirstVisitGate({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
+  const { replace } = useRouter();
   const visited = hasVisitedBefore();
 
+  // Client-side gate: localStorage isn't available server-side, so we can't
+  // do this redirect via middleware or a server component.
+  // react-doctor-disable-next-line react-doctor/nextjs-no-client-side-redirect
   useEffect(() => {
     if (!visited) {
-      router.replace("/about/");
+      replace("/about/");
     }
-  }, [visited, router]);
+  }, [visited, replace]);
 
   if (!visited) return null;
 

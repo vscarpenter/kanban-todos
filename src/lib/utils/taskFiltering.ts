@@ -5,7 +5,7 @@ import { taskDB } from '@/lib/utils/database';
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 const MAX_CACHE_SIZE = 50;
 
-export type CacheEntry = { results: Task[]; timestamp: number };
+type CacheEntry = { results: Task[]; timestamp: number };
 export type SearchCache = Map<string, CacheEntry>;
 
 /**
@@ -15,7 +15,10 @@ export type SearchCache = Map<string, CacheEntry>;
 export async function validateBoardAccess(tasks: Task[]): Promise<Task[]> {
   try {
     const boards = await taskDB.getBoards();
-    const validBoardIds = new Set(boards.filter(b => !b.archivedAt).map(b => b.id));
+    const validBoardIds = new Set<string>();
+    for (const b of boards) {
+      if (!b.archivedAt) validBoardIds.add(b.id);
+    }
 
     const accessibleTasks = tasks.filter(task => validBoardIds.has(task.boardId));
     if (accessibleTasks.length !== tasks.length) {
@@ -36,7 +39,7 @@ export function generateCacheKey(filters: TaskFilters): string {
     search: filters.search,
     status: filters.status,
     priority: filters.priority,
-    tags: [...filters.tags].sort(),
+    tags: filters.tags.toSorted(),
     boardId: filters.boardId,
     crossBoardSearch: filters.crossBoardSearch,
     dateRange: filters.dateRange ? {

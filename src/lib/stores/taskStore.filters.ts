@@ -23,7 +23,7 @@ import { logger } from '@/lib/utils/logger';
 // Configuration
 // ============================================================================
 
-export const SEARCH_DEBOUNCE_MS = 300;
+const SEARCH_DEBOUNCE_MS = 300;
 
 // Module-scoped search debounce timeout
 let searchTimeout: ReturnType<typeof setTimeout> | undefined;

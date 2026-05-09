@@ -91,7 +91,7 @@ export function AppResetDialog({
                 onClick={handleFirstConfirm}
                 disabled={loading}
               >
-                Continue
+                Continue to reset
               </Button>
             </div>
           </>

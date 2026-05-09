@@ -124,8 +124,8 @@ export function TaskCardMetadata({ task }: TaskCardMetadataProps) {
               role="list"
               aria-label="Task tags"
             >
-              {task.tags.slice(0, 3).map((tag, index) => (
-                <TagChip key={`${tag}-${index}`} label={tag} />
+              {task.tags.slice(0, 3).map((tag) => (
+                <TagChip key={tag} label={tag} />
               ))}
               {task.tags.length > 3 && (
                 <span

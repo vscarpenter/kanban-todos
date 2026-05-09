@@ -16,15 +16,11 @@ export function UserGuideDialog({ open, onOpenChange }: UserGuideDialogProps) {
   const [currentStep, setCurrentStep] = useState(0);
 
   const nextStep = () => {
-    if (currentStep < guideSteps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    }
+    setCurrentStep(prev => Math.min(prev + 1, guideSteps.length - 1));
   };
 
   const prevStep = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
+    setCurrentStep(prev => Math.max(prev - 1, 0));
   };
 
   const goToStep = (step: number) => {
@@ -43,9 +39,9 @@ export function UserGuideDialog({ open, onOpenChange }: UserGuideDialogProps) {
 
         {/* Progress Indicator */}
         <div className="flex items-center gap-2 mb-4">
-          {guideSteps.map((_, index) => (
+          {guideSteps.map((step, index) => (
             <button
-              key={index}
+              key={step.title}
               onClick={() => goToStep(index)}
               className={`w-2 h-2 rounded-full transition-colors ${
                 index === currentStep

@@ -29,7 +29,7 @@ function LoadingFallback() {
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading application...</p>
+          <p className="text-muted-foreground">Loading application…</p>
         </div>
       </div>
     </div>
@@ -55,26 +55,22 @@ export function KanbanBoard() {
   const { initializeSettings, settings } = useSettingsStore();
 
   useEffect(() => {
-    // Initialize stores sequentially for better performance
     const initializeStores = async () => {
       try {
-        // Initialize settings first (needed for theme)
-        await initializeSettings();
-        // Initialize boards next (needed for board selection)  
-        await initializeBoards();
-        // Initialize task store last (can be deferred until board is selected)
-        await initializeStore();
+        await Promise.all([initializeSettings(), initializeBoards(), initializeStore()]);
         setIsInitialized(true);
       } catch (error) {
         console.error('Failed to initialize stores:', error);
-        setIsInitialized(true); // Still show UI even if initialization fails
+        setIsInitialized(true);
       }
     };
 
     initializeStores();
   }, [initializeStore, initializeBoards, initializeSettings]);
 
-  // Update task filtering when current board changes
+  // Cross-store sync: task store's filter follows the selected board from board store.
+  // Not derived state — it's a side effect into an external store.
+  // react-doctor-disable-next-line react-doctor/no-derived-state-effect
   useEffect(() => {
     setBoardFilter(currentBoardId);
   }, [currentBoardId, setBoardFilter]);

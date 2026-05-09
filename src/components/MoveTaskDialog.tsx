@@ -162,7 +162,7 @@ export function MoveTaskDialog({ task, open, onOpenChange }: MoveTaskDialogProps
                 variant="default"
               >
                 {isMoving ? (
-                  <>Moving...</>
+                  <>Moving…</>
                 ) : (
                   <>
                     <Move className="h-4 w-4" />
@@ -182,7 +182,7 @@ export function MoveTaskDialog({ task, open, onOpenChange }: MoveTaskDialogProps
                 className="gap-2"
               >
                 {isMoving ? (
-                  <>Moving...</>
+                  <>Moving…</>
                 ) : (
                   <>
                     <Move className="h-4 w-4" />

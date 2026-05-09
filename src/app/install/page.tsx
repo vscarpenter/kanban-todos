@@ -13,7 +13,7 @@ export default function InstallPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b">
-        <div className="container mx-auto max-w-4xl px-4 py-4">
+        <div className="container mx-auto max-w-4xl p-4">
           <Link href="/">
             <Button variant="ghost" size="sm" className="gap-2">
               <ArrowLeft className="h-4 w-4" />
@@ -30,7 +30,7 @@ export default function InstallPage() {
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <Download className="h-8 w-8 text-primary" />
-              <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+              <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
                 Install Cascade
               </h1>
             </div>
@@ -54,7 +54,7 @@ export default function InstallPage() {
                   <li>Look for the <strong>install icon</strong> in the address bar (looks like a computer monitor with a download arrow)</li>
                   <li>Click the install icon or use the browser menu:
                     <ul className="ml-5 mt-1 list-disc">
-                      <li>Chrome: Menu (⋮) → &quot;Install Cascade...&quot;</li>
+                      <li>Chrome: Menu (⋮) → &quot;Install Cascade…&quot;</li>
                       <li>Edge: Menu (⋯) → &quot;Apps&quot; → &quot;Install Cascade&quot;</li>
                     </ul>
                   </li>
@@ -199,12 +199,14 @@ export default function InstallPage() {
             </div>
             <div className="pt-2">
               <p className="text-sm text-muted-foreground">
-                For more help, check the{" "}
+                For more help, see the{" "}
                 <a
-                  href="/docs/installation-guide.md"
+                  href="https://github.com/vscarpenter/kanban-todos/blob/main/docs/installation-guide.md"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="font-medium text-primary underline-offset-4 hover:underline"
                 >
-                  detailed installation guide
+                  detailed installation guide on GitHub
                 </a>
                 .
               </p>

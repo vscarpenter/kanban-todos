@@ -40,7 +40,7 @@ export interface SerializedBoard extends Omit<Board, 'createdAt' | 'updatedAt' |
   archivedAt?: string;
 }
 
-export type SerializedSettings = Settings;
+type SerializedSettings = Settings;
 
 // Import validation results
 export interface ImportValidationResult {

@@ -447,7 +447,7 @@ describe('boardStore', () => {
       await reorderBoard('board-a', 'down');
 
       const { boards } = useBoardStore.getState();
-      const sortedBoards = [...boards].sort((a, b) => a.order - b.order);
+      const sortedBoards = boards.toSorted((a, b) => a.order - b.order);
       expect(sortedBoards[0].id).toBe('board-b');
       expect(sortedBoards[1].id).toBe('board-a');
     });
@@ -458,7 +458,7 @@ describe('boardStore', () => {
       await reorderBoard('board-c', 'up');
 
       const { boards } = useBoardStore.getState();
-      const sortedBoards = [...boards].sort((a, b) => a.order - b.order);
+      const sortedBoards = boards.toSorted((a, b) => a.order - b.order);
       expect(sortedBoards[1].id).toBe('board-c');
       expect(sortedBoards[2].id).toBe('board-b');
     });
@@ -469,7 +469,7 @@ describe('boardStore', () => {
       await reorderBoard('board-a', 'up');
 
       const { boards } = useBoardStore.getState();
-      const sortedBoards = [...boards].sort((a, b) => a.order - b.order);
+      const sortedBoards = boards.toSorted((a, b) => a.order - b.order);
       expect(sortedBoards[0].id).toBe('board-a');
     });
 
@@ -479,7 +479,7 @@ describe('boardStore', () => {
       await reorderBoard('board-c', 'down');
 
       const { boards } = useBoardStore.getState();
-      const sortedBoards = [...boards].sort((a, b) => a.order - b.order);
+      const sortedBoards = boards.toSorted((a, b) => a.order - b.order);
       expect(sortedBoards[2].id).toBe('board-c');
     });
 

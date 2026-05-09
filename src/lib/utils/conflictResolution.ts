@@ -12,13 +12,12 @@ import {
   mergeSettings,
   generateUniqueBoardName,
 } from './conflictMerge';
-export type { MergeStrategy, MergeResult, FieldConflict } from './conflictMerge';
 
 // ============================================================================
 // Types
 // ============================================================================
 
-export type ConflictResolutionStrategy =
+type ConflictResolutionStrategy =
   | 'skip'
   | 'overwrite'
   | 'merge'
@@ -43,7 +42,7 @@ export interface ConflictResolutionResult {
   backupData?: ExportData;
 }
 
-export interface ResolutionAction {
+interface ResolutionAction {
   type: 'skip' | 'overwrite' | 'merge' | 'rename' | 'generate_id';
   itemType: 'task' | 'board' | 'settings';
   itemId: string;
@@ -64,11 +63,17 @@ export function resolveBoardConflicts(
 ): Board[] {
   const resolved: Board[] = [...existingBoards];
   const existingBoardMap = new Map(existingBoards.map(b => [b.id, b]));
+  const indexById = new Map(existingBoards.map((b, i) => [b.id, i]));
+  const duplicateIds = new Set(conflicts.duplicateBoardIds);
+  const nameConflicts = new Set(conflicts.boardNameConflicts);
+  const defaultConflictByImportedId = new Map(
+    conflicts.defaultBoardConflicts.map(c => [c.importedBoard.id, c])
+  );
 
   for (const importedBoard of importedBoards) {
-    const hasIdConflict = conflicts.duplicateBoardIds.includes(importedBoard.id);
-    const hasNameConflict = conflicts.boardNameConflicts.includes(importedBoard.name);
-    const defaultConflict = conflicts.defaultBoardConflicts.find(c => c.importedBoard.id === importedBoard.id);
+    const hasIdConflict = duplicateIds.has(importedBoard.id);
+    const hasNameConflict = nameConflicts.has(importedBoard.name);
+    const defaultConflict = defaultConflictByImportedId.get(importedBoard.id);
 
     if (!hasIdConflict && !hasNameConflict && !defaultConflict) { resolved.push(importedBoard); continue; }
 
@@ -76,7 +81,8 @@ export function resolveBoardConflicts(
       const existing = defaultConflict.existingBoard;
       const result = mergeBoards(existing, importedBoard, options.mergeStrategy);
       const merged = { ...result.merged, id: existing.id, isDefault: true, updatedAt: new Date() };
-      resolved[resolved.findIndex(b => b.id === existing.id)] = merged;
+      const idx = indexById.get(existing.id);
+      if (idx !== undefined) resolved[idx] = merged;
       resolutionLog.push({ type: 'merge', itemType: 'board', itemId: existing.id, originalName: importedBoard.name, mergedFields: result.mergedFields, reason: 'Merged imported board with existing default board' });
       continue;
     }
@@ -89,27 +95,31 @@ export function resolveBoardConflicts(
         break;
       case 'overwrite':
         if (existingBoard) {
-          resolved[resolved.findIndex(b => b.id === importedBoard.id)] = importedBoard;
+          const idx = indexById.get(importedBoard.id);
+          if (idx !== undefined) resolved[idx] = importedBoard;
           resolutionLog.push({ type: 'overwrite', itemType: 'board', itemId: importedBoard.id, originalName: importedBoard.name, reason: 'Overwrote existing board' });
         }
         break;
       case 'merge':
         if (existingBoard) {
           const result = mergeBoards(existingBoard, importedBoard, options.mergeStrategy);
-          resolved[resolved.findIndex(b => b.id === importedBoard.id)] = result.merged;
+          const idx = indexById.get(importedBoard.id);
+          if (idx !== undefined) resolved[idx] = result.merged;
           resolutionLog.push({ type: 'merge', itemType: 'board', itemId: importedBoard.id, originalName: importedBoard.name, mergedFields: result.mergedFields, reason: 'Merged with existing board' });
         }
         break;
-      case 'rename':
+      case 'rename': {
         const renamed = { ...importedBoard, name: generateUniqueBoardName(importedBoard.name, resolved) };
         resolved.push(renamed);
         resolutionLog.push({ type: 'rename', itemType: 'board', itemId: importedBoard.id, originalName: importedBoard.name, newName: renamed.name, reason: 'Renamed to avoid conflict' });
         break;
-      case 'generate_new_ids':
+      }
+      case 'generate_new_ids': {
         const newId = crypto.randomUUID();
         resolved.push({ ...importedBoard, id: newId });
         resolutionLog.push({ type: 'generate_id', itemType: 'board', itemId: importedBoard.id, originalId: importedBoard.id, newId, reason: 'Generated new ID to avoid conflict' });
         break;
+      }
     }
   }
   return resolved;
@@ -121,6 +131,7 @@ export function createBoardIdMapping(
   resolutionLog: ResolutionAction[]
 ): Map<string, string> {
   const mapping = new Map<string, string>();
+  const importedByName = new Map(importedBoards.map(b => [b.name, b]));
   for (const action of resolutionLog) {
     if (action.itemType === 'board' && action.type === 'generate_id') {
       if (action.originalId && action.newId) {
@@ -128,7 +139,7 @@ export function createBoardIdMapping(
       }
     }
     if (action.itemType === 'board' && action.type === 'merge' && action.reason === 'Merged imported board with existing default board') {
-      const imported = importedBoards.find(b => b.name === action.originalName);
+      const imported = action.originalName ? importedByName.get(action.originalName) : undefined;
       if (imported) mapping.set(imported.id, action.itemId);
     }
   }
@@ -149,6 +160,9 @@ export function resolveTaskConflicts(
 ): Task[] {
   const resolved: Task[] = [...existingTasks];
   const existingTaskMap = new Map(existingTasks.map(t => [t.id, t]));
+  const indexById = new Map(existingTasks.map((t, i) => [t.id, i]));
+  const duplicateIds = new Set(conflicts.duplicateTaskIds);
+  const orphaned = new Set(conflicts.orphanedTasks);
 
   for (const importedTask of importedTasks) {
     let processed = importedTask;
@@ -157,8 +171,8 @@ export function resolveTaskConflicts(
       if (newBoardId) processed = { ...importedTask, boardId: newBoardId };
     }
 
-    const hasIdConflict = conflicts.duplicateTaskIds.includes(importedTask.id);
-    const isOrphaned = conflicts.orphanedTasks.includes(importedTask.id);
+    const hasIdConflict = duplicateIds.has(importedTask.id);
+    const isOrphaned = orphaned.has(importedTask.id);
 
     if (isOrphaned && options.taskStrategy !== 'generate_new_ids') {
       resolutionLog.push({ type: 'skip', itemType: 'task', itemId: importedTask.id, reason: 'Task references non-existent board' });
@@ -174,22 +188,25 @@ export function resolveTaskConflicts(
         break;
       case 'overwrite':
         if (existingTask) {
-          resolved[resolved.findIndex(t => t.id === importedTask.id)] = processed;
+          const idx = indexById.get(importedTask.id);
+          if (idx !== undefined) resolved[idx] = processed;
           resolutionLog.push({ type: 'overwrite', itemType: 'task', itemId: importedTask.id, reason: 'Overwrote existing task' });
         }
         break;
       case 'merge':
         if (existingTask) {
           const result = mergeTasks(existingTask, processed, options.mergeStrategy);
-          resolved[resolved.findIndex(t => t.id === importedTask.id)] = result.merged;
+          const idx = indexById.get(importedTask.id);
+          if (idx !== undefined) resolved[idx] = result.merged;
           resolutionLog.push({ type: 'merge', itemType: 'task', itemId: importedTask.id, mergedFields: result.mergedFields, reason: 'Merged with existing task' });
         }
         break;
-      case 'generate_new_ids':
+      case 'generate_new_ids': {
         const newId = crypto.randomUUID();
         resolved.push({ ...processed, id: newId });
         resolutionLog.push({ type: 'generate_id', itemType: 'task', itemId: importedTask.id, originalId: importedTask.id, newId, reason: 'Generated new ID to avoid conflict' });
         break;
+      }
     }
   }
   return resolved;
@@ -215,10 +232,11 @@ export function resolveSettingsConflicts(
     case 'overwrite':
       resolutionLog.push({ type: 'overwrite', itemType: 'settings', itemId: 'settings', reason: 'Overwrote with imported settings' });
       return importedSettings;
-    case 'merge':
+    case 'merge': {
       const result = mergeSettings(existingSettings, importedSettings, options.mergeStrategy);
       resolutionLog.push({ type: 'merge', itemType: 'settings', itemId: 'settings', mergedFields: result.mergedFields, reason: 'Merged settings' });
       return result.merged;
+    }
     default:
       return existingSettings;
   }

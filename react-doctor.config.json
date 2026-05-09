@@ -1,0 +1,13 @@
+{
+  "ignore": {
+    "files": [
+      "design_handoff_cascade_redesign/**",
+      "out/**",
+      "playwright-report/**",
+      "test-results/**",
+      "public/sw.js",
+      "deploy.config.js",
+      "scripts/**"
+    ]
+  }
+}

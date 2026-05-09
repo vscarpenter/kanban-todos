@@ -74,8 +74,8 @@ export function FileSelectStep({
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             <ul className="list-disc list-inside space-y-1">
-              {errors.map((error, index) => (
-                <li key={index}>{error}</li>
+              {errors.map((error) => (
+                <li key={error}>{error}</li>
               ))}
             </ul>
           </AlertDescription>
@@ -84,7 +84,7 @@ export function FileSelectStep({
 
       {selectedFile && errors.length === 0 && (
         <Button onClick={onNext} className="w-full">
-          Continue
+          Review import
         </Button>
       )}
     </div>

@@ -16,13 +16,13 @@ export type MergeStrategy =
   | 'keep_newer'
   | 'keep_older';
 
-export interface MergeResult<T> {
+interface MergeResult<T> {
   merged: T;
   conflicts: FieldConflict[];
   mergedFields: string[];
 }
 
-export interface FieldConflict {
+interface FieldConflict {
   field: string;
   existingValue: unknown;
   importedValue: unknown;

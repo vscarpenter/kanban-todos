@@ -5,7 +5,7 @@ export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const LARGE_FILE_THRESHOLD = 1 * 1024 * 1024; // 1MB — warn when above this
 export const ALLOWED_FILE_TYPES = ['.json'];
 
-export interface FileValidationResult {
+interface FileValidationResult {
   isValid: boolean;
   errors: string[];
   warnings: string[];
@@ -261,6 +261,8 @@ export async function processMultipleFiles(
     }
     
     try {
+      // Sequential reads so onProgress fires accurately as each file finishes.
+      // react-doctor-disable-next-line react-doctor/async-await-in-loop
       const result = await readJsonFile(file);
       if (result.success) {
         successful.push(result);

@@ -43,7 +43,7 @@ export function PrivacySection() {
           </p>
           <p>
             If your browser data clears, your tasks clear too. Export regularly
-            as JSON to keep a backup. It&apos;s your data — treat it that way.
+            as JSON to keep a backup. It&apos;s your data: treat it that way.
           </p>
         </div>
 

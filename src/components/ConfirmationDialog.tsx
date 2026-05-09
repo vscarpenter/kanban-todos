@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Settings, Trash2 } from "@/lib/icons";
 
-export type ConfirmationType = 'destructive' | 'warning' | 'info';
+type ConfirmationType = 'destructive' | 'warning' | 'info';
 
 interface ConfirmationDialogProps {
   open: boolean;

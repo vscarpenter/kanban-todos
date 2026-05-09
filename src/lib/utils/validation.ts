@@ -21,8 +21,6 @@ import {
 export type {
   ValidationSchema,
   DetailedValidationResult,
-  ValidationError,
-  ValidationWarning,
   SanitizationOptions,
 } from './validationSchemas';
 export {
