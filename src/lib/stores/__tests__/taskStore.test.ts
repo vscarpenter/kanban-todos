@@ -433,6 +433,51 @@ describe('taskStore', () => {
       expect(filters.search).toBe('');
       expect(searchState.highlightedTaskId).toBeUndefined();
     });
+
+    it('preserves non-search filters when search recovery fails', () => {
+      useTaskStore.setState({
+        ...useTaskStore.getState(),
+        tasks: [{
+          id: 'task-1',
+          title: 'Task',
+          status: 'in-progress',
+          boardId: 'board-1',
+          priority: 'high',
+          tags: ['urgent'],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }],
+        filters: {
+          search: 'initial search',
+          tags: ['urgent'],
+          status: 'in-progress',
+          priority: 'high',
+          boardId: 'board-1',
+          dateRange: {
+            start: new Date('2024-01-01'),
+            end: new Date('2024-12-31'),
+          },
+          crossBoardSearch: true,
+        },
+        applyFilters: (() => {
+          throw new Error('applyFilters failed');
+        }) as unknown as () => Promise<void>,
+      });
+
+      const { recoverFromSearchError } = useTaskStore.getState();
+      recoverFromSearchError();
+
+      const { filters, error, filteredTasks } = useTaskStore.getState();
+      expect(filters.search).toBe('');
+      expect(filters.tags).toEqual(['urgent']);
+      expect(filters.status).toBe('in-progress');
+      expect(filters.priority).toBe('high');
+      expect(filters.boardId).toBe('board-1');
+      expect(filters.dateRange).toBeDefined();
+      expect(filters.crossBoardSearch).toBe(true);
+      expect(error).toBe('Search functionality temporarily unavailable. Please refresh the page.');
+      expect(filteredTasks).toHaveLength(1);
+    });
   });
 
   describe('simple setters', () => {

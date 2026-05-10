@@ -182,7 +182,7 @@ function createRecoverFromSearchError(get: () => TaskState & TaskActions, set: (
     } catch {
       set({
         filteredTasks: get().tasks,
-        filters: { search: '', tags: [], crossBoardSearch: false },
+        filters: { ...get().filters, search: '' },
         isSearching: false,
         error: 'Search functionality temporarily unavailable. Please refresh the page.',
       });
