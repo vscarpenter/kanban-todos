@@ -304,7 +304,6 @@ async function setupTestData(page: any) {
   await page.evaluate(() => {
     // This would typically interact with your app's API or state management
     // For now, we'll assume the app has some default test data
-    console.log('Setting up test data...');
   });
 }
 
@@ -312,7 +311,6 @@ async function createLargeDataset(page: any) {
   // Create a large number of tasks for performance testing
   await page.evaluate(() => {
     // This would create many tasks across multiple boards
-    console.log('Creating large dataset...');
   });
 }
 
@@ -320,6 +318,5 @@ async function deleteBoardWithTasks(page: any, boardName: string) {
   // Navigate to board management and delete a board
   await page.evaluate((name: string) => {
     // This would trigger board deletion through the app's interface
-    console.log(`Deleting board: ${name}`);
   }, boardName);
 }
