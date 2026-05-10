@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Instrument_Sans, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -8,27 +7,8 @@ import InstallPWA from "@/components/InstallPWA";
 import { IOSClassProvider } from "@/components/IOSClassProvider";
 import { NotificationProvider } from "@/components/NotificationProvider";
 
-const instrumentSans = Instrument_Sans({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
-  weight: ["400", "500", "600", "700"],
-});
-
-const instrumentSerif = Instrument_Serif({
-  subsets: ["latin"],
-  variable: "--font-serif",
-  display: "swap",
-  weight: ["400"],
-  style: ["normal", "italic"],
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-  display: "swap",
-  weight: ["400", "500", "600"],
-});
+// Inkwell rule #5: platform fonts only — no Google Fonts. The font stacks
+// (--font-sans, --font-serif, --font-mono) are defined in globals.css.
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://cascade.vinny.dev"),
@@ -96,8 +76,8 @@ export const viewport = {
   shrinkToFit: "no", // Prevent iOS Safari from shrinking viewport
   viewportFit: "cover", // For iOS notch handling
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#6B4A87" },
-    { media: "(prefers-color-scheme: dark)", color: "#C2A4DB" },
+    { media: "(prefers-color-scheme: light)", color: "#3B4A8C" },
+    { media: "(prefers-color-scheme: dark)", color: "#7A8AD1" },
   ],
 };
 
@@ -116,10 +96,10 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Cascade" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
-        <meta name="msapplication-TileColor" content="#6B4A87" />
+        <meta name="msapplication-TileColor" content="#3B4A8C" />
         <meta name="msapplication-tap-highlight" content="no" />
       </head>
-      <body className={`${instrumentSans.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
+      <body className="font-sans antialiased">
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
