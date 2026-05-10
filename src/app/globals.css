@@ -3,60 +3,92 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ─────────────────────────────────────────────────────────────
-   Cascade — Warm Editorial Design Tokens
-   Source of truth: design_handoff_cascade_redesign/tokens.css
-   ───────────────────────────────────────────────────────────── */
+/* =====================================================================
+   Inkwell — Indigo & Cloud
+   Cool stone surfaces, deep indigo accent, signature 1.5px borders,
+   platform fonts only. Source: https://github.com/vscarpenter/inkwell
+   ===================================================================== */
 
 :root {
-  /* Paper / surfaces — warm whites */
-  --paper-0: #FBF8F3;
-  --paper-1: #F5F1EA;
-  --paper-2: #EDE7DC;
-  --paper-3: #E4DCCC;
-  --paper-card: #FFFEFB;
-  --hairline: rgba(28, 26, 23, 0.08);
-  --hairline-strong: rgba(28, 26, 23, 0.14);
+  /* ---------- Surfaces ---------- */
+  --ivory: #F4F4F0;       /* page background — cool stone */
+  --paper: #FFFFFF;       /* card / panel surface */
+  --slate: #13141B;       /* primary text, slight cool undertone */
+  --oat:   #DDDCDF;       /* tertiary surface, hover thumbnails */
 
-  /* Ink — warm near-blacks */
-  --ink-1: #1C1A17;
-  --ink-2: #3A352E;
-  --ink-3: #6B6358;
-  --ink-4: #948C7E;
-  --ink-5: #BDB4A4;
+  /* ---------- Accent (saturated indigo) ---------- */
+  --accent:               #3B4A8C;
+  --accent-d:             #2A3768;
+  --accent-tint:          rgba(59, 74, 140, 0.14);
+  --accent-focus-ring:    rgba(59, 74, 140, 0.18);
+  --accent-strong-border: rgba(59, 74, 140, 0.5);
 
-  /* Accent — refined plum */
-  --accent-50:  #F6F0FA;
-  --accent-100: #EADDF3;
-  --accent-200: #D6BCE6;
-  --accent-300: #B690CE;
-  --accent-400: #8E62AB;
-  --accent-500: #6B4A87;
-  --accent-600: #553A6C;
-  --accent-700: #402B52;
-  --accent-ink: #FFFEFB;
+  /* ---------- Semantic ---------- */
+  --olive:        #788C5D;
+  --olive-tint:   rgba(120, 140, 93, 0.16);
+  --rust:         #B04A3F;
+  --rust-tint:    rgba(176, 74, 63, 0.10);
+  --warning:      #C78E3F;
+  --warning-tint: rgba(199, 142, 63, 0.16);
+  --info:         #5C7CA3;
+  --sky:          #6A8CAF;
 
-  /* Status — muted, editorial (darkened for accessibility) */
-  --ok-50:  #EDF2EC;
-  --ok-200: #BFD3BC;
-  --ok-500: #3A6B35; /* Darkened from #4F7A4B for better contrast */
-  --ok-700: #34522F;
+  /* ---------- Neutral scale (cool putty) ---------- */
+  --gray-100: #EDEDEA;
+  --gray-200: #E1E1DE;
+  --gray-300: #CFCFCC;
+  --gray-500: #6F6F75;
+  --gray-700: #3A3B41;
 
-  --warn-50:  #FBF1E1;
-  --warn-200: #EDD3A2;
-  --warn-500: #9A6B1A; /* Darkened from #B07820 for better contrast */
-  --warn-700: #7A5210;
+  /* ---------- Typography (platform fonts only — Inkwell rule #5) ---------- */
+  --font-serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+  --font-sans:  system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono:  ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
 
-  --danger-50:  #F8E9E5;
-  --danger-200: #E6BBB0;
-  --danger-500: #8B3A2A; /* Darkened from #A8412A for better contrast */
-  --danger-700: #76281A;
+  /* ---------- Spacing (8px base, 4px micro) ---------- */
+  --sp-1:  4px;  --sp-2:  8px;  --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 24px;  --sp-6: 32px;  --sp-7: 48px; --sp-8: 64px;
 
-  --info-50:  #E8EEF2;
-  --info-200: #B5C6D2;
-  --info-500: #2A4A5A; /* Darkened from #3F627A for better contrast */
+  /* Legacy aliases used by carried-over component recipes */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px; --s-5: 20px;
+  --s-6: 24px; --s-7: 32px; --s-8: 40px; --s-9: 56px; --s-10: 72px;
 
-  /* Per-board accent dots */
+  /* ---------- Radius ---------- */
+  --r-xs:    4px;
+  --r-sm:    8px;
+  --r-md:   12px;
+  --r-lg:   14px;
+  --r-xl:   20px;
+  --r-2xl:  20px;
+  --r-pill: 999px;
+
+  /* ---------- Borders (signature 1.5px) ---------- */
+  --border-rule: 1px solid var(--gray-300);
+  --border-hair: 1px solid var(--gray-100);
+
+  /* ---------- Shadows (warm low-spread) ---------- */
+  --shadow-xs:         0 1px 0  rgba(20, 20, 19, 0.04);
+  --shadow-sm:         0 1px 2px  rgba(20, 20, 19, 0.06);
+  --shadow-md:         0 4px 14px rgba(20, 20, 19, 0.08);
+  --shadow-lg:         0 12px 28px rgba(20, 20, 19, 0.12);
+  --shadow-xl:         0 24px 48px rgba(20, 20, 19, 0.18);
+  --shadow-lift:       0 32px 60px rgba(20, 20, 19, 0.22);
+  --shadow-card-hover: 0 10px 30px rgba(20, 20, 19, 0.10);
+
+  --focus: 0 0 0 3px var(--accent-focus-ring);
+
+  /* ---------- Motion ---------- */
+  --t-fast:   120ms;
+  --t-base:   150ms;
+  --t-slow:   300ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ---------- Per-board accent dots ----------
+     Categorical palette for the user's per-board color picker. These are
+     NOT the system accent — they're user-chosen labels persisted in board
+     records, so the literal hex must stay stable across design changes.
+     Source of truth: src/lib/utils/boardIcons.ts DOT_COLORS. */
   --dot-blue:  #3F627A;
   --dot-amber: #B07820;
   --dot-green: #4F7A4B;
@@ -65,152 +97,183 @@
   --dot-clay:  #9A6240;
   --dot-moss:  #5C6B3C;
 
-  /* Spacing scale (4px base) */
-  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px; --s-5: 20px;
-  --s-6: 24px; --s-7: 32px; --s-8: 40px; --s-9: 56px; --s-10: 72px;
+  color-scheme: light dark;
 
-  /* Radius */
-  --r-xs: 4px; --r-sm: 6px; --r-md: 8px; --r-lg: 12px; --r-xl: 16px; --r-2xl: 20px;
-
-  /* Warm, layered, paper-like shadows */
-  --shadow-xs: 0 1px 0 rgba(60, 45, 25, 0.04);
-  --shadow-sm: 0 1px 2px rgba(60, 45, 25, 0.06), 0 1px 1px rgba(60, 45, 25, 0.04);
-  --shadow-md: 0 2px 4px rgba(60, 45, 25, 0.06), 0 4px 12px rgba(60, 45, 25, 0.06);
-  --shadow-lg: 0 4px 8px rgba(60, 45, 25, 0.07), 0 12px 28px rgba(60, 45, 25, 0.10);
-  --shadow-xl: 0 8px 16px rgba(60, 45, 25, 0.10), 0 24px 48px rgba(60, 45, 25, 0.14);
-  --shadow-lift: 0 12px 24px rgba(60, 45, 25, 0.14), 0 32px 60px rgba(60, 45, 25, 0.18);
-
-  --focus: 0 0 0 3px rgba(107, 74, 135, 0.28);
-
-  /* shadcn semantic aliases — point to warm palette so all existing
-     bg-card, text-foreground, border-border, etc. inherit the new look */
+  /* ─── shadcn semantic aliases ───
+     Existing components rely on bg-card / text-foreground / border-border
+     etc. — these map shadcn's vocabulary onto Inkwell's tokens so the
+     swap is invisible to consumers. */
   --radius: 0.625rem;
 
-  --background: var(--paper-0);
-  --foreground: var(--ink-1);
-  --surface: var(--paper-1);
-  --surface-2: var(--paper-2);
+  --background:        var(--ivory);
+  --foreground:        var(--slate);
+  --surface:           var(--gray-100);
+  --surface-2:         var(--gray-200);
 
-  --border: var(--hairline);
-  --border-strong: var(--hairline-strong);
+  --border:            var(--gray-300);
+  --border-strong:     var(--slate);
 
-  --primary: var(--accent-500);
-  --primary-foreground: var(--accent-ink);
-  --ring: var(--accent-500);
+  --primary:           var(--accent);
+  --primary-foreground: var(--paper);
+  --ring:              var(--accent);
 
-  --danger: var(--danger-500);
-  --warning: var(--warn-500);
-  --success: var(--ok-500);
+  --danger:            var(--rust);
+  --success:           var(--olive);
 
-  --muted: var(--ink-3);
-  --muted-2: var(--ink-2);
+  --muted:             var(--gray-500);
+  --muted-2:           var(--gray-700);
 
-  /* Legacy shadcn compatibility */
-  --card: var(--paper-card);
-  --card-foreground: var(--ink-1);
-  --popover: var(--paper-card);
-  --popover-foreground: var(--ink-1);
-  --secondary: var(--paper-2);
-  --secondary-foreground: var(--ink-1);
-  --muted-foreground: var(--ink-3);
-  --accent: var(--paper-2);
-  --accent-foreground: var(--ink-1);
-  --destructive: var(--danger-500);
-  --input: var(--hairline-strong);
+  --card:              var(--paper);
+  --card-foreground:   var(--slate);
+  --popover:           var(--paper);
+  --popover-foreground: var(--slate);
+  --secondary:         var(--gray-100);
+  --secondary-foreground: var(--slate);
+  --muted-foreground:  var(--gray-500);
 
-  /* Chart colors — drawn from the per-board dot palette so charts
-     read as part of the same editorial system */
-  --chart-1: var(--dot-blue);
-  --chart-2: var(--dot-amber);
-  --chart-3: var(--dot-green);
-  --chart-4: var(--dot-rose);
-  --chart-5: var(--dot-plum);
+  /* shadcn's "accent" is a neutral hover surface (NOT the brand color).
+     Keeping it neutral preserves dropdown/menu hover legibility. */
+  --accent-surface:    var(--gray-100);
+  --accent-foreground: var(--slate);
 
-  /* Sidebar (consistent with main tokens) */
-  --sidebar: var(--paper-1);
-  --sidebar-foreground: var(--ink-1);
-  --sidebar-primary: var(--accent-500);
-  --sidebar-primary-foreground: var(--accent-ink);
-  --sidebar-accent: var(--paper-2);
-  --sidebar-accent-foreground: var(--ink-1);
-  --sidebar-border: var(--hairline-strong);
-  --sidebar-ring: var(--accent-500);
+  --destructive:       var(--rust);
+  --input:             var(--gray-300);
+
+  --chart-1: var(--info);
+  --chart-2: var(--warning);
+  --chart-3: var(--olive);
+  --chart-4: var(--rust);
+  --chart-5: var(--accent);
+
+  --sidebar:                       var(--gray-100);
+  --sidebar-foreground:            var(--slate);
+  --sidebar-primary:               var(--accent);
+  --sidebar-primary-foreground:    var(--paper);
+  --sidebar-accent:                var(--gray-200);
+  --sidebar-accent-foreground:     var(--slate);
+  --sidebar-border:                var(--gray-300);
+  --sidebar-ring:                  var(--accent);
+
+  /* ─── Legacy Cascade token aliases (back-compat) ───
+     Existing components reference these names via inline styles. They
+     resolve to Inkwell tokens so the palette swap propagates automatically.
+     Defined only here — dark mode inherits because the underlying Inkwell
+     tokens (--ivory, --slate, --accent, etc.) themselves swap under .dark. */
+  --paper-0:         var(--ivory);
+  --paper-1:         var(--gray-100);
+  --paper-2:         var(--oat);
+  --paper-3:         var(--gray-200);
+  --paper-card:      var(--paper);
+  --hairline:        var(--gray-200);
+  --hairline-strong: var(--gray-300);
+
+  --ink-1: var(--slate);
+  --ink-2: var(--gray-700);
+  --ink-3: var(--gray-500);
+  --ink-4: var(--gray-500);
+  --ink-5: var(--gray-300);
+
+  --accent-50:  var(--accent-tint);
+  --accent-100: var(--accent-tint);
+  --accent-200: var(--accent-strong-border);
+  --accent-300: var(--accent);
+  --accent-400: var(--accent);
+  --accent-500: var(--accent);
+  --accent-600: var(--accent-d);
+  --accent-700: var(--accent-d);
+  --accent-ink: var(--paper);
+
+  --ok-50:  var(--olive-tint);
+  --ok-200: color-mix(in oklab, var(--olive) 35%, transparent);
+  --ok-500: var(--olive);
+  --ok-700: var(--olive);
+
+  --warn-50:  var(--warning-tint);
+  --warn-200: color-mix(in oklab, var(--warning) 35%, transparent);
+  --warn-500: var(--warning);
+  --warn-700: var(--warning);
+
+  --danger-50:  var(--rust-tint);
+  --danger-200: color-mix(in oklab, var(--rust) 35%, transparent);
+  --danger-500: var(--rust);
+  --danger-700: var(--rust);
+
+  --info-50:  color-mix(in oklab, var(--info) 14%, transparent);
+  --info-200: color-mix(in oklab, var(--info) 35%, transparent);
+  --info-500: var(--info);
 }
 
-/* ─── Dark mode ─── */
+/* ─── Dark mode ─── (next-themes toggles `.dark` on <html>) */
 .dark {
-  --paper-0: #14130F;
-  --paper-1: #1B1915;
-  --paper-2: #221F1A;
-  --paper-3: #2D2A23;
-  --paper-card: #1F1D18;
-  --hairline: rgba(255, 250, 240, 0.07);
-  --hairline-strong: rgba(255, 250, 240, 0.13);
+  --ivory: #0F1018;
+  --paper: #181A24;
+  --slate: #E8E8EE;
+  --oat:   #2B2D38;
 
-  --ink-1: #F4EFE5;
-  --ink-2: #D9D3C5;
-  --ink-3: #9C9486;
-  --ink-4: #6E675B;
-  --ink-5: #4A453C;
+  --accent:               #7A8AD1;   /* lifted indigo → periwinkle */
+  --accent-d:             #6273C0;
+  --accent-tint:          rgba(122, 138, 209, 0.18);
+  --accent-focus-ring:    rgba(122, 138, 209, 0.28);
+  --accent-strong-border: rgba(122, 138, 209, 0.6);
 
-  --accent-50:  #2A1F36;
-  --accent-100: #3A2A4A;
-  --accent-200: #553A6C;
-  --accent-300: #7A569A;
-  --accent-400: #A586C2;
-  --accent-500: #C2A4DB;
-  --accent-600: #D4BDE8;
-  --accent-700: #E4D2F0;
-  --accent-ink: #14130F;
+  --olive:        #9CB07A;
+  --olive-tint:   rgba(156, 176, 122, 0.18);
+  --rust:         #D27468;
+  --rust-tint:    rgba(210, 116, 104, 0.16);
+  --warning:      #D9A55F;
+  --warning-tint: rgba(217, 165, 95, 0.18);
+  --info:         #7C9FD2;
+  --sky:          #85A6CB;
 
-  --ok-50:  #1B2419; --ok-200: #3A5234; --ok-500: #7A9A75; --ok-700: #BFD3BC;
-  --warn-50: #2A2113; --warn-200: #5A4220; --warn-500: #C49A5C; --warn-700: #EDD3A2;
-  --danger-50: #2A1815; --danger-200: #5A2C22; --danger-500: #C47A65; --danger-700: #E6BBB0;
-  --info-50: #15202A; --info-200: #2C4458; --info-500: #7A90A4;
+  --gray-100: #1E1F29;
+  --gray-200: #262732;
+  --gray-300: #34363F;
+  --gray-500: #9A9AA0;
+  --gray-700: #C0C0C7;
 
-  --shadow-xs: 0 1px 0 rgba(0, 0, 0, 0.3);
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 1px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.45), 0 12px 28px rgba(0, 0, 0, 0.4);
-  --shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.5), 0 24px 48px rgba(0, 0, 0, 0.5);
-  --shadow-lift: 0 12px 24px rgba(0, 0, 0, 0.6), 0 32px 60px rgba(0, 0, 0, 0.7);
+  --shadow-xs:         0 1px 0  rgba(0, 0, 0, 0.30);
+  --shadow-sm:         0 1px 2px  rgba(0, 0, 0, 0.45);
+  --shadow-md:         0 4px 14px rgba(0, 0, 0, 0.50);
+  --shadow-lg:         0 12px 28px rgba(0, 0, 0, 0.55);
+  --shadow-xl:         0 24px 48px rgba(0, 0, 0, 0.60);
+  --shadow-lift:       0 32px 60px rgba(0, 0, 0, 0.70);
+  --shadow-card-hover: 0 10px 30px rgba(0, 0, 0, 0.50);
 
-  /* Re-bind shadcn aliases for dark — vars above already swapped,
-     but explicit re-bind makes intent crystal clear */
-  --background: var(--paper-0);
-  --foreground: var(--ink-1);
-  --surface: var(--paper-1);
-  --surface-2: var(--paper-2);
-  --border: var(--hairline);
-  --border-strong: var(--hairline-strong);
-  --primary: var(--accent-500);
-  --primary-foreground: var(--accent-ink);
-  --ring: var(--accent-500);
-  --danger: var(--danger-500);
-  --warning: var(--warn-500);
-  --success: var(--ok-500);
-  --muted: var(--ink-3);
-  --muted-2: var(--ink-2);
-  --card: var(--paper-card);
-  --card-foreground: var(--ink-1);
-  --popover: var(--paper-card);
-  --popover-foreground: var(--ink-1);
-  --secondary: var(--paper-2);
-  --secondary-foreground: var(--ink-1);
-  --muted-foreground: var(--ink-3);
-  --accent: var(--paper-2);
-  --accent-foreground: var(--ink-1);
-  --destructive: var(--danger-500);
-  --input: var(--hairline-strong);
+  /* Re-bind shadcn aliases — vars above already swapped, but explicit
+     re-bind makes intent crystal clear */
+  --background:        var(--ivory);
+  --foreground:        var(--slate);
+  --surface:           var(--gray-100);
+  --surface-2:         var(--gray-200);
+  --border:            var(--gray-300);
+  --border-strong:     var(--slate);
+  --primary:           var(--accent);
+  --primary-foreground: var(--ivory);
+  --ring:              var(--accent);
+  --danger:            var(--rust);
+  --success:           var(--olive);
+  --muted:             var(--gray-500);
+  --muted-2:           var(--gray-700);
+  --card:              var(--paper);
+  --card-foreground:   var(--slate);
+  --popover:           var(--paper);
+  --popover-foreground: var(--slate);
+  --secondary:         var(--gray-100);
+  --secondary-foreground: var(--slate);
+  --muted-foreground:  var(--gray-500);
+  --accent-surface:    var(--gray-100);
+  --accent-foreground: var(--slate);
+  --destructive:       var(--rust);
+  --input:             var(--gray-300);
 
-  --sidebar: var(--paper-1);
-  --sidebar-foreground: var(--ink-1);
-  --sidebar-primary: var(--accent-500);
-  --sidebar-primary-foreground: var(--accent-ink);
-  --sidebar-accent: var(--paper-2);
-  --sidebar-accent-foreground: var(--ink-1);
-  --sidebar-border: var(--hairline-strong);
-  --sidebar-ring: var(--accent-500);
+  --sidebar:                    var(--gray-100);
+  --sidebar-foreground:         var(--slate);
+  --sidebar-primary:            var(--accent);
+  --sidebar-primary-foreground: var(--ivory);
+  --sidebar-accent:             var(--gray-200);
+  --sidebar-accent-foreground:  var(--slate);
+  --sidebar-border:             var(--gray-300);
+  --sidebar-ring:               var(--accent);
 }
 
 /* ─── Accessibility utilities ─── */
@@ -226,8 +289,7 @@
   border: 0;
 }
 
-/* High contrast mode — clarity through contrast, not saturation.
-   Re-binds the same shadcn aliases to a pure black/white palette. */
+/* High contrast mode — clarity through contrast, not saturation. */
 .high-contrast {
   --background: #FFFFFF;
   --foreground: #000000;
@@ -255,7 +317,7 @@
   --secondary: var(--surface-2);
   --secondary-foreground: var(--foreground);
   --muted-foreground: var(--muted);
-  --accent: var(--surface-2);
+  --accent-surface: var(--surface-2);
   --accent-foreground: var(--foreground);
   --destructive: var(--danger);
   --input: var(--border);
@@ -276,7 +338,7 @@
 
 /* Focus indicators */
 .focus-visible:focus-visible {
-  outline: 2px solid var(--accent-500);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -290,8 +352,8 @@
   position: absolute;
   top: -40px;
   left: 6px;
-  background: var(--ink-1);
-  color: var(--paper-card);
+  background: var(--slate);
+  color: var(--paper);
   padding: 8px;
   text-decoration: none;
   z-index: 1000;
@@ -314,7 +376,7 @@
 .keyboard-navigation select:focus,
 .keyboard-navigation textarea:focus,
 .keyboard-navigation [tabindex]:focus {
-  outline: 2px solid var(--accent-500);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -329,66 +391,56 @@
 
 /* ─── Tailwind v4 theme aliasing ─── */
 @theme inline {
-  /* Foundation */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-surface: var(--surface);
-  --color-surface-2: var(--surface-2);
+  --color-surface:    var(--surface);
+  --color-surface-2:  var(--surface-2);
 
-  /* Borders */
-  --color-border: var(--border);
+  --color-border:        var(--border);
   --color-border-strong: var(--border-strong);
 
-  /* Primary */
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-ring: var(--ring);
+  --color-primary:             var(--primary);
+  --color-primary-foreground:  var(--primary-foreground);
+  --color-ring:                var(--ring);
 
-  /* Semantic */
-  --color-danger: var(--danger);
+  --color-danger:  var(--danger);
   --color-warning: var(--warning);
   --color-success: var(--success);
 
-  /* Text */
-  --color-muted: var(--muted);
+  --color-muted:   var(--muted);
   --color-muted-2: var(--muted-2);
 
-  /* Legacy shadcn compatibility */
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
+  --color-card:               var(--card);
+  --color-card-foreground:    var(--card-foreground);
+  --color-popover:            var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-  --color-secondary: var(--secondary);
+  --color-secondary:          var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-input: var(--input);
+  --color-muted-foreground:   var(--muted-foreground);
+  --color-accent:             var(--accent-surface);
+  --color-accent-foreground:  var(--accent-foreground);
+  --color-destructive:        var(--destructive);
+  --color-input:              var(--input);
 
-  /* Charts */
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
 
-  /* Sidebar */
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar:                       var(--sidebar);
+  --color-sidebar-foreground:            var(--sidebar-foreground);
+  --color-sidebar-primary:               var(--sidebar-primary);
+  --color-sidebar-primary-foreground:    var(--sidebar-primary-foreground);
+  --color-sidebar-accent:                var(--sidebar-accent);
+  --color-sidebar-accent-foreground:     var(--sidebar-accent-foreground);
+  --color-sidebar-border:                var(--sidebar-border);
+  --color-sidebar-ring:                  var(--sidebar-ring);
 
-  /* Fonts — Instrument Sans body, Instrument Serif display, JetBrains Mono numerics */
-  --font-sans: var(--font-sans);
+  --font-sans:  var(--font-sans);
   --font-serif: var(--font-serif);
-  --font-mono: var(--font-mono);
+  --font-mono:  var(--font-mono);
 
-  /* Radius */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -404,21 +456,17 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
-    /* Instrument Sans stylistic sets: ss01 punctuation, cv11 alt forms */
-    font-feature-settings:
-      "rlig" 1,
-      "calt" 1,
-      "ss01" 1,
-      "cv11" 1;
-    text-rendering: optimizeLegibility;
+    font-size: 16px;
+    line-height: 1.55;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
-  /* Display / page titles use Instrument Serif by default */
+  /* Display / page titles use serif by default (Inkwell rule #4: roles) */
   h1, h2, h3 {
     font-family: var(--font-serif);
-    font-weight: 400;
+    font-weight: 500;
     text-wrap: balance;
   }
 
@@ -430,32 +478,31 @@
 
   h1 {
     @apply text-5xl lg:text-6xl;
-    line-height: 1.05;
-    letter-spacing: -0.025em;
-  }
-
-  h2 {
-    @apply text-4xl lg:text-5xl;
     line-height: 1.1;
     letter-spacing: -0.02em;
   }
 
+  h2 {
+    @apply text-4xl lg:text-5xl;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
   h3 {
     @apply text-3xl lg:text-4xl;
-    line-height: 1.15;
-    letter-spacing: -0.015em;
+    line-height: 1.22;
+    letter-spacing: -0.008em;
   }
 
   h4 {
     @apply text-2xl lg:text-3xl;
-    line-height: 1.2;
-    letter-spacing: -0.01em;
+    line-height: 1.25;
+    letter-spacing: -0.005em;
   }
 
   h5 {
     @apply text-xl lg:text-2xl;
     line-height: 1.3;
-    letter-spacing: -0.005em;
   }
 
   h6 {
@@ -463,13 +510,11 @@
     line-height: 1.4;
   }
 
-  /* Body text */
   p {
     @apply leading-7;
     text-wrap: pretty;
   }
 
-  /* Code / mono — JetBrains Mono with tabular numbers */
   code, pre {
     font-family: var(--font-mono);
     font-feature-settings: "tnum" 1, "zero" 1;
@@ -494,7 +539,7 @@
 @layer utilities {
   .font-serif {
     font-family: var(--font-serif);
-    font-weight: 400;
+    font-weight: 500;
     letter-spacing: -0.01em;
   }
 
@@ -503,14 +548,15 @@
     font-feature-settings: "tnum" 1;
   }
 
-  /* Eyebrow label — 11px, 600, 0.14em uppercase */
+  /* Eyebrow label — Inkwell signature: 11px mono, uppercase, accent rule */
   .label-eyebrow {
+    font-family: var(--font-mono);
     font-size: 11px;
     line-height: 15px;
     font-weight: 600;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--ink-4);
+    color: var(--gray-500);
   }
 
   /* Touch target utility for mobile */
@@ -545,7 +591,7 @@
     .task-card:hover {
       transform: none;
       box-shadow: var(--shadow-sm);
-      border-color: var(--hairline);
+      border-color: var(--gray-300);
     }
 
     button:not(:disabled):hover {
@@ -554,15 +600,7 @@
   }
 }
 
-/* ─── Theme switch crossfade ─────────────────────────────────────
-   When the user toggles light ↔ dark (or system flips), <html> swaps
-   --paper-*, --ink-*, --accent-*, --hairline* all at once. Without a
-   transition the swap is jarring; with a global `*` transition it
-   lags every hover/state change. The compromise: scope the 200ms
-   crossfade to the known token-consuming surfaces — body and the
-   recipe classes / data-slot elements that actually render those
-   tokens directly. Buttons, badges, and hover states keep their
-   existing snappy transitions. */
+/* ─── Theme switch crossfade ─── */
 body,
 .kanban-column,
 .task-card,
@@ -578,75 +616,44 @@ body,
   transition-timing-function: ease;
 }
 
-/* The .reduce-motion override later in this file zeros transition
-   durations globally, so users with reduced-motion preferences get
-   the instant swap they expect. */
-
 /* ─── Modal enter/exit motion ─── */
-/* Replaces shadcn's zoom-95 default with the editorial spec:
-   backdrop fade 180ms; dialog fade + translateY(8 → 0) over 220ms ease-out.
-   Single keyframe handles both opacity AND transform per phase so we don't
-   race separate Tailwind animate-in/fade-out-0 utilities on the same node. */
-@keyframes cascade-dialog-in {
-  from {
-    opacity: 0;
-    transform: translate(-50%, calc(-50% + 8px));
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%);
-  }
+@keyframes inkwell-dialog-in {
+  from { opacity: 0; transform: translate(-50%, calc(-50% + 8px)); }
+  to   { opacity: 1; transform: translate(-50%, -50%); }
 }
 
-@keyframes cascade-dialog-out {
-  from {
-    opacity: 1;
-    transform: translate(-50%, -50%);
-  }
-  to {
-    opacity: 0;
-    transform: translate(-50%, calc(-50% + 8px));
-  }
+@keyframes inkwell-dialog-out {
+  from { opacity: 1; transform: translate(-50%, -50%); }
+  to   { opacity: 0; transform: translate(-50%, calc(-50% + 8px)); }
 }
 
+/* Backwards-compat: existing components reference .cascade-dialog-content */
 .cascade-dialog-content[data-state="open"] {
-  animation: cascade-dialog-in 220ms cubic-bezier(0.2, 0.7, 0.3, 1);
+  animation: inkwell-dialog-in 220ms cubic-bezier(0.2, 0.7, 0.3, 1);
 }
 .cascade-dialog-content[data-state="closed"] {
-  animation: cascade-dialog-out 180ms ease-in;
+  animation: inkwell-dialog-out 180ms ease-in;
 }
 
 /* ─── Card & board animations ─── */
 @keyframes card-enter {
-  from {
-    opacity: 0;
-    transform: translateY(8px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 @keyframes board-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(4px) scale(0.99);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  from { opacity: 0; transform: translateY(4px) scale(0.99); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 @keyframes drop-zone-pulse {
   0%, 100% {
-    border-color: var(--accent-400);
-    background-color: color-mix(in oklab, var(--accent-50) 60%, transparent);
+    border-color: var(--accent);
+    background-color: color-mix(in oklab, var(--accent-tint) 60%, transparent);
   }
   50% {
-    border-color: var(--accent-300);
-    background-color: color-mix(in oklab, var(--accent-100) 70%, transparent);
+    border-color: var(--accent-d);
+    background-color: color-mix(in oklab, var(--accent-tint) 90%, transparent);
   }
 }
 
@@ -661,8 +668,8 @@ body,
 
 /* Drag ghost placeholder */
 .drag-ghost {
-  border: 1.5px dashed var(--accent-300);
-  background: color-mix(in oklab, var(--accent-50) 30%, transparent);
+  border: 1.5px dashed var(--accent);
+  background: color-mix(in oklab, var(--accent-tint) 30%, transparent);
   border-radius: var(--r-lg);
 }
 
@@ -702,18 +709,17 @@ body,
   }
 }
 
-/* ─── Component recipes — warm/paper aesthetic ─── */
+/* ─── Component recipes — Inkwell aesthetic ─── */
 @layer components {
-  /* Stats pill — single row of cells separated by hairline dividers on
-     wide viewports; collapses to a 2x2 grid (with a hairline cross) on
-     narrow viewports so it never overflows the board column. */
+  /* Stats pill — single row of cells with hairline dividers; collapses
+     to a 2x2 grid on narrow viewports. */
   .stats-pill {
     display: inline-flex;
     align-items: center;
   }
 
   .stats-pill__cell + .stats-pill__cell {
-    border-left: 1px solid var(--hairline);
+    border-left: 1px solid var(--gray-200);
   }
 
   @media (max-width: 640px) {
@@ -722,28 +728,17 @@ body,
       grid-template-columns: 1fr 1fr;
       width: 100%;
     }
-    .stats-pill__cell + .stats-pill__cell {
-      border-left: none;
-    }
-    /* 2nd cell: divider on left */
-    .stats-pill__cell:nth-child(2) {
-      border-left: 1px solid var(--hairline);
-    }
-    /* 3rd & 4th cells: divider above */
-    .stats-pill__cell:nth-child(n+3) {
-      border-top: 1px solid var(--hairline);
-    }
-    /* 4th cell: divider on left */
-    .stats-pill__cell:nth-child(4) {
-      border-left: 1px solid var(--hairline);
-    }
+    .stats-pill__cell + .stats-pill__cell { border-left: none; }
+    .stats-pill__cell:nth-child(2)  { border-left: 1px solid var(--gray-200); }
+    .stats-pill__cell:nth-child(n+3) { border-top: 1px solid var(--gray-200); }
+    .stats-pill__cell:nth-child(4)  { border-left: 1px solid var(--gray-200); }
   }
 
-  /* Kanban Column */
+  /* Kanban Column — paper surface with signature 1.5px frame */
   .kanban-column {
-    background: var(--paper-2);
-    border: 1px solid var(--hairline);
-    border-radius: 14px;
+    background: var(--gray-100);
+    border: 1.5px solid var(--gray-300);
+    border-radius: var(--r-lg);
     padding: 16px 14px;
     display: flex;
     flex-direction: column;
@@ -758,38 +753,39 @@ body,
     font-family: var(--font-mono);
     font-size: 11px;
     font-weight: 500;
-    color: var(--ink-3);
-    background: var(--paper-1);
-    border: 1px solid var(--hairline);
-    border-radius: 999px;
+    color: var(--gray-500);
+    background: var(--paper);
+    border: 1px solid var(--gray-300);
+    border-radius: var(--r-pill);
     padding: 1px 6px;
     font-feature-settings: "tnum" 1;
   }
 
-  /* Status dots */
+  /* Status dots — Inkwell semantic colors */
   .status-dot {
     @apply w-2 h-2 rounded-full flex-shrink-0;
   }
 
-  .status-dot--todo        { background-color: var(--info-500); }
-  .status-dot--in-progress { background-color: var(--warn-500); }
-  .status-dot--done        { background-color: var(--ok-500); }
+  .status-dot--todo        { background-color: var(--info); }
+  .status-dot--in-progress { background-color: var(--warning); }
+  .status-dot--done        { background-color: var(--olive); }
 
-  /* Task card — paper surface, layered warm shadow */
+  /* Task card — paper surface, 1.5px frame, layered shadow */
   .task-card {
-    background: var(--paper-card);
-    border: 1px solid var(--hairline);
-    border-radius: 10px;
+    background: var(--paper);
+    border: 1.5px solid var(--gray-300);
+    border-radius: var(--r-md);
     padding: 14px 14px 12px;
     box-shadow: var(--shadow-sm);
-    transition: transform 150ms ease, opacity 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+    transition: transform 150ms ease, opacity 150ms ease,
+                box-shadow 150ms ease, border-color 150ms ease;
     will-change: transform, opacity;
   }
 
   .task-card:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    border-color: var(--hairline-strong);
+    box-shadow: var(--shadow-card-hover);
+    border-color: var(--slate);
   }
 
   .task-card:active {
@@ -806,18 +802,18 @@ body,
     font-weight: 600;
     line-height: 1.35;
     letter-spacing: -0.005em;
-    color: var(--ink-1);
+    color: var(--slate);
   }
 
   .task-card__metadata {
     @apply text-xs space-y-1;
-    color: var(--ink-3);
+    color: var(--gray-500);
   }
 
-  /* Sidebar active state — 3px plum left border + paper-card surface */
+  /* Sidebar active state — 3px indigo left rule + paper surface */
   .sidebar-item--active {
-    background: var(--paper-card);
-    border: 1px solid var(--hairline-strong);
+    background: var(--paper);
+    border: 1.5px solid var(--gray-300);
     box-shadow: var(--shadow-xs);
     position: relative;
   }
@@ -829,7 +825,7 @@ body,
     top: 0;
     bottom: 0;
     width: 3px;
-    background: var(--accent-500);
+    background: var(--accent);
     border-radius: 0 2px 2px 0;
   }
 
@@ -838,50 +834,51 @@ body,
     @apply ring-2 ring-ring ring-offset-2 ring-offset-background;
   }
 
-  /* Button variants */
+  /* Button variants — Inkwell .btn-* recipes */
   .btn-primary {
-    background: var(--accent-500);
-    color: var(--accent-ink);
-    border: 1px solid var(--accent-600);
+    background: var(--accent);
+    color: var(--paper);
+    border: 1.5px solid var(--accent-d);
     box-shadow: var(--shadow-sm);
-    transition: background 150ms ease, box-shadow 150ms ease;
+    transition: background var(--t-fast) ease, box-shadow var(--t-fast) ease;
   }
 
   .btn-primary:hover {
-    background: var(--accent-600);
+    background: var(--accent-d);
     box-shadow: var(--shadow-md);
   }
 
   .btn-secondary {
-    background: var(--paper-card);
-    color: var(--ink-2);
-    border: 1px solid var(--hairline-strong);
+    background: var(--paper);
+    color: var(--slate);
+    border: 1.5px solid var(--gray-300);
     box-shadow: var(--shadow-xs);
-    transition: background 150ms ease, box-shadow 150ms ease;
+    transition: background var(--t-fast) ease, box-shadow var(--t-fast) ease;
   }
 
   .btn-secondary:hover {
-    background: var(--paper-1);
+    background: var(--gray-100);
     box-shadow: var(--shadow-sm);
+    border-color: var(--slate);
   }
 
   /* Input styling */
   .input-calm {
-    background: var(--paper-card);
-    color: var(--ink-1);
-    border: 1px solid var(--hairline-strong);
-    border-radius: 8px;
+    background: var(--paper);
+    color: var(--slate);
+    border: 1.5px solid var(--gray-300);
+    border-radius: var(--r-sm);
     padding: 10px 12px;
-    transition: border-color 150ms ease, box-shadow 150ms ease;
+    transition: border-color var(--t-fast) ease, box-shadow var(--t-fast) ease;
   }
 
   .input-calm:focus {
     outline: none;
-    border-color: var(--accent-500);
+    border-color: var(--accent);
     box-shadow: var(--focus);
   }
 
-  /* ─── Touch / iOS optimizations (unchanged) ─── */
+  /* ─── Touch / iOS optimizations ─── */
   .touch-optimized {
     touch-action: manipulation;
     -webkit-touch-callout: none;
@@ -947,7 +944,6 @@ body,
     isolation: isolate;
   }
 
-  /* Drag visuals — README spec: rotate(-1.4deg) translateY(-2px) + lift shadow */
   .ios-device .drag-active {
     transform: rotate(-1.4deg) translateY(-2px) translateZ(0);
     transition: transform 200ms cubic-bezier(0.2, 0.7, 0.3, 1);
@@ -960,34 +956,15 @@ body,
     transition: transform 200ms cubic-bezier(0.2, 0.7, 0.3, 1);
   }
 
-  /* Sidebar (paper-1) — keeps glass treatment subtle in dark mode only */
+  /* Sidebar surface — subtle glass treatment in dark mode only */
   .sidebar-glass {
     position: relative;
-    background: var(--paper-1);
+    background: var(--gray-100);
   }
 
   .dark .sidebar-glass {
     backdrop-filter: blur(20px) saturate(1.3);
     -webkit-backdrop-filter: blur(20px) saturate(1.3);
-    background: color-mix(in oklab, var(--paper-1) 92%, transparent);
-  }
-
-  /* Subtle paper grain — kept off by default to preserve clean tone */
-  .grain-overlay::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0.02;
-    mix-blend-mode: multiply;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-repeat: repeat;
-    background-size: 128px 128px;
-    z-index: 1;
-  }
-
-  .dark .grain-overlay::after {
-    opacity: 0.04;
-    mix-blend-mode: screen;
+    background: color-mix(in oklab, var(--gray-100) 92%, transparent);
   }
 }
