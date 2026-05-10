@@ -1,16 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { 
   applyFiltersToTasks,
-  createSetFilters,
-  createSetBoardFilter,
-  createSetCrossBoardSearch,
-  createSetSearchQuery,
-  createClearFilters,
-  createClearSearch,
-  createSetHighlightedTask,
 } from '../taskStore.filters'
-import { Task, TaskFilters, SearchScope } from '@/lib/types'
-import { sanitizeSearchQuery, searchRateLimiter } from '@/lib/utils/security'
+import { Task, TaskFilters } from '@/lib/types'
+import { sanitizeSearchQuery } from '@/lib/utils/security'
 import { searchTasks } from '@/lib/utils/taskSearch'
 
 // Mock dependencies

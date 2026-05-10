@@ -1,0 +1,136 @@
+{
+  "total": 6,
+  "hotspots": [
+    {
+      "key": "AZ2Nlz0pU8-ATWWSBhbB",
+      "component": "vscarpenter_kanban-todos:src/lib/utils/iosDetection.ts",
+      "project": "vscarpenter_kanban-todos",
+      "securityCategory": "dos",
+      "vulnerabilityProbability": "MEDIUM",
+      "status": "TO_REVIEW",
+      "line": 58,
+      "message": "Make sure the regex used here, which is vulnerable to super-linear runtime due to backtracking, cannot lead to denial of service.",
+      "assignee": "AZsS1t1pfZd8Q_ekGf7W",
+      "author": "vscarpenter@gmail.com",
+      "creationDate": "2025-09-01T20:25:03+0000",
+      "updateDate": "2026-04-14T20:02:19+0000",
+      "textRange": {
+        "startLine": 58,
+        "endLine": 58,
+        "startOffset": 5,
+        "endOffset": 38
+      },
+      "flows": [],
+      "ruleKey": "typescript:S5852"
+    },
+    {
+      "key": "AZ2Nlz1CU8-ATWWSBhbw",
+      "component": "vscarpenter_kanban-todos:src/lib/utils/security.ts",
+      "project": "vscarpenter_kanban-todos",
+      "securityCategory": "dos",
+      "vulnerabilityProbability": "MEDIUM",
+      "status": "TO_REVIEW",
+      "line": 88,
+      "message": "Make sure the regex used here, which is vulnerable to super-linear runtime due to backtracking, cannot lead to denial of service.",
+      "assignee": "AZsS1t1pfZd8Q_ekGf7W",
+      "author": "vscarpenter@gmail.com",
+      "creationDate": "2025-09-06T19:13:11+0000",
+      "updateDate": "2026-04-14T20:02:19+0000",
+      "textRange": {
+        "startLine": 88,
+        "endLine": 88,
+        "startOffset": 32,
+        "endOffset": 42
+      },
+      "flows": [],
+      "ruleKey": "typescript:S5852"
+    },
+    {
+      "key": "AZ2Nlz4PU8-ATWWSBhdt",
+      "component": "vscarpenter_kanban-todos:Dockerfile",
+      "project": "vscarpenter_kanban-todos",
+      "securityCategory": "permission",
+      "vulnerabilityProbability": "MEDIUM",
+      "status": "TO_REVIEW",
+      "line": 24,
+      "message": "Copying recursively might inadvertently add sensitive data to the container. Make sure it is safe here.",
+      "author": "vinnycarpenter@northwesternmutual.com",
+      "creationDate": "2025-08-11T16:02:38+0000",
+      "updateDate": "2026-04-14T20:02:19+0000",
+      "textRange": {
+        "startLine": 24,
+        "endLine": 24,
+        "startOffset": 5,
+        "endOffset": 6
+      },
+      "flows": [],
+      "ruleKey": "docker:S6470"
+    },
+    {
+      "key": "AZ2Nlz2ZU8-ATWWSBhcO",
+      "component": "vscarpenter_kanban-todos:src/lib/stores/taskStore.filters.ts",
+      "project": "vscarpenter_kanban-todos",
+      "securityCategory": "weak-cryptography",
+      "vulnerabilityProbability": "MEDIUM",
+      "status": "TO_REVIEW",
+      "line": 273,
+      "message": "Make sure that using this pseudorandom number generator is safe here.",
+      "assignee": "AZsS1t1pfZd8Q_ekGf7W",
+      "author": "vscarpenter@gmail.com",
+      "creationDate": "2026-01-11T05:15:45+0000",
+      "updateDate": "2026-04-14T20:02:19+0000",
+      "textRange": {
+        "startLine": 273,
+        "endLine": 273,
+        "startOffset": 10,
+        "endOffset": 23
+      },
+      "flows": [],
+      "ruleKey": "typescript:S2245"
+    },
+    {
+      "key": "AZ2Nlzz8U8-ATWWSBhah",
+      "component": "vscarpenter_kanban-todos:src/lib/utils/__tests__/database.test.ts",
+      "project": "vscarpenter_kanban-todos",
+      "securityCategory": "weak-cryptography",
+      "vulnerabilityProbability": "MEDIUM",
+      "status": "TO_REVIEW",
+      "line": 12,
+      "message": "Make sure that using this pseudorandom number generator is safe here.",
+      "assignee": "AZsS1t1pfZd8Q_ekGf7W",
+      "author": "vscarpenter@gmail.com",
+      "creationDate": "2026-03-22T01:32:41+0000",
+      "updateDate": "2026-04-14T20:02:19+0000",
+      "textRange": {
+        "startLine": 12,
+        "endLine": 12,
+        "startOffset": 16,
+        "endOffset": 29
+      },
+      "flows": [],
+      "ruleKey": "typescript:S2245"
+    },
+    {
+      "key": "AZ2Nlzz8U8-ATWWSBhai",
+      "component": "vscarpenter_kanban-todos:src/lib/utils/__tests__/database.test.ts",
+      "project": "vscarpenter_kanban-todos",
+      "securityCategory": "weak-cryptography",
+      "vulnerabilityProbability": "MEDIUM",
+      "status": "TO_REVIEW",
+      "line": 27,
+      "message": "Make sure that using this pseudorandom number generator is safe here.",
+      "assignee": "AZsS1t1pfZd8Q_ekGf7W",
+      "author": "vscarpenter@gmail.com",
+      "creationDate": "2026-03-22T01:32:41+0000",
+      "updateDate": "2026-04-14T20:02:19+0000",
+      "textRange": {
+        "startLine": 27,
+        "endLine": 27,
+        "startOffset": 17,
+        "endOffset": 30
+      },
+      "flows": [],
+      "ruleKey": "typescript:S2245"
+    }
+  ]
+}

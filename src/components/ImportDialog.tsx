@@ -34,6 +34,12 @@ const STEP_DESCRIPTIONS = {
   complete: 'Import finished successfully',
 };
 
+const hasDetectedConflicts = (conflicts: ReturnType<typeof detectImportConflicts>) => (
+  (conflicts.duplicateTaskIds?.length ?? 0) > 0 ||
+  (conflicts.duplicateBoardIds?.length ?? 0) > 0 ||
+  (conflicts.defaultBoardConflicts?.length ?? 0) > 0
+);
+
 export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
   const { tasks, importTasks } = useTaskStore();
   const { boards, importBoards } = useBoardStore();
@@ -87,10 +93,12 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
     if (!state.importData) return;
 
     const conflicts = detectImportConflicts(state.importData, tasks, boards);
-    state.setConflicts(conflicts);
-    state.setCurrentStep(state.hasConflicts() ? 'conflicts' : 'importing');
+    const hasConflicts = hasDetectedConflicts(conflicts);
 
-    if (!state.hasConflicts()) {
+    state.setConflicts(conflicts);
+    state.setCurrentStep(hasConflicts ? 'conflicts' : 'importing');
+
+    if (!hasConflicts) {
       handleImport();
     }
   };

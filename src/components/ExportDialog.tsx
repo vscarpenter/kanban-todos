@@ -84,17 +84,29 @@ export function ExportDialog({ open, onOpenChange }: ExportDialogProps) {
   const validateExport = () => {
     try {
       const result = validateAndSanitizeExport(tasks, boards, settings, exportOptions);
-      setValidationResults({
+      const nextValidationResults = {
         errors: result.validationResult.errors.map(e => e.message),
         warnings: result.validationResult.warnings.map(w => w.message),
-      });
-      return result.validationResult.isValid;
+      };
+
+      setValidationResults(nextValidationResults);
+
+      return {
+        isValid: result.validationResult.isValid,
+        ...nextValidationResults,
+      };
     } catch (error) {
-      setValidationResults({
+      const nextValidationResults = {
         errors: [error instanceof Error ? error.message : 'Validation failed'],
         warnings: [],
-      });
-      return false;
+      };
+
+      setValidationResults(nextValidationResults);
+
+      return {
+        isValid: false,
+        ...nextValidationResults,
+      };
     }
   };
 
@@ -105,9 +117,9 @@ export function ExportDialog({ open, onOpenChange }: ExportDialogProps) {
     try {
       // Step 1: Validate export data
       setExportProgress(20);
-      const isValid = validateExport();
+      const validation = validateExport();
       
-      if (!isValid && validationResults.errors.length > 0) {
+      if (!validation.isValid) {
         throw new Error('Export validation failed');
       }
 

@@ -44,7 +44,7 @@ vi.mock('@/components/about/ScrollReveal', () => ({
 
 vi.mock('@/components/about/EnterAppLink', () => ({
   EnterAppLink: ({ children }: { children: React.ReactNode }) => (
-    <a href="/">{children}</a>
+    <button type="button">{children}</button>
   ),
 }))
 

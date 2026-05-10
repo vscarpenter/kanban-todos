@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { KanbanBoard } from '@/components/KanbanBoard'
 
@@ -26,7 +26,7 @@ vi.mock('@/components/ClientOnly', () => ({
 }))
 
 vi.mock('@/components/ui/button', () => ({
-  Button: ({ children, onClick, className, ...props }: any) => (
+  Button: ({ children, onClick, className, ...props }: React.ComponentProps<'button'>) => (
     <button onClick={onClick} className={className} {...props}>
       {children}
     </button>

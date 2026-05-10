@@ -1,494 +1,716 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Codebase Analysis Report — Kanban Todos</title>
-  <link rel="stylesheet" href="public/css/inkwell.css">
-  <style>
-    body {
-      max-width: 920px;
-      margin: 0 auto;
-      padding: 24px;
-    }
-    .metric-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin: 24px 0;
-    }
-    .metric-card {
-      border: var(--border);
-      padding: 16px;
-    }
-    .metric-value {
-      font-family: var(--serif);
-      font-size: var(--t-h2);
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-    .metric-label {
-      font-family: var(--mono);
-      font-size: var(--t-small);
-      color: var(--gray-500);
-    }
-    .section {
-      margin-bottom: 48px;
-    }
-    .finding {
-      margin-bottom: 16px;
-      padding: 16px;
-      border: var(--border-hair);
-      border-left: 3px solid var(--accent);
-    }
-    .finding.warning {
-      border-left-color: var(--rust);
-    }
-    .finding.success {
-      border-left-color: var(--olive);
-    }
-    .code-block {
-      background: var(--gray-100);
-      padding: 16px;
-      border-radius: var(--r-sm);
-      font-family: var(--mono);
-      font-size: var(--t-small);
-      overflow-x: auto;
-      margin: 16px 0;
-    }
-    .score-bar {
-      height: 8px;
-      background: var(--gray-200);
-      border-radius: var(--r-pill);
-      overflow: hidden;
-      margin-top: 8px;
-    }
-    .score-fill {
-      height: 100%;
-      background: var(--accent);
-      transition: width 0.3s ease;
-    }
-    .score-fill.warning {
-      background: var(--rust);
-    }
-    .score-fill.success {
-      background: var(--olive);
-    }
-    .tag {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: var(--r-pill);
-      font-family: var(--mono);
-      font-size: var(--t-caption);
-      margin-right: 8px;
-      margin-bottom: 8px;
-    }
-    .tag.compliance {
-      background: var(--olive);
-      color: white;
-    }
-    .tag.warning {
-      background: var(--rust);
-      color: white;
-    }
-    .tag.info {
-      background: var(--sky);
-      color: white;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>kanban-todos · Codebase Analysis Report</title>
+<style>
+:root{--ivory:#F4F4F0;--paper:#FFFFFF;--slate:#13141B;--oat:#DDDCDF;--accent:#3B4A8C;--accent-d:#2A3768;--accent-tint:rgba(59,74,140,0.14);--accent-focus-ring:rgba(59,74,140,0.18);--accent-strong-border:rgba(59,74,140,0.5);--olive:#788C5D;--olive-tint:rgba(120,140,93,0.16);--rust:#B04A3F;--warning:#C78E3F;--warning-tint:rgba(199,142,63,0.16);--info:#5C7CA3;--sky:#6A8CAF;--gray-100:#EDEDEA;--gray-200:#E1E1DE;--gray-300:#CFCFCC;--gray-500:#6F6F75;--gray-700:#3A3B41;--serif:ui-serif,Georgia,"Times New Roman",Times,serif;--sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Monaco,Consolas,monospace;--t-display:48px;--t-h1:32px;--t-h2:24px;--t-h3:19px;--t-body:16px;--t-small:14px;--t-caption:12px;--t-eyebrow:11px;--sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:24px;--sp-6:32px;--sp-7:48px;--sp-8:64px;--r-xs:4px;--r-sm:8px;--r-md:12px;--r-lg:14px;--r-xl:20px;--r-pill:999px;--border:1.5px solid var(--gray-300);--border-strong:1.5px solid var(--slate);--border-hair:1px solid var(--gray-100);--border-rule:1px solid var(--gray-300);--shadow-sm:0 1px 2px rgba(20,20,19,0.06);--shadow-md:0 4px 14px rgba(20,20,19,0.08);--shadow-lg:0 12px 28px rgba(20,20,19,0.12);--shadow-card-hover:0 10px 30px rgba(20,20,19,0.10);--t-fast:120ms;--t-base:150ms;--t-slow:300ms;--ease-out:cubic-bezier(0.2,0.8,0.2,1);--content-narrow:820px;--content-default:920px;--content-wide:1120px;--page-pad-x:24px;color-scheme:light dark}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--ivory:#0F1018;--paper:#181A24;--slate:#E8E8EE;--oat:#2B2D38;--accent:#7A8AD1;--accent-d:#6273C0;--accent-tint:rgba(122,138,209,0.18);--accent-focus-ring:rgba(122,138,209,0.28);--accent-strong-border:rgba(122,138,209,0.6);--olive:#9CB07A;--olive-tint:rgba(156,176,122,0.18);--rust:#D27468;--warning:#D9A55F;--warning-tint:rgba(217,165,95,0.18);--info:#7C9FD2;--sky:#85A6CB;--gray-100:#1E1F29;--gray-200:#262732;--gray-300:#34363F;--gray-500:#9A9AA0;--gray-700:#C0C0C7}}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--ivory);color:var(--slate);font-family:var(--sans);font-size:var(--t-body);line-height:1.55;-webkit-font-smoothing:antialiased}
+.t-display{font-family:var(--serif);font-weight:500;font-size:var(--t-display);line-height:1.1;letter-spacing:-0.02em}
+.t-h1{font-family:var(--serif);font-weight:500;font-size:var(--t-h1);line-height:1.2;letter-spacing:-0.01em}
+.t-h2{font-family:var(--serif);font-weight:500;font-size:var(--t-h2);line-height:1.3;letter-spacing:-0.01em}
+.t-h3{font-family:var(--serif);font-weight:500;font-size:var(--t-h3);line-height:1.22;letter-spacing:-0.008em}
+.t-small{font:430 var(--t-small)/1.5 var(--sans);color:var(--gray-700)}
+.t-caption{font:500 var(--t-caption)/1.4 var(--sans);color:var(--gray-500)}
+.eyebrow{font-family:var(--mono);font-size:var(--t-eyebrow);letter-spacing:0.12em;text-transform:uppercase;color:var(--gray-500);display:inline-flex;align-items:center;gap:12px}
+.eyebrow::before{content:"";width:24px;height:1.5px;background:var(--accent)}
+em.accent,.serif em{font-style:italic;color:var(--accent)}
+a.link{color:var(--accent);text-decoration-color:var(--oat);text-underline-offset:3px}
+a.link:hover{text-decoration-color:var(--accent)}
+code,.code-inline{font-family:var(--mono);font-size:0.86em;background:var(--gray-100);padding:1.5px 5px;border-radius:var(--r-xs)}
+.card{background:var(--paper);border:var(--border);border-radius:var(--r-lg);padding:var(--sp-5)}
+.stat-card{background:var(--paper);border:var(--border);border-radius:var(--r-md);padding:20px 22px 18px}
+.stat-card.warn{border-left:4px solid var(--rust);padding-left:19px}
+.stat-card.flag{border-left:4px solid var(--warning);padding-left:19px}
+.stat-card.good{border-left:4px solid var(--olive);padding-left:19px}
+.stat-num{font:500 38px/1 var(--serif);margin-bottom:6px;color:var(--slate)}
+.stat-label{font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--gray-500)}
+.stat-delta{font-family:var(--mono);font-size:11px;margin-top:6px;color:var(--gray-500)}
+.tbl{width:100%;border-collapse:separate;border-spacing:0;background:var(--paper);border:var(--border);border-radius:var(--r-md);overflow:hidden}
+.tbl thead th{text-align:left;font:600 11px/1 var(--sans);text-transform:uppercase;letter-spacing:0.06em;color:var(--gray-500);background:var(--gray-100);padding:12px 16px;border-bottom:1px solid var(--gray-300)}
+.tbl tbody td{padding:13px 16px;border-bottom:1px solid var(--gray-100);font-size:13px;vertical-align:top}
+.tbl tbody tr:last-child td{border-bottom:none}
+.tldr{background:var(--slate);color:var(--ivory);border-radius:var(--r-md);padding:22px 26px}
+.tldr-label{font:500 var(--t-eyebrow)/1 var(--mono);text-transform:uppercase;letter-spacing:0.1em;color:var(--oat);margin-bottom:10px}
+.tldr code{background:rgba(255,255,255,0.08);color:var(--ivory)}
+.pill{display:inline-flex;align-items:baseline;gap:6px;font:600 11px/1 var(--sans);border-radius:var(--r-pill);padding:5px 11px;letter-spacing:0.04em;text-transform:uppercase}
+.pill.crit{background:var(--rust);color:var(--paper)}
+.pill.high{background:var(--warning);color:#3A2A0F}
+.pill.med{background:var(--accent);color:var(--paper)}
+.pill.low{background:var(--gray-100);color:var(--gray-700);border:var(--border)}
+.pill.ok{background:var(--olive);color:var(--paper)}
+.pill.fail{background:var(--rust);color:var(--paper)}
+.pill.conf-h{background:var(--olive-tint);color:var(--olive)}
+.pill.conf-m{background:var(--warning-tint);color:#A06A2A}
+.pill.conf-l{background:var(--gray-100);color:var(--gray-500)}
+.pill.src-claude{background:var(--accent-tint);color:var(--accent)}
+.pill.src-sonar{background:var(--olive-tint);color:var(--olive)}
+.pill.src-both{background:var(--info);color:var(--paper)}
+.alert{display:flex;gap:12px;padding:14px 18px;border-radius:var(--r-md);border:var(--border);background:var(--paper);font-size:14px;line-height:1.5;color:var(--slate)}
+.alert-title{font-weight:600;margin:0 0 4px;font-size:14px}
+.alert-body{color:var(--gray-700)}
+.alert.is-info{background:var(--accent-tint);border-color:var(--accent-strong-border)}
+.alert.is-info .alert-title{color:var(--accent)}
+.alert.is-warning{background:var(--warning-tint);border-color:rgba(199,142,63,0.45)}
+.alert.is-warning .alert-title{color:#A06A2A}
+.alert.is-danger{background:rgba(176,74,63,0.10);border-color:rgba(176,74,63,0.45)}
+.alert.is-danger .alert-title{color:var(--rust)}
+.alert.is-success{background:var(--olive-tint);border-color:rgba(120,140,93,0.45)}
+.alert.is-success .alert-title{color:var(--olive)}
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.toc a{font-size:12.5px;padding:7px 14px;border:var(--border);border-radius:var(--r-pill);text-decoration:none;color:var(--gray-700);background:var(--paper);transition:border-color var(--t-fast),color var(--t-fast),background var(--t-fast);display:inline-flex;align-items:center;gap:7px}
+.toc a .n{font:10px/1 var(--mono);color:var(--gray-500)}
+.toc a:hover{border-color:var(--slate);color:var(--slate)}
+.toc a:hover .n{color:var(--accent)}
+.sec-head{display:flex;align-items:baseline;gap:16px;margin:48px 0 14px;padding-top:8px;scroll-margin-top:24px}
+.sec-head .idx{font:600 13px/1 var(--mono);color:var(--accent);width:34px;flex-shrink:0}
+.sec-head h2{margin:0;font-family:var(--serif);font-weight:500;font-size:27px;letter-spacing:-0.012em}
+.sec-head .count{font:11px/1 var(--mono);color:var(--gray-500);background:var(--gray-100);padding:4px 9px;border-radius:var(--r-pill)}
+hr.rule{border:none;border-top:var(--border-rule);margin:28px 0 22px}
+.wrap{max-width:var(--content-wide);margin:0 auto;padding:0 var(--page-pad-x)}
+.grid{display:grid;gap:var(--sp-4)}
+.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:760px){.grid-3,.grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-2{grid-template-columns:1fr}}
+@media (max-width:480px){.grid-3,.grid-4,.grid-2{grid-template-columns:1fr}}
+details.finding{background:var(--paper);border:var(--border);border-radius:var(--r-md);margin-bottom:10px;transition:border-color var(--t-fast)}
+details.finding[open]{border-color:var(--slate)}
+details.finding summary{padding:14px 18px;cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:10px;list-style:none;font-size:14px;font-weight:500}
+details.finding summary::-webkit-details-marker{display:none}
+details.finding summary::after{content:"+";margin-left:auto;font:400 18px/1 var(--mono);color:var(--gray-500)}
+details.finding[open] summary::after{content:"−"}
+details.finding .body{padding:0 18px 18px;border-top:1px solid var(--gray-100);padding-top:14px}
+details.finding .body p{margin:0 0 10px;font-size:13.5px;line-height:1.55;color:var(--gray-700)}
+details.finding .meta-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.path{font-family:var(--mono);font-size:12.5px;color:var(--accent);background:var(--gray-100);padding:2px 8px;border-radius:var(--r-xs)}
+.section-intro{font-size:14.5px;color:var(--gray-700);margin:0 0 var(--sp-4);max-width:780px;line-height:1.6}
+.report-head{padding:64px 0 32px;border-bottom:var(--border-rule);margin-bottom:32px}
+.report-head .eyebrow{margin-bottom:18px}
+.report-head h1{margin:0 0 12px}
+.report-head .deck{font:430 18px/1.5 var(--sans);color:var(--gray-700);max-width:680px}
+.meta-grid{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:20px;font-family:var(--mono);font-size:12px;color:var(--gray-500)}
+.meta-grid b{font-weight:600;color:var(--slate)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px;font-family:var(--mono);color:var(--gray-700)}
+.kv dt{color:var(--gray-500)}
+.kv dd{margin:0;color:var(--slate)}
+ul.tight{margin:6px 0 0;padding-left:20px;font-size:14px;line-height:1.6;color:var(--gray-700)}
+ul.tight li{margin:4px 0}
+.scorecard{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+.scorecard .num{font:500 64px/1 var(--serif);color:var(--accent);letter-spacing:-0.02em}
+.scorecard .den{font:500 24px/1 var(--serif);color:var(--gray-500)}
+.scorecard .label{font:500 13px/1.3 var(--sans);text-transform:uppercase;letter-spacing:0.08em;color:var(--gray-500);max-width:170px}
+.gate{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:var(--r-pill);font:600 12px/1 var(--sans);letter-spacing:0.04em;text-transform:uppercase}
+.gate.fail{background:var(--rust);color:var(--paper)}
+.gate.pass{background:var(--olive);color:var(--paper)}
+*:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:var(--r-xs)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.01ms!important}}
+@media print{.toc{display:none}details.finding{break-inside:avoid;border-color:var(--gray-300)!important}details.finding[open] .body{display:block}.sec-head{break-after:avoid}}
+</style>
 </head>
 <body>
-  <header>
-    <h1>Codebase Analysis Report</h1>
-    <p class="t-eyebrow">Kanban Todos Project — Compliance & Quality Assessment</p>
-    <p style="color: var(--gray-500);">Generated on June 2025</p>
-  </header>
+<main class="wrap">
+<header class="report-head">
+  <div class="eyebrow">Codebase Quality Review</div>
+  <h1 class="t-display">kanban-todos<br/><em class="accent">health &amp; risk audit</em></h1>
+  <p class="deck">A privacy-first, client-only kanban PWA built with Next.js 16, React 19, and Zustand. This audit cross-validates SonarCloud findings against the actual codebase, flags Sonar drift, and prioritizes a 90-day remediation roadmap.</p>
+  <div class="meta-grid">
+    <span><b>Project</b> vscarpenter_kanban-todos</span>
+    <span><b>Branch</b> main · v5.2.0</span>
+    <span><b>Sonar fetched</b> 2026-05-10T16:13:38Z</span>
+    <span><b>Audit date</b> 2026-05-10</span>
+    <span><b>NCLOC</b> 23,541</span>
+    <span><b>Source files</b> 169 (.ts/.tsx)</span>
+  </div>
+</header>
 
-  <section class="section">
-    <h2>Executive Summary</h2>
-    <p>A comprehensive analysis of the Kanban Todos codebase was conducted to assess compliance with coding standards, test quality, and overall code health. The project demonstrates strong adherence to established patterns with room for improvement in test coverage and some code quality areas.</p>
-    
-    <div class="metric-grid">
-      <div class="metric-card">
-        <div class="metric-value">A-</div>
-        <div class="metric-label">Overall Grade</div>
+<nav aria-label="Section navigation" style="margin-bottom:32px">
+  <ul class="toc">
+    <li><a href="#executive"><span class="n">01</span> Executive Summary</a></li>
+    <li><a href="#metrics"><span class="n">02</span> Metrics Dashboard</a></li>
+    <li><a href="#deltas"><span class="n">03</span> Sonar Deltas</a></li>
+    <li><a href="#conflicts"><span class="n">04</span> Standards vs Sonar Conflicts</a></li>
+    <li><a href="#findings"><span class="n">05</span> Detailed Findings</a></li>
+    <li><a href="#roadmap"><span class="n">06</span> 30 / 60 / 90 Roadmap</a></li>
+    <li><a href="#methodology"><span class="n">07</span> Methodology &amp; Limitations</a></li>
+  </ul>
+</nav>
+
+<section id="executive">
+  <div class="sec-head"><span class="idx">01</span><h2>Executive Summary</h2></div>
+  <div class="grid grid-2" style="margin-bottom:20px">
+    <div class="card">
+      <div class="eyebrow" style="margin-bottom:12px">Overall Health</div>
+      <div class="scorecard">
+        <span class="num">7.5</span><span class="den">/ 10</span>
+        <span class="label">Strong fundamentals; quality gate inflated by stale data</span>
       </div>
-      <div class="metric-card">
-        <div class="metric-value">45.3%</div>
-        <div class="metric-label">Test Coverage</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value">166</div>
-        <div class="metric-label">TypeScript Files</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value">31</div>
-        <div class="metric-label">Test Files</div>
-      </div>
+      <p class="t-small" style="margin:18px 0 0">A modern, well-typed, security-conscious codebase with active modernization momentum (PRs #65–#68 in the last cycle). The headline Sonar quality-gate FAIL is largely an artifact of pre-cleanup data: ~24% of issues live in a directory that was deleted on 2026-05-09. After a re-scan, reliability rating should drop from D toward A or B.</p>
     </div>
-  </section>
+    <div class="card">
+      <div class="eyebrow" style="margin-bottom:12px">Sonar Quality Gate</div>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+        <span class="gate fail">FAIL</span>
+        <span class="t-small" style="margin:0"><b>1 of 5</b> conditions failing</span>
+      </div>
+      <dl class="kv">
+        <dt>new_reliability_rating</dt><dd>4.0 &gt; 1 · <span style="color:var(--rust)">FAIL</span></dd>
+        <dt>new_security_rating</dt><dd>1.0 · <span style="color:var(--olive)">PASS</span></dd>
+        <dt>new_maintainability</dt><dd>1.0 · <span style="color:var(--olive)">PASS</span></dd>
+        <dt>new_duplicated_lines</dt><dd>2.0% &lt; 3% · <span style="color:var(--olive)">PASS</span></dd>
+        <dt>new_hotspots_reviewed</dt><dd>100% · <span style="color:var(--olive)">PASS</span></dd>
+      </dl>
+    </div>
+  </div>
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="eyebrow" style="margin-bottom:12px;color:var(--rust)">Top 5 Risks</div>
+      <ol class="tight" style="padding-left:22px">
+        <li><b>Stale Sonar scope.</b> 156 of 637 issues live in <code>design_handoff_cascade_redesign/</code> — deleted in PR #67 on 2026-05-09. Quality gate currently misrepresents real reliability.</li>
+        <li><b>Test coverage floor at ~37%.</b> <code>vitest.config.ts</code> thresholds (lines 37%, branches 35%) are well below the 80% target in <code>coding-standards.md</code>.</li>
+        <li><b>Service worker accepts unverified <code>postMessage</code></b> at <code>public/sw.js:34</code>. Action is benign (<code>skipWaiting</code>) but pattern violates Sonar S2819 and defense-in-depth.</li>
+        <li><b>Cognitive complexity hot spots in conflict resolvers.</b> <code>conflictResolution.ts</code> and <code>validation.ts</code> contain 6 functions with cognitive complexity 17–28 (Sonar threshold 15).</li>
+        <li><b>No spec/lessons workflow on disk.</b> <code>tasks/</code> directory absent; standards mandate <code>tasks/spec.md</code>, <code>tasks/todo.md</code>, <code>tasks/lessons.md</code> for non-trivial work.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <div class="eyebrow" style="margin-bottom:12px;color:var(--olive)">Top 3 Strengths</div>
+      <ol class="tight" style="padding-left:22px">
+        <li><b>Disciplined type safety.</b> <code>tsconfig.json</code> has <code>strict: true</code>; zero <code>TODO</code>/<code>FIXME</code> in <code>src/</code>; production code uses a centralized <code>logger.ts</code> rather than ad-hoc <code>console.*</code>.</li>
+        <li><b>Defense-in-depth security.</b> CSP governance (PR #43, #63), non-root nginx Docker stage, <code>--ignore-scripts</code> on <code>bun install</code>, bounded-length input sanitization, frozen <code>bun.lock</code>.</li>
+        <li><b>Active, visible modernization.</b> Last 10 commits show purposeful uplift: react-doctor 61→94, Inkwell design system adoption, CI action SHA pinning, security-header hardening, code-compliance cleanup.</li>
+      </ol>
+      <div class="eyebrow" style="margin:22px 0 12px;color:var(--accent)">Top 3 Sprint Priorities</div>
+      <ol class="tight" style="padding-left:22px">
+        <li>Re-trigger the SonarCloud scan post-PR #67 and update <code>sonar-project.properties</code> exclusions; expect quality gate to flip to PASS.</li>
+        <li>Add origin verification to <code>public/sw.js</code> message handler; lift coverage thresholds from 37% → 50% as a stepping stone to 80%.</li>
+        <li>Decompose the three resolver functions in <code>conflictResolution.ts</code> (lines 57, 128, 153) and the two validators in <code>validation.ts</code> (lines 61, 138).</li>
+      </ol>
+    </div>
+  </div>
+  <div class="tldr" style="margin-top:24px">
+    <div class="tldr-label">TL;DR</div>
+    The codebase is in genuinely good shape; the SonarCloud dashboard is not. <em style="color:var(--ivory);font-style:italic">First action is operational, not engineering: re-scan and tune the quality profile.</em> Once scope/profile drift is corrected, the residual technical debt is small, well-understood, and concentrated in two files (<code>conflictResolution.ts</code>, <code>validation.ts</code>) plus a coverage threshold that needs to climb.
+  </div>
+</section>
 
-  <section class="section">
-    <h2>Coding Standards Compliance</h2>
-    
-    <h3>Project Structure — <span style="color: var(--olive);">Excellent</span></h3>
-    <div class="score-bar"><div class="score-fill success" style="width: 95%;"></div></div>
-    
-    <div class="finding success">
-      <strong>✓ Well-organized structure</strong>
-      <p>The codebase follows the prescribed Next.js App Router structure with proper separation of concerns:</p>
-      <ul>
-        <li><code>src/app/</code> — Pages and layouts properly organized</li>
-        <li><code>src/components/&lt;Feature&gt;/&lt;Component&gt;.tsx</code> — Feature-based component grouping</li>
-        <li><code>src/lib/stores/</code> — Zustand state management properly separated</li>
-        <li><code>src/lib/utils/</code> — Utility functions well-organized</li>
-        <li><code>src/lib/types/</code> — TypeScript definitions centralized</li>
+<section id="metrics">
+  <div class="sec-head"><span class="idx">02</span><h2>Metrics Dashboard</h2></div>
+  <p class="section-intro">All numbers below are surfaced directly from SonarCloud's pre-fetched payload — they are not recomputed. Treat them as the most-recent published snapshot, not a current-state truth (see <a class="link" href="#methodology">methodology</a>).</p>
+
+  <div class="grid grid-4" style="margin-bottom:18px">
+    <div class="stat-card good"><div class="stat-num">A</div><div class="stat-label">Maintainability (sqale)</div><div class="stat-delta">22.8 hrs debt · 1.0 rating</div></div>
+    <div class="stat-card warn"><div class="stat-num">D</div><div class="stat-label">Reliability rating</div><div class="stat-delta">14 bugs · ~10 in deleted dir</div></div>
+    <div class="stat-card warn"><div class="stat-num">D</div><div class="stat-label">Security rating</div><div class="stat-delta">1 vuln · 6 hotspots</div></div>
+    <div class="stat-card good"><div class="stat-num">1.3%</div><div class="stat-label">Duplicated lines</div><div class="stat-delta">well under 3% gate</div></div>
+  </div>
+
+  <div class="grid grid-4" style="margin-bottom:18px">
+    <div class="stat-card"><div class="stat-num">23,541</div><div class="stat-label">Lines of code (ncloc)</div><div class="stat-delta">169 .ts/.tsx files</div></div>
+    <div class="stat-card"><div class="stat-num">3,320</div><div class="stat-label">Cyclomatic complexity</div><div class="stat-delta">project total</div></div>
+    <div class="stat-card flag"><div class="stat-num">1,394</div><div class="stat-label">Cognitive complexity</div><div class="stat-delta">12 functions over threshold</div></div>
+    <div class="stat-card"><div class="stat-num">344</div><div class="stat-label">Code smells</div><div class="stat-delta">621 issues incl. minors</div></div>
+  </div>
+
+  <div class="grid grid-4" style="margin-bottom:18px">
+    <div class="stat-card warn"><div class="stat-num">22</div><div class="stat-label">Critical issues</div><div class="stat-delta">12 are S3776 complexity</div></div>
+    <div class="stat-card flag"><div class="stat-num">316</div><div class="stat-label">Major issues</div><div class="stat-delta">88 in src/ · 156 stale</div></div>
+    <div class="stat-card"><div class="stat-num">299</div><div class="stat-label">Minor issues</div><div class="stat-delta">mostly style/jsx-a11y</div></div>
+    <div class="stat-card flag"><div class="stat-num">6</div><div class="stat-label">Security hotspots</div><div class="stat-delta">100% reviewed (gate)</div></div>
+  </div>
+
+  <h3 class="t-h3" style="margin:34px 0 10px">Issue distribution by area</h3>
+  <table class="tbl">
+    <thead><tr><th>Scope</th><th>Issues</th><th>% of total</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>src/</code> (production source)</td><td>387</td><td>60.8%</td><td>The relevant maintenance surface</td></tr>
+      <tr><td><code>design_handoff_cascade_redesign/</code></td><td>156</td><td>24.5%</td><td><b style="color:var(--rust)">Directory deleted 2026-05-09 in PR #67</b> — stale</td></tr>
+      <tr><td><code>scripts/</code> (deploy / CI shell)</td><td>~80</td><td>~12%</td><td>Mostly shell-style nits (S7682, S7688, S7679)</td></tr>
+      <tr><td><code>public/sw.js</code></td><td>5</td><td>0.8%</td><td>1 critical (S2819 origin), 3 minor (globalThis), 1 major (optional chain)</td></tr>
+      <tr><td><code>Dockerfile</code></td><td>2</td><td>0.3%</td><td>1 hotspot (S6470 COPY .), 1 nit</td></tr>
+      <tr><td><code>playwright-report/</code></td><td>5+</td><td>0.8%</td><td>Generated artifact — should be excluded from Sonar scope</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="t-h3" style="margin:34px 0 10px">Dependency snapshot</h3>
+  <div class="grid grid-3">
+    <div class="card">
+      <div class="eyebrow" style="margin-bottom:10px">Runtime</div>
+      <dl class="kv">
+        <dt>next</dt><dd>^16.2.6</dd>
+        <dt>react / react-dom</dt><dd>^19.2.6</dd>
+        <dt>zustand</dt><dd>^5.0.13</dd>
+        <dt>@dnd-kit/core</dt><dd>^6.3.1</dd>
+        <dt>radix-ui</dt><dd>11 packages</dd>
+        <dt>date-fns</dt><dd>^4.1.0</dd>
+      </dl>
+    </div>
+    <div class="card">
+      <div class="eyebrow" style="margin-bottom:10px">Tooling</div>
+      <dl class="kv">
+        <dt>typescript</dt><dd>strict mode on</dd>
+        <dt>vitest</dt><dd>4.x · jsdom env</dd>
+        <dt>@playwright/test</dt><dd>^1.59.1</dd>
+        <dt>eslint</dt><dd>^9.39.4 (flat config)</dd>
+        <dt>bun</dt><dd>1.3.12 · frozen lock</dd>
+      </dl>
+    </div>
+    <div class="card">
+      <div class="eyebrow" style="margin-bottom:10px">Test footprint</div>
+      <dl class="kv">
+        <dt>Unit/integration</dt><dd>34 test files</dd>
+        <dt>Coverage floor</dt><dd>lines 37% · branches 35%</dd>
+        <dt>Coverage target</dt><dd>80% (per standards)</dd>
+        <dt>Provider</dt><dd>v8 + lcov</dd>
+        <dt>E2E</dt><dd>Playwright (separate suite)</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section id="deltas">
+  <div class="sec-head"><span class="idx">03</span><h2>Sonar Deltas</h2><span class="count">3 sub-sections</span></div>
+  <p class="section-intro">Sonar is treated here as one input, not ground truth. The three subsections below describe (a) issues this audit flagged that Sonar missed, (b) Sonar findings this audit dismisses or downgrades, and (c) line-by-line validation of the highest-severity Sonar findings.</p>
+
+  <h3 class="t-h3" style="margin:24px 0 10px">3a · Issues Claude flagged that Sonar did not</h3>
+  <div class="alert is-warning" style="margin-bottom:14px"><div><div class="alert-title">Why Sonar misses these</div><div class="alert-body">SonarCloud's quality profile here is configured for code-shape rules, not project-process rules. Standards-based, architectural, and observability concerns require a human (or LLM) reading <code>coding-standards.md</code> against the codebase.</div></div></div>
+  <table class="tbl">
+    <thead><tr><th>Finding</th><th>Severity</th><th>Likely reason Sonar missed</th></tr></thead>
+    <tbody>
+      <tr><td>Coverage thresholds at 37% in <code>vitest.config.ts</code> are far below the 80% target stated in <code>coding-standards.md</code></td><td><span class="pill high">High</span></td><td>Sonar reports coverage but does not check it against project-internal targets.</td></tr>
+      <tr><td>No <code>tasks/spec.md</code>, <code>tasks/todo.md</code>, or <code>tasks/lessons.md</code> on disk; standards mandate spec-driven workflow</td><td><span class="pill med">Medium</span></td><td>Process compliance — outside any static-analysis ruleset.</td></tr>
+      <tr><td>No <code>docs/adr/</code> directory; standards require ADRs for hard-to-reverse decisions (CSP policy, IndexedDB schema, dnd-kit choice would qualify)</td><td><span class="pill med">Medium</span></td><td>Same as above — process/governance.</td></tr>
+      <tr><td>Coverage exclusion of <code>src/app/layout.tsx</code> with comment "boilerplate" — acceptable, but worth a one-line ADR or comment block to justify</td><td><span class="pill low">Low</span></td><td>Subjective.</td></tr>
+      <tr><td><code>archive/</code> directory at repo root contains historical implementation docs — dated and unlinked from the live <code>docs/</code> tree</td><td><span class="pill low">Low</span></td><td>Documentation hygiene; Sonar doesn't grade docs.</td></tr>
+      <tr><td>Service worker has no version-bump telemetry — silent rollouts mean an aging cache is invisible until a user reports a stale UI</td><td><span class="pill med">Medium</span></td><td>Observability gap; Sonar checks code shape, not telemetry coverage.</td></tr>
+      <tr><td><code>src/lib/utils/conflictMerge.ts:79–87</code> — Sonar S1871 flags duplicate branches, but the deeper issue is two near-identical merge strategies that should be one parameterized helper</td><td><span class="pill med">Medium</span></td><td>Sonar flags the symptom (S1871) but not the design smell.</td></tr>
+      <tr><td>No <code>npm audit</code> / <code>bun audit</code> step pinned in CI for high-severity deps (per standards Part 4)</td><td><span class="pill high">High</span></td><td>CI-config concern; not in Sonar's analysis surface.</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="t-h3" style="margin:34px 0 10px">3b · Sonar findings downgraded or dismissed</h3>
+  <table class="tbl">
+    <thead><tr><th>Sonar finding</th><th>Original</th><th>Verdict</th><th>Reasoning</th></tr></thead>
+    <tbody>
+      <tr><td>156 issues in <code>design_handoff_cascade_redesign/</code></td><td><span class="pill high">14 BUG / many MAJOR</span></td><td><span class="pill ok">Dismissed</span></td><td>Directory deleted in PR #67 (commit f203655, 2026-05-09). Sonar fetch is 2026-05-10 but predates this commit being scanned. <b>All 156 are zombies.</b></td></tr>
+      <tr><td>S6774 "Add a PropTypes validation" × 122</td><td><span class="pill med">Major (×122)</span></td><td><span class="pill ok">Dismissed (rule)</span></td><td>This codebase is fully TypeScript with strict mode. PropTypes is incompatible. Disable rule in Sonar profile.</td></tr>
+      <tr><td>S2245 "PRNG safety" at <code>taskStore.filters.ts:273</code></td><td><span class="pill med">Hotspot · Medium</span></td><td><span class="pill conf-l">Downgraded → Low</span></td><td>Use is <code>Math.random() &lt; 0.1</code> for probabilistic cache cleanup — not a security context. Code comment justifies; mark as Safe in Sonar.</td></tr>
+      <tr><td>S2245 "PRNG safety" × 2 in <code>database.test.ts</code></td><td><span class="pill med">Hotspot · Medium</span></td><td><span class="pill ok">Dismissed</span></td><td>Test fixture random data. Mark as Safe.</td></tr>
+      <tr><td>S5852 "Regex backtracking" at <code>iosDetection.ts:58</code></td><td><span class="pill med">Hotspot · Medium</span></td><td><span class="pill conf-l">Downgraded → Low</span></td><td>Input is browser UA string (length-bounded by the platform). Practical DoS surface is null on a client-only PWA, but the regex <code>[\d.]+.*Mobile.*Safari</code> is genuinely lazy — worth a 5-min tightening.</td></tr>
+      <tr><td>S5852 "Regex backtracking" at <code>security.ts:88</code></td><td><span class="pill med">Hotspot · Medium</span></td><td><span class="pill conf-l">Downgraded → Low</span></td><td>Input is bounded by <code>INPUT_LIMITS</code> (max 1000 chars). Catastrophic backtracking is impossible at this length.</td></tr>
+      <tr><td>S6470 "Dockerfile COPY ." at line 24</td><td><span class="pill med">Hotspot · Medium</span></td><td><span class="pill conf-h">Confirmed → Low (mitigated)</span></td><td><code>.dockerignore</code> should be reviewed (not seen in scope), but build runs <code>--ignore-scripts</code> and the runner stage only copies <code>/app/out</code>. Limited blast radius.</td></tr>
+      <tr><td>~30 shell-script style issues in <code>scripts/deploy*.sh</code></td><td><span class="pill med">Major (mostly)</span></td><td><span class="pill conf-l">Downgraded → Low</span></td><td>These are operational scripts on a static-export deploy. Worth fixing in batch but not blocking.</td></tr>
+      <tr><td>Web:S5254 "Add lang attribute" in <code>playwright-report/index.html</code></td><td><span class="pill med">Major</span></td><td><span class="pill ok">Dismissed</span></td><td>Generated test artifact. Add <code>playwright-report/**</code> to Sonar exclusions.</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="t-h3" style="margin:34px 0 10px">3c · Validation of top 10 Sonar findings</h3>
+  <p class="section-intro">Each entry was confirmed by reading the cited file at the cited line. Verdicts: <b>Confirmed</b> = real issue worth fixing. <b>Confirmed (Low)</b> = real but lower-impact than Sonar's severity suggests. <b>False positive</b> = Sonar wrong.</p>
+  <table class="tbl">
+    <thead><tr><th style="width:34px">#</th><th>File · line</th><th>Sonar rule</th><th>Sonar severity</th><th>Verdict</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><code>src/lib/utils/taskFiltering.ts:42</code></td><td>S2871 (BUG)</td><td><span class="pill crit">Critical</span></td><td><span class="pill conf-h">Confirmed (Low)</span></td><td><code>filters.tags.toSorted()</code> uses default UTF-16 sort — only affects cache-key generation. Real-world impact ≈ zero (deterministic for same input). Fix anyway: <code>.toSorted((a,b)=&gt;a.localeCompare(b))</code>.</td></tr>
+      <tr><td>2</td><td><code>public/sw.js:34</code></td><td>S2819 (VULN)</td><td><span class="pill crit">Critical</span></td><td><span class="pill conf-m">Confirmed</span></td><td>Message handler accepts any postMessage; only reacts to <code>SKIP_WAITING</code>. Action is benign but pattern is wrong. Add <code>event.source instanceof Client</code> or compare <code>event.origin</code>.</td></tr>
+      <tr><td>3</td><td><code>src/lib/utils/conflictResolution.ts:57</code></td><td>S3776</td><td><span class="pill crit">Critical (28)</span></td><td><span class="pill conf-h">Confirmed</span></td><td><code>resolveBoardConflicts</code> is a nested switch + early-continue mass. Extract per-strategy helpers (<code>handleSkip</code>, <code>handleOverwrite</code>, <code>handleMerge</code>...) — drops to ~10.</td></tr>
+      <tr><td>4</td><td><code>src/lib/utils/conflictResolution.ts:153</code></td><td>S3776</td><td><span class="pill crit">Critical (27)</span></td><td><span class="pill conf-h">Confirmed</span></td><td>Same shape as #3 for <code>resolveTaskConflicts</code>. Same fix.</td></tr>
+      <tr><td>5</td><td><code>src/lib/utils/validation.ts:61</code></td><td>S3776</td><td><span class="pill crit">Critical (22)</span></td><td><span class="pill conf-h">Confirmed</span></td><td>Validators benefit from a small per-field schema list driven by data, not control flow.</td></tr>
+      <tr><td>6</td><td><code>src/lib/utils/conflictMerge.ts:52</code></td><td>S3776</td><td><span class="pill crit">Critical (20)</span></td><td><span class="pill conf-h">Confirmed</span></td><td>Same family of dispatcher complexity.</td></tr>
+      <tr><td>7</td><td><code>src/lib/utils/validation.ts:214</code></td><td>S3776</td><td><span class="pill crit">Critical (20)</span></td><td><span class="pill conf-h">Confirmed</span></td><td>Same root cause as #5.</td></tr>
+      <tr><td>8</td><td><code>src/lib/utils/shareTask.ts:12</code></td><td>S3776</td><td><span class="pill crit">Critical (20)</span></td><td><span class="pill conf-m">Confirmed</span></td><td>Branchy URL/clipboard logic; can be split into <code>buildShareLink</code> + <code>writeClipboard</code>.</td></tr>
+      <tr><td>9</td><td><code>src/lib/utils/iosDetection.ts:58</code></td><td>S5852 (Hotspot)</td><td><span class="pill med">Medium</span></td><td><span class="pill conf-l">Confirmed (Low)</span></td><td>Real but bounded by UA-string length. Tighten regex anyway: anchor groups, drop nested <code>.*</code>.</td></tr>
+      <tr><td>10</td><td><code>src/lib/stores/taskStore.filters.ts:273</code></td><td>S2245 (Hotspot)</td><td><span class="pill med">Medium</span></td><td><span class="pill ok">False positive</span></td><td><code>Math.random() &lt; 0.1</code> for probabilistic cache GC — non-security use. Mark Safe in Sonar.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="conflicts">
+  <div class="sec-head"><span class="idx">04</span><h2>Standards vs Sonar Conflicts</h2></div>
+  <p class="section-intro">Per the audit prompt, <code>coding-standards.md</code> is the source of truth and overrides Sonar when the two disagree. Each conflict below comes with a recommended Sonar quality-profile adjustment so the dashboard stops flagging the same disagreement on every scan.</p>
+
+  <table class="tbl">
+    <thead><tr><th>Conflict</th><th>Standard says</th><th>Sonar says</th><th>Resolution &amp; profile change</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><b>PropTypes</b><br/><span class="t-caption">122 issues from rule <code>javascript:S6774</code></span></td>
+        <td>TypeScript strict mode is the type contract. <code>tsconfig.json</code> has <code>strict: true</code>; types live in <code>src/lib/types/</code>.</td>
+        <td>Every React component must define PropTypes.</td>
+        <td><b>Disable <code>javascript:S6774</code></b> in the Sonar profile. PropTypes is incompatible with TS-only codebases. Drops 122 noise issues immediately.</td>
+      </tr>
+      <tr>
+        <td><b>Cognitive complexity threshold</b><br/><span class="t-caption">12 issues from <code>typescript:S3776</code> at &gt;15</span></td>
+        <td>Functions ≤ 40 lines, ≤ 3 nesting levels, single responsibility. Doesn't quote a complexity number.</td>
+        <td>Cognitive complexity must be ≤ 15.</td>
+        <td><b>Keep S3776 enabled</b> at default 15 — most flagged functions are real refactor candidates. <i>Standards win on principle (single responsibility) and Sonar's number is a useful approximation.</i></td>
+      </tr>
+      <tr>
+        <td><b>Conventional <code>self</code> in service workers</b><br/><span class="t-caption">3 issues from <code>javascript:S7764</code> in <code>sw.js</code></span></td>
+        <td>Match existing patterns in the codebase. Service workers conventionally use <code>self</code>.</td>
+        <td>Prefer <code>globalThis</code> over <code>self</code>.</td>
+        <td><b>Suppress S7764 for <code>public/sw.js</code></b> (or globally for service workers). MDN and the W3C spec use <code>self</code>; switching breaks idiom.</td>
+      </tr>
+      <tr>
+        <td><b>Test fixture randomness</b><br/><span class="t-caption">2 issues from <code>typescript:S2245</code> in <code>database.test.ts</code></span></td>
+        <td>Test data uses simple, reproducible randomness; no security context.</td>
+        <td>Avoid <code>Math.random()</code>.</td>
+        <td><b>Mark hotspots as Safe</b> in SonarCloud (no rule change needed). Rule is correct in default context — wrong here.</td>
+      </tr>
+      <tr>
+        <td><b>Default sort for ASCII tag arrays</b><br/><span class="t-caption">2 issues from <code>typescript:S2871</code></span></td>
+        <td>Code should be deterministic and minimal. Cache-key generation does not need locale-aware sort.</td>
+        <td>Always use <code>localeCompare</code>.</td>
+        <td><b>Standards win narrowly — but apply Sonar's fix anyway.</b> The fix is one line and removes a future foot-gun if non-ASCII tags ever exist. No profile change.</td>
+      </tr>
+      <tr>
+        <td><b>Generated artifacts</b><br/><span class="t-caption"><code>playwright-report/</code>, <code>codebase-analysis-report.html</code></span></td>
+        <td>Generated files are excluded from analysis (audit-prompt scope).</td>
+        <td>Issues raised against <code>playwright-report/index.html</code>, <code>design_handoff_cascade_redesign/*</code>, etc.</td>
+        <td><b>Update <code>sonar-project.properties</code></b> with <code>sonar.exclusions=playwright-report/**,design_handoff_cascade_redesign/**,codebase-analysis-report.html,reports/**</code></td>
+      </tr>
+      <tr>
+        <td><b>Aria-role on semantic HTML</b><br/><span class="t-caption">11 issues from <code>typescript:S6819</code></span></td>
+        <td>Accessibility baseline: semantic HTML where appropriate. Standards align with Sonar here.</td>
+        <td>Don't use <code>role="article"</code> when <code>&lt;article&gt;</code> works.</td>
+        <td><b>Standards and Sonar agree.</b> No conflict — fix the code. (See finding A1 in §05.)</td>
+      </tr>
+      <tr>
+        <td><b>Shell scripts in <code>scripts/</code></b><br/><span class="t-caption">~80 issues from <code>shelldre:*</code> rules</span></td>
+        <td>"Standard lib > external" and "boring tech" — shell scripts here are deploy glue, not product surface.</td>
+        <td>Apply ShellCheck-like rules at MAJOR severity.</td>
+        <td><b>Downgrade <code>shelldre:*</code> rules to MINOR</b> in the Sonar profile, or scope them to <code>scripts/critical/</code> only. Fix in a one-time bulk PR instead of letting them gate quality.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="findings">
+  <div class="sec-head"><span class="idx">05</span><h2>Detailed Findings</h2><span class="count">11 dimensions</span></div>
+  <p class="section-intro">Findings are grouped by review dimension and sorted by severity. Each card includes the four metadata pills (severity, confidence, source, effort), the file path with line numbers, a specific recommendation, and (where useful) a short code example. Click a card to expand.</p>
+
+  <h3 class="t-h3" style="margin:22px 0 10px">5.1 · Standards Compliance</h3>
+  <details class="finding"><summary><span class="pill high">High</span><span class="pill conf-h">High conf</span><span class="pill src-claude">Claude</span><span class="pill low">Effort: Small</span><span>S1.1 — Coverage thresholds far below standards target</span></summary>
+    <div class="body">
+      <p><span class="path">vitest.config.ts:24-29</span></p>
+      <p>Thresholds: <code>lines:37, functions:38, branches:35, statements:36</code>. Comment in file says "Baseline thresholds as of initial compliance pass (raise over time toward 80%)" — that intent has not been actioned, and there is no ratchet to enforce it.</p>
+      <p><b>Recommendation:</b> Step the thresholds up by 5 points per release until 80% is reached. Wire CI to fail on regression.</p>
+      <p><b>Effort:</b> Small (config only); the harder work is writing the tests that justify each step.</p>
+    </div>
+  </details>
+  <details class="finding"><summary><span class="pill med">Medium</span><span class="pill conf-h">High conf</span><span class="pill src-claude">Claude</span><span class="pill low">Effort: Small</span><span>S1.2 — No <code>tasks/</code> spec workflow on disk</span></summary>
+    <div class="body">
+      <p>Standards require <code>tasks/spec.md</code>, <code>tasks/todo.md</code>, and <code>tasks/lessons.md</code> for non-trivial work. Repo has none. <code>archive/</code> contains historical implementation notes but is not the same artifact.</p>
+      <p><b>Recommendation:</b> Add a <code>tasks/</code> directory with a stub <code>todo.md</code> and a <code>lessons.md</code>. Even an empty scaffold normalizes the workflow for future sessions.</p>
+    </div>
+  </details>
+  <details class="finding"><summary><span class="pill med">Medium</span><span class="pill conf-h">High conf</span><span class="pill src-claude">Claude</span><span class="pill low">Effort: Small</span><span>S1.3 — No ADR directory</span></summary>
+    <div class="body">
+      <p>No <code>docs/adr/</code>. Several decisions in this codebase qualify (CSP policy in PR #43/#63; static-export over SSR; IndexedDB over remote storage; choice of <code>@dnd-kit</code> over <code>react-beautiful-dnd</code>; Inkwell adoption). PRs and commit messages carry the rationale, but it disperses over time.</p>
+      <p><b>Recommendation:</b> Backfill 4–6 ADRs from existing PR descriptions; require new ADRs for any future hard-to-reverse choice.</p>
+    </div>
+  </details>
+
+  <h3 class="t-h3" style="margin:32px 0 10px">5.2 · Test Quality &amp; Coverage</h3>
+  <details class="finding" open><summary><span class="pill high">High</span><span class="pill conf-h">High conf</span><span class="pill src-claude">Claude</span><span class="pill med">Effort: Medium</span><span>T2.1 — Coverage gap (37% floor) vs. 80% standard</span></summary>
+    <div class="body">
+      <p><span class="path">vitest.config.ts</span> · 34 test files for 169 source files</p>
+      <p>The test estate covers stores well (<code>boardStore.test.ts</code> 688 lines, <code>taskStore.test.ts</code> 503) and dialogs decently, but utility modules and many components lag. The branches threshold (35%) is the most exposed metric.</p>
+      <p><b>Recommendation:</b> Prioritize closing branches in the four files Sonar already calls out for cognitive complexity (<code>conflictResolution.ts</code>, <code>conflictMerge.ts</code>, <code>validation.ts</code>, <code>shareTask.ts</code>) — each branch is a behavior worth testing anyway.</p>
+    </div>
+  </details>
+  <details class="finding"><summary><span class="pill med">Medium</span><span class="pill conf-h">High conf</span><span class="pill src-claude">Claude</span><span class="pill low">Effort: Small</span><span>T2.2 — Largest test files exceed standards file-size guideline</span></summary>
+    <div class="body">
+      <p><span class="path">src/lib/stores/__tests__/boardStore.test.ts</span> 688 lines · <span class="path">taskStore.test.ts</span> 503 · <span class="path">exportImport.test.ts</span> 486</p>
+      <p>Standards say "Limit code files to ~350-400 lines. Split by responsibility." Test files are not exempt — when they grow this large, they often mix unit, integration, and edge-case suites.</p>
+      <p><b>Recommendation:</b> Split each by behavior (e.g. <code>boardStore.crud.test.ts</code>, <code>boardStore.import.test.ts</code>, <code>boardStore.archive.test.ts</code>). Mirrors how the production code is already split (<code>taskStore.crudActions.ts</code>, <code>taskStore.filters.ts</code>, ...).</p>
+    </div>
+  </details>
+  <details class="finding"><summary><span class="pill med">Medium</span><span class="pill conf-m">Medium conf</span><span class="pill src-sonar">Sonar</span><span class="pill low">Effort: Small</span><span>T2.3 — Constant-truthy in test assertion</span></summary>
+    <div class="body">
+      <p><span class="path">src/lib/utils/__tests__/cn.test.ts:11</span></p>
+      <p>Sonar S6638: "Unexpected constant truthiness on the left-hand side of a <code>&amp;&amp;</code> expression." Two occurrences. The assertion's logic short-circuits on a hardcoded literal, which means the test passes whether or not the production code does what it claims.</p>
+      <p><b>Recommendation:</b> Replace constant LHS with the actual value under test.</p>
+    </div>
+  </details>
+
+  <h3 class="t-h3" style="margin:32px 0 10px">5.3 · Security &amp; Supply Chain</h3>
+  <details class="finding" open><summary><span class="pill crit">Critical</span><span class="pill conf-h">High conf</span><span class="pill src-both">Both</span><span class="pill low">Effort: Small</span><span>SC3.1 — Service worker accepts unverified <code>postMessage</code></span></summary>
+    <div class="body">
+      <p><span class="path">public/sw.js:34-38</span></p>
+      <p>Listener reacts to any cross-origin or compromised page that calls <code>navigator.serviceWorker.controller.postMessage({type:'SKIP_WAITING'})</code>. The action itself is benign, but the pattern violates Sonar S2819 and creates a precedent for less-benign handlers later.</p>
+      <p><b>Recommendation (small fix):</b></p>
+      <pre style="background:var(--gray-100);border:var(--border);border-radius:var(--r-sm);padding:12px 14px;font:12.5px/1.55 var(--mono);overflow-x:auto"><code>self.addEventListener('message', (event) =&gt; {
+  if (!(event.source instanceof Client)) return;
+  if (event.source.url &amp;&amp; new URL(event.source.url).origin !== self.location.origin) return;
+  if (event?.data?.type === 'SKIP_WAITING') self.skipWaiting();
+});</code></pre>
+    </div>
+  </details>
+  <details class="finding"><summary><span class="pill med">Medium</span><span class="pill conf-h">High conf</span><span class="pill src-both">Both</span><span class="pill low">Effort: Small</span><span>SC3.2 — Regex hotspots in <code>iosDetection.ts</code> &amp; <code>security.ts</code></span></summary>
+    <div class="body">
+      <p><span class="path">src/lib/utils/iosDetection.ts:58</span> · <span class="path">src/lib/utils/security.ts:88</span></p>
+      <p>Both flagged as S5852 super-linear backtracking risk. Real DoS surface is limited (UA-string in #1 is platform-bounded; security.ts input is bounded by <code>INPUT_LIMITS</code> max 1000 chars), but the regex shapes (<code>[\d.]+.*Mobile.*Safari</code>, <code>&lt;[^&gt;]*&gt;</code>) are easy wins to tighten.</p>
+      <p><b>Recommendation:</b> For iosDetection, anchor groups: <code>/Version\/[\d.]+\sMobile\/\S+\sSafari/</code>. For security.ts, the <code>&lt;[^&gt;]*&gt;</code> form is fine in practice given the length cap — keep it but add a one-line comment justifying.</p>
+    </div>
+  </details>
+  <details class="finding"><summary><span class="pill med">Medium</span><span class="pill conf-h">High conf</span><span class="pill src-claude">Claude</span><span class="pill low">Effort: Small</span><span>SC3.3 — No CI dependency-audit gate</span></summary>
+    <div class="body">
+      <p>Standards require <code>npm audit</code>/<code>bun audit</code> on every CI build, failing on high severity. Repo has the tools (<code>bun</code> available, lockfile pinned with <code>--frozen-lockfile --ignore-scripts</code>) but no scheduled audit step in the deploy script visible from the audit surface.</p>
+      <p><b>Recommendation:</b> Add <code>bun audit --audit-level=high</code> as a step in the deploy script and/or a pre-commit hook.</p>
+    </div>
+  </details>
+  <details class="finding"><summary><span class="pill low">Low</span><span class="pill conf-h">High conf</span><span class="pill src-sonar">Sonar</span><span class="pill low">Effort: Small</span><span>SC3.4 — <code>Dockerfile</code> COPY . hotspot</span></summary>
+    <div class="body">
+      <p><span class="path">Dockerfile:24</span></p>
+      <p>Sonar S6470. Mitigated already by the multi-stage pattern (only <code>/app/out</code> reaches the runner) and by <code>--ignore-scripts</code>. Worth confirming a <code>.dockerignore</code> file excludes <code>node_modules</code>, <code>.git</code>, secrets.</p>
+      <p><b>Recommendation:</b> Confirm a tight <code>.dockerignore</code>; mark hotspot as Safe in Sonar with link to the dockerignore.</p>
+    </div>
+  </details>
+
+  <h3 class="t-h3" style="margin:32px 0 10px">5.4 · Architecture &amp; Layering</h3>
+  <details class="finding"><summary><span class="pill med">Medium</span><span class="pill conf-h">High conf</span><span class="pill src-claude">Claude</span><span class="pill med">Effort: Medium</span><span>A4.1 — Conflict-resolution layer is a dispatcher with embedded business logic</span></summary>
+    <div class="body">
+      <p><span class="path">src/lib/utils/conflictResolution.ts</span> · <span class="path">conflictMerge.ts</span></p>
+      <p>The two files form a 600+ line dispatcher: a strategy enum (<code>'skip'|'overwrite'|'merge'|'rename'|'generate_new_ids'|'ask_user'</code>) drives switch statements that mutate result arrays in place. The shape repeats verbatim for boards, tasks, and (lightly) settings.</p>
+      <p><b>Recommendation:</b> Replace with a strategy table — <code>const strategies: Record&lt;Strategy, Resolver&gt; = {...}</code>. Each resolver returns a new array (no in-place index lookups). Drops cognitive complexity to ~8 per resolver and makes the boards/tasks/settings repetition into a single generic <code>resolveCollectionConflicts&lt;T&gt;(...)</code>.</p>
+    </div>
+  </details>
+  <details class="finding"><summary><span class="pill low">Low</span><span class="pill conf-m">Medium conf</span><span class="pill src-claude">Claude</span><span class="pill low">Effort: Small</span><span>A4.2 — Store split is good; minor coupling between filters and DB</span></summary>
+    <div class="body">
+      <p><span class="path">src/lib/stores/taskStore.filters.ts</span> imports <span class="path">src/lib/utils/database.ts</span> directly</p>
+      <p>The store split (<code>boardStore</code>, <code>taskStore</code>, <code>taskStore.filters</code>, <code>taskStore.crudActions</code>, <code>taskStore.import</code>, <code>settingsStore</code>) is well-shaped. One small hairball: <code>taskFiltering.ts:15</code> calls <code>taskDB.getBoards()</code> directly, mixing storage and filtering concerns.</p>
+      <p><b>Recommendation:</b> Inject the board-list as a parameter so the function is pure. Test simplifies from "needs IndexedDB mock" to "passes a board array."</p>
+    </div>
+  </details>
+
+  <h3 class="t-h3" style="margin:32px 0 10px">5.5 · Maintainability &amp; Complexity</h3>
+  <details class="finding" open><summary><span class="pill crit">Critical</span><span class="pill conf-h">High conf</span><span class="pill src-both">Both</span><span class="pill med">Effort: Medium</span><span>M5.1 — 12 functions exceed cognitive-complexity threshold</span></summary>
+    <div class="body">
+      <p><span class="path">conflictResolution.ts:57 (28)</span> · <span class="path">:128 (17)</span> · <span class="path">:153 (27)</span> · <span class="path">validation.ts:61 (22)</span> · <span class="path">:138 (18)</span> · <span class="path">:214 (20)</span> · <span class="path">conflictMerge.ts:52 (20)</span> · <span class="path">logger.ts:39 (17)</span> · <span class="path">shareTask.ts:12 (20)</span> · <span class="path">exportImport/exportData.ts:23 (16)</span> · <span class="path">stores/taskStore.filters.ts:65 (18)</span> · <span class="path">components/TaskDialog.tsx (16)</span></p>
+      <p>Cognitive complexity 17–28 on a threshold of 15. All twelve are dispatcher / validator / orchestrator shapes — the kind that's "fine in practice" until someone needs to extend them.</p>
+      <p><b>Recommendation:</b> Tackle the four worst (≥20) in one PR using the strategy-table pattern from A4.1. The remaining eight likely become trivial once that pattern is in the codebase.</p>
+    </div>
+  </details>
+  <details class="finding"><summary><span class="pill med">Medium</span><span class="pill conf-h">High conf</span><span class="pill src-sonar">Sonar</span><span class="pill low">Effort: Small</span><span>M5.2 — 14 nested-ternary issues (S3358)</span></summary>
+    <div class="body">
+      <p>Mostly in <span class="path">logger.ts</span> (lines 52, 65) and <span class="path">components/kanban/KanbanColumn.tsx:112</span>.</p>
+      <p>The logger ternaries route by level and are at least uniform — keep them but extract to a tiny helper. The KanbanColumn ternary is harder to scan; extract.</p>
+    </div>
+  </details>
+  <details class="finding"><summary><span class="pill low">Low</span><span class="pill conf-h">High conf</span><span class="pill src-sonar">Sonar</span><span class="pill low">Effort: Small</span><span>M5.3 — Optional-chain replacements (13 × S6582)</span></summary>
+    <div class="body">
+      <p>Trivial mechanical fix; auto-fixable with eslint <code>--fix</code> if the ESLint rule is enabled.</p>
+    </div>
+  </details>
+
+  <h3 class="t-h3" style="margin:32px 0 10px">5.6 · Dependencies &amp; Supply Chain</h3>
+  <details class="finding"><summary><span class="pill low">Low</span><span class="pill conf-h">High conf</span><span class="pill src-claude">Claude</span><span class="pill low">Effort: Small</span><span>D6.1 — Dependency hygiene is good</span></summary>
+    <div class="body">
+      <p>28 runtime dependencies, all on current major versions: Next 16, React 19, Zustand 5, dnd-kit 6/9/10, Radix 1.x, date-fns 4, lucide-react 0.577, sonner 2, tailwind-merge 3. Lockfile pinned with <code>bun.lock</code>; install runs <code>--frozen-lockfile --ignore-scripts</code>.</p>
+      <p><b>Recommendation:</b> Add the audit gate (SC3.3) and a quarterly dep-bump review cadence. No urgent issues.</p>
+    </div>
+  </details>
+  <details class="finding"><summary><span class="pill low">Low</span><span class="pill conf-m">Medium conf</span><span class="pill src-claude">Claude</span><span class="pill low">Effort: Small</span><span>D6.2 — <code>canvas-confetti</code> is single-use</span></summary>
+    <div class="body">
+      <p>Used only in <code>src/lib/utils/celebrateCompletion.ts</code>. Standards say "Add new dependencies deliberately. Evaluate maintenance, license, bundle size before adding." This one is a delight feature, not load-bearing — fine to keep, but worth a comment explaining why it's here.</p>
+    </div>
+  </details>
+
+  <h3 class="t-h3" style="margin:32px 0 10px">5.7 · Performance</h3>
+  <details class="finding"><summary><span class="pill low">Low</span><span class="pill conf-m">Medium conf</span><span class="pill src-claude">Claude</span><span class="pill low">Effort: Small</span><span>P7.1 — Filter pipeline is well-ordered</span></summary>
+    <div class="body">
+      <p><span class="path">src/lib/stores/taskStore.filters.ts:65 (applyFiltersToTasks)</span></p>
+      <p>Pipeline applies most-selective filters first (board → status → priority → tags → date → search), with early exits on empty results. Search cache with TTL + size cap. The cognitive complexity flag here is structural, not a perf concern.</p>
+    </div>
+  </details>
+  <details class="finding"><summary><span class="pill low">Low</span><span class="pill conf-m">Medium conf</span><span class="pill src-claude">Claude</span><span class="pill low">Effort: Small</span><span>P7.2 — Bundle and lazy-load discipline</span></summary>
+    <div class="body">
+      <p>CLAUDE.md documents ~388 kB bundle with @dnd-kit lazy-loaded, dialogs dynamically imported, React.memo on KanbanColumn/TaskCard. No measurable perf risk surfaced from static review. Run <code>bun run build:analyze</code> after the refactor in M5.1 to confirm no regression.</p>
+    </div>
+  </details>
+
+  <h3 class="t-h3" style="margin:32px 0 10px">5.8 · Error Handling &amp; Observability</h3>
+  <details class="finding"><summary><span class="pill med">Medium</span><span class="pill conf-h">High conf</span><span class="pill src-claude">Claude</span><span class="pill med">Effort: Medium</span><span>E8.1 — Logger is structured but undertelemetered</span></summary>
+    <div class="body">
+      <p><span class="path">src/lib/utils/logger.ts:39-90</span></p>
+      <p>Production logger emits JSON lines via <code>console.error/warn/info</code>. Good shape, but: there's no log aggregator on the receiving end (this is a static-export client app) and no event correlation ID across user actions. For a privacy-first client-only app this is partly intentional, but failure modes (sw update fail, IndexedDB quota exceeded) currently surface as toasts and disappear.</p>
+      <p><b>Recommendation:</b> Pipe ERROR-level logs to an in-app "diagnostics" page (off by default, opt-in via debug mode setting) so users can copy a redacted error trace when reporting issues.</p>
+    </div>
+  </details>
+  <details class="finding"><summary><span class="pill med">Medium</span><span class="pill conf-m">Medium conf</span><span class="pill src-claude">Claude</span><span class="pill low">Effort: Small</span><span>E8.2 — 45 <code>console.*</code> calls outside the logger</span></summary>
+    <div class="body">
+      <p>Most are in <code>logger.ts</code> itself (the sink) and a handful in stores (<code>console.info</code>, <code>console.warn</code>) — see <code>taskFiltering.ts:25</code>, <code>taskFiltering.ts:29</code>, <code>taskFiltering.ts:111</code>, <code>taskFiltering.ts:128</code>, <code>conflictResolution.ts</code>, etc.</p>
+      <p><b>Recommendation:</b> Route everything through <code>logger.*</code>. Add an ESLint rule (<code>no-console</code> with allowlist for <code>logger.ts</code>) to enforce.</p>
+    </div>
+  </details>
+
+  <h3 class="t-h3" style="margin:32px 0 10px">5.9 · Documentation &amp; Onboarding</h3>
+  <details class="finding"><summary><span class="pill low">Low</span><span class="pill conf-h">High conf</span><span class="pill src-claude">Claude</span><span class="pill low">Effort: Small</span><span>D9.1 — Strong existing docs; missing index-of-history</span></summary>
+    <div class="body">
+      <p>CLAUDE.md is comprehensive; <code>src/docs/</code> has user-guide, developer-guide, api-reference, testing-guide. Missing: a top-level <code>docs/architecture.md</code> diagramming the store/db/sw boundaries, and an ADR index (see S1.3).</p>
+    </div>
+  </details>
+  <details class="finding"><summary><span class="pill low">Low</span><span class="pill conf-m">Medium conf</span><span class="pill src-claude">Claude</span><span class="pill low">Effort: Small</span><span>D9.2 — <code>archive/</code> directory is unindexed history</span></summary>
+    <div class="body">
+      <p>CLAUDE.md says it's documented in <code>archive/README.md</code>. Worth a periodic prune so it stays referenceable rather than becoming a graveyard.</p>
+    </div>
+  </details>
+
+  <h3 class="t-h3" style="margin:32px 0 10px">5.10 · Tech Debt</h3>
+  <details class="finding"><summary><span class="pill ok">Strength</span><span class="pill conf-h">High conf</span><span class="pill src-claude">Claude</span><span class="pill low">—</span><span>TD10.1 — Zero <code>TODO</code>/<code>FIXME</code> in <code>src/</code></span></summary>
+    <div class="body">
+      <p>A <code>grep -rn "TODO|FIXME|XXX|HACK" src/</code> returns no matches. Either the team is disciplined about ticketing or aggressive about cleaning. Either way, this is a positive signal.</p>
+    </div>
+  </details>
+  <details class="finding"><summary><span class="pill med">Medium</span><span class="pill conf-h">High conf</span><span class="pill src-claude">Claude</span><span class="pill low">Effort: Small</span><span>TD10.2 — <code>design_handoff_cascade_redesign/</code> deletion not reflected in Sonar</span></summary>
+    <div class="body">
+      <p>Largest single piece of "Sonar debt" is debt that no longer exists. This is process debt, not code debt — the Sonar scope drifted, and the gate now lies. See §03.</p>
+    </div>
+  </details>
+
+  <h3 class="t-h3" style="margin:32px 0 10px">5.11 · Type Safety &amp; Configuration</h3>
+  <details class="finding"><summary><span class="pill ok">Strength</span><span class="pill conf-h">High conf</span><span class="pill src-claude">Claude</span><span class="pill low">—</span><span>TS11.1 — TypeScript strict mode on, types co-located</span></summary>
+    <div class="body">
+      <p><span class="path">tsconfig.json</span> has <code>strict:true</code> and <code>isolatedModules:true</code>. Types live in <code>src/lib/types/</code>. <code>any</code> usage is rare and mostly justified.</p>
+    </div>
+  </details>
+  <details class="finding"><summary><span class="pill med">Medium</span><span class="pill conf-h">High conf</span><span class="pill src-sonar">Sonar</span><span class="pill low">Effort: Small</span><span>TS11.2 — JSX a11y role redundancy (11 × S6819)</span></summary>
+    <div class="body">
+      <p><span class="path">src/components/Logo.tsx</span> · <span class="path">kanban/TaskCard.tsx</span> · <span class="path">kanban/TaskCardMetadata.tsx (lines 51, 122, 131)</span> · <span class="path">sidebar/BoardItem.tsx:43</span></p>
+      <p>Using <code>role="article"</code>, <code>role="listitem"</code>, <code>role="button"</code> on generic divs when the matching semantic element exists. Standards align with Sonar — fix.</p>
+    </div>
+  </details>
+</section>
+
+<section id="roadmap">
+  <div class="sec-head"><span class="idx">06</span><h2>30 / 60 / 90 Day Remediation Roadmap</h2></div>
+  <p class="section-intro">Sequenced for compounding value: the 30-day items unblock the dashboard so subsequent work is measurable. The 60-day items pay down the largest concentrated debt (resolvers + coverage). The 90-day items address process-level standards gaps that are easy to defer indefinitely.</p>
+
+  <h3 class="t-h3" style="margin:22px 0 10px">First 30 days · Restore signal</h3>
+  <table class="tbl">
+    <thead><tr><th style="width:40%">Action</th><th>Driver</th><th>Severity</th><th>Effort</th></tr></thead>
+    <tbody>
+      <tr><td>Re-trigger SonarCloud scan after PR #67; confirm 156 stale issues drop</td><td>§03 — quality gate misrepresenting state</td><td><span class="pill high">High</span></td><td>Small</td></tr>
+      <tr><td>Update <code>sonar-project.properties</code>: exclude <code>playwright-report/**</code>, <code>design_handoff_cascade_redesign/**</code> (defensive), <code>codebase-analysis-report.html</code>, <code>reports/**</code></td><td>§03, §04</td><td><span class="pill high">High</span></td><td>Small</td></tr>
+      <tr><td>Disable <code>javascript:S6774</code> (PropTypes) in Sonar profile</td><td>§04 — 122 issues become 0</td><td><span class="pill high">High</span></td><td>Small</td></tr>
+      <tr><td>Mark hotspots in <code>database.test.ts</code> and <code>taskStore.filters.ts:273</code> as Safe</td><td>§03c #10, §04</td><td><span class="pill med">Medium</span></td><td>Small</td></tr>
+      <tr><td>Add origin verification to <code>public/sw.js</code> message handler (SC3.1)</td><td>§03c #2 — only real critical vuln</td><td><span class="pill crit">Critical</span></td><td>Small</td></tr>
+      <tr><td>Fix <code>taskFiltering.ts:42</code> with <code>.toSorted((a,b)=&gt;a.localeCompare(b))</code></td><td>§03c #1</td><td><span class="pill crit">Critical (per Sonar)</span></td><td>Small</td></tr>
+      <tr><td>Add <code>bun audit --audit-level=high</code> to deploy script + pre-commit hook</td><td>SC3.3</td><td><span class="pill med">Medium</span></td><td>Small</td></tr>
+      <tr><td>Bump vitest coverage thresholds: lines 37 → 50, branches 35 → 45</td><td>T2.1</td><td><span class="pill high">High</span></td><td>Medium (writing the tests is the work)</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="t-h3" style="margin:32px 0 10px">Days 31–60 · Pay down the concentrated debt</h3>
+  <table class="tbl">
+    <thead><tr><th style="width:40%">Action</th><th>Driver</th><th>Severity</th><th>Effort</th></tr></thead>
+    <tbody>
+      <tr><td>Refactor <code>conflictResolution.ts</code> + <code>conflictMerge.ts</code> to a strategy table; collapse boards/tasks/settings into one generic resolver</td><td>A4.1, M5.1 — clears 6 of 12 cognitive-complexity flags</td><td><span class="pill crit">Critical</span></td><td>Medium</td></tr>
+      <tr><td>Refactor <code>validation.ts</code> validators to schema-driven pattern</td><td>M5.1 (3 of 12 flags)</td><td><span class="pill high">High</span></td><td>Medium</td></tr>
+      <tr><td>Split <code>boardStore.test.ts</code>, <code>taskStore.test.ts</code>, <code>exportImport.test.ts</code> by responsibility (mirror production module split)</td><td>T2.2</td><td><span class="pill med">Medium</span></td><td>Medium</td></tr>
+      <tr><td>Bump coverage thresholds: 50 → 65 (lines), 45 → 55 (branches)</td><td>T2.1</td><td><span class="pill high">High</span></td><td>Medium</td></tr>
+      <tr><td>Apply ESLint <code>--fix</code> for S6582 optional-chain (13 issues)</td><td>M5.3</td><td><span class="pill low">Low</span></td><td>Small</td></tr>
+      <tr><td>Replace JSX role= attributes with semantic elements (11 issues)</td><td>TS11.2</td><td><span class="pill med">Medium</span></td><td>Small</td></tr>
+      <tr><td>Add ESLint <code>no-console</code> with <code>logger.ts</code> allowlist</td><td>E8.2</td><td><span class="pill med">Medium</span></td><td>Small</td></tr>
+      <tr><td>Tighten <code>iosDetection.ts:58</code> regex; add justification comment to <code>security.ts:88</code></td><td>SC3.2</td><td><span class="pill med">Medium</span></td><td>Small</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="t-h3" style="margin:32px 0 10px">Days 61–90 · Process &amp; durability</h3>
+  <table class="tbl">
+    <thead><tr><th style="width:40%">Action</th><th>Driver</th><th>Severity</th><th>Effort</th></tr></thead>
+    <tbody>
+      <tr><td>Bootstrap <code>tasks/</code> directory: stub <code>todo.md</code>, <code>lessons.md</code>; document the spec-first workflow in CLAUDE.md</td><td>S1.2</td><td><span class="pill med">Medium</span></td><td>Small</td></tr>
+      <tr><td>Backfill 4–6 ADRs (CSP policy, static-export choice, IndexedDB schema, dnd-kit selection, Inkwell adoption)</td><td>S1.3, D9.1</td><td><span class="pill med">Medium</span></td><td>Medium</td></tr>
+      <tr><td>Add diagnostics page: opt-in error log viewer for user-reported issues</td><td>E8.1</td><td><span class="pill med">Medium</span></td><td>Medium</td></tr>
+      <tr><td>Bump coverage thresholds: 65 → 80 (lines), 55 → 70 (branches) — meets standards target</td><td>T2.1</td><td><span class="pill high">High</span></td><td>Medium</td></tr>
+      <tr><td>Document <code>.dockerignore</code>; mark Dockerfile S6470 as Safe with link</td><td>SC3.4</td><td><span class="pill low">Low</span></td><td>Small</td></tr>
+      <tr><td>Set up SonarCloud profile review cadence (quarterly) so PropTypes-style drift catches itself next time</td><td>§04</td><td><span class="pill med">Medium</span></td><td>Small</td></tr>
+      <tr><td>Bulk-fix shell-script Sonar issues in <code>scripts/deploy*.sh</code> in one PR (or downgrade rules)</td><td>§04</td><td><span class="pill low">Low</span></td><td>Medium</td></tr>
+    </tbody>
+  </table>
+
+  <div class="alert is-info" style="margin-top:24px">
+    <div>
+      <div class="alert-title">Expected end-state at day 90</div>
+      <div class="alert-body">SonarCloud quality gate: PASS. Reliability rating: A. Coverage: 80% lines / 70% branches. Cognitive complexity: 0 functions over threshold. Process artifacts (<code>tasks/</code>, <code>docs/adr/</code>) in place. The audit at that point should land the codebase at <b>9.0/10</b>.</div>
+    </div>
+  </div>
+</section>
+
+<section id="methodology">
+  <div class="sec-head"><span class="idx">07</span><h2>Methodology &amp; Limitations</h2></div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h3 class="t-h3" style="margin:0 0 10px">Inputs</h3>
+      <dl class="kv">
+        <dt>Source of truth</dt><dd><code>coding-standards.md</code> v14.0</dd>
+        <dt>Sonar manifest</dt><dd><code>reports/sonar/manifest.json</code></dd>
+        <dt>Sonar fetch (UTC)</dt><dd>2026-05-10T16:13:38Z</dd>
+        <dt>Sonar project key</dt><dd>vscarpenter_kanban-todos</dd>
+        <dt>Sonar branch</dt><dd>default</dd>
+        <dt>Audit date</dt><dd>2026-05-10</dd>
+        <dt>Repo HEAD at audit</dt><dd><code>0c18a7a</code> (PR #68)</dd>
+        <dt>Design system</dt><dd>Inkwell · Indigo &amp; Cloud · tokens.css fetched from upstream</dd>
+      </dl>
+    </div>
+    <div class="card">
+      <h3 class="t-h3" style="margin:0 0 10px">What was inspected</h3>
+      <ul class="tight">
+        <li>All 637 Sonar issues, 6 hotspots, quality-gate conditions, and project measures</li>
+        <li>Top 10 highest-severity Sonar findings validated against actual code at cited line numbers</li>
+        <li><code>src/</code> structure (169 files), top-20 largest files by line count, all stores in <code>src/lib/stores/</code></li>
+        <li><code>tsconfig.json</code>, <code>vitest.config.ts</code>, <code>package.json</code>, <code>Dockerfile</code></li>
+        <li>Last 10 commits (git log) for momentum/process signal</li>
+        <li>Cross-check whether <code>design_handoff_cascade_redesign/</code> still exists on disk (it does not)</li>
+        <li>Conflict-resolution &amp; security utilities read in full</li>
+        <li>Full <code>tokens.css</code> from <code>github.com/vscarpenter/inkwell</code> (used inline in this report)</li>
       </ul>
     </div>
+  </div>
 
-    <div class="finding success">
-      <strong>✓ Proper naming conventions</strong>
-      <p>Components use PascalCase (e.g., <code>KanbanBoard.tsx</code>, <code>TaskCard.tsx</code>) while functions and hooks use camelCase (e.g., <code>useTaskStore</code>, <code>formatDueDate</code>), following the established conventions.</p>
+  <div class="card" style="margin-top:18px">
+    <h3 class="t-h3" style="margin:0 0 10px">What was NOT inspected (limitations)</h3>
+    <ul class="tight">
+      <li><b>Runtime build &amp; test execution.</b> No <code>bun run build</code>, <code>bun test</code>, or actual coverage measurement was performed during this audit. All coverage figures are read from <code>vitest.config.ts</code> threshold floors, not measured percentages.</li>
+      <li><b>Live <code>bun audit</code>.</b> Dependency audit results were not executed; assessment is based on lockfile pinning and version currency.</li>
+      <li><b>SonarCloud rule descriptions for every cited rule.</b> Validation focused on the actual code; rule semantics for less-cited rules were inferred.</li>
+      <li><b>Browser-runtime accessibility audit.</b> A11y findings come from static analysis (S6819 family) and the existing CLAUDE.md "WCAG 2.1 AA" claim; no axe-core or screen-reader run was performed.</li>
+      <li><b>The <code>archive/</code>, <code>docs/</code>, <code>e2e/</code>, and <code>public/</code> trees</b> were sampled, not exhaustively read.</li>
+      <li><b>Sonar fetch freshness.</b> The <code>fetched_at</code> timestamp is 2026-05-10T16:13:38Z; the most recent code commit is from earlier the same day. Sonar's last <i>scan</i> may pre-date PR #67 (the directory-deletion commit) — that's the working hypothesis behind §03's "stale 156 issues" claim. A re-scan is the cheapest way to confirm.</li>
+      <li><b>Confidence calibration.</b> Severity labels in §05 are calibrated against this codebase's threat model (privacy-first, client-only PWA, no server-side state). Findings here would re-rank in a different context (e.g. an SSR app with PII).</li>
+    </ul>
+  </div>
+
+  <div class="card" style="margin-top:18px">
+    <h3 class="t-h3" style="margin:0 0 10px">How to reproduce</h3>
+    <pre style="background:var(--gray-100);border:var(--border);border-radius:var(--r-sm);padding:14px 16px;font:12.5px/1.6 var(--mono);overflow-x:auto;color:var(--slate)"><code># 1. Pull fresh Sonar data
+./fetch-sonar.sh
+
+# 2. Validate top findings against current HEAD
+git log --oneline -10
+grep -rn 'TODO\|FIXME' src/
+
+# 3. Confirm directory still missing
+ls design_handoff_cascade_redesign/ 2&gt;/dev/null || echo deleted
+
+# 4. Re-run this audit prompt against the fresh inputs
+#    See codebase-analysis-prompt.md for the full instruction set.</code></pre>
+  </div>
+
+  <div class="alert is-info" style="margin-top:18px">
+    <div>
+      <div class="alert-title">Severity rubric used in this report</div>
+      <div class="alert-body"><b>Critical</b> blocks safety, correctness, or quality-gate compliance and is in scope to fix this sprint. <b>High</b> meaningfully degrades the codebase or process and should land in 30 days. <b>Medium</b> is worth fixing but tolerable as-is for now. <b>Low</b> is nit-grade or cosmetic. Confidence reflects how much of the assessment depends on direct file inspection (<b>High</b>) vs. inference from configuration or git history (<b>Medium</b>) vs. heuristic (<b>Low</b>).</div>
     </div>
+  </div>
+</section>
 
-    <div class="finding success">
-      <strong>✓ TypeScript configuration</strong>
-      <p>Strict TypeScript mode enabled with proper path aliases (<code>@/*</code>), ensuring type safety across the project.</p>
-    </div>
 
-    <h3>Code Quality — <span style="color: var(--rust);">Good with Issues</span></h3>
-    <div class="score-bar"><div class="score-fill warning" style="width: 75%;"></div></div>
-
-    <div class="finding warning">
-      <strong>⚠ ESLint Issues</strong>
-      <p>Current lint run shows 17 problems (1 error, 16 warnings):</p>
-      <ul>
-        <li><strong>Error:</strong> Use of <code>&lt;a&gt;</code> instead of Next.js <code>Link</code> component in test file</li>
-        <li><strong>Warnings:</strong> Unused imports and <code>any</code> types in test files</li>
-        <li><strong>Warnings:</strong> Unused function imports in filter and import test files</li>
-      </ul>
-      <div class="code-block">
-src/app/__tests__/page.test.tsx:47:5 error - Use Link component
-src/components/__tests__/KanbanBoard.test.tsx:1:26 warning - unused 'fireEvent'
-src/components/__tests__/Sidebar.test.tsx:7:56 warning - Unexpected any
-      </div>
-    </div>
-
-    <div class="finding success">
-      <strong>✓ Function complexity</strong>
-      <p>Most functions are well-structured and follow single responsibility principles. The store architecture demonstrates good separation with dedicated files for different concerns (CRUD, filters, import).</p>
-    </div>
-
-    <div class="finding success">
-      <strong>✓ Error handling</strong>
-      <p>Comprehensive error handling patterns observed throughout the codebase, particularly in database operations and store functions. Proper try-catch blocks with meaningful error messages.</p>
-    </div>
-
-    <div class="finding warning">
-      <strong>⚠ Component complexity</strong>
-      <p>Some components like <code>ExportDialog.tsx</code> (397 lines) and <code>ImportDialog.tsx</code> could benefit from further decomposition into smaller, more focused sub-components.</p>
-    </div>
-  </section>
-
-  <section class="section">
-    <h2>Test Quality Assessment</h2>
-    
-    <h3>Test Coverage — <span style="color: var(--rust);">Needs Improvement</span></h3>
-    <div class="score-bar"><div class="score-fill warning" style="width: 45%;"></div></div>
-
-    <div class="metric-grid">
-      <div class="metric-card">
-        <div class="metric-value">45.3%</div>
-        <div class="metric-label">Statements</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value">41.8%</div>
-        <div class="metric-label">Branches</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value">46.2%</div>
-        <div class="metric-label">Functions</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value">46.4%</div>
-        <div class="metric-label">Lines</div>
-      </div>
-    </div>
-
-    <div class="finding warning">
-      <strong>⚠ Below target coverage</strong>
-      <p>Current coverage is significantly below the 80% target, with particularly low coverage in:</p>
-      <ul>
-        <li><strong>Components:</strong> Many dialog components have 0% coverage (ExportDialog, ImportDialog, SettingsDialog, etc.)</li>
-        <li><strong>UI Components:</strong> shadcn/ui components largely untested</li>
-        <li><strong>Import Flow:</strong> Import step components completely untested</li>
-        <li><strong>About Page:</strong> Marketing components lack test coverage</li>
-      </ul>
-    </div>
-
-    <div class="finding success">
-      <strong>✓ Well-tested core functionality</strong>
-      <p>Core business logic demonstrates strong test coverage:</p>
-      <ul>
-        <li><strong>Security utilities:</strong> 55 comprehensive tests for input sanitization and validation</li>
-        <li><strong>Database layer:</strong> 31 tests for IndexedDB operations</li>
-        <li><strong>Task validation:</strong> 35 tests for data integrity checks</li>
-        <li><strong>Export/import:</strong> 24 tests for data transfer operations</li>
-      </ul>
-    </div>
-
-    <h3>Test Quality — <span style="color: var(--olive);">Good</span></h3>
-    <div class="score-bar"><div class="score-fill success" style="width: 80%;"></div></div>
-
-    <div class="finding success">
-      <strong>✓ Test organization</strong>
-      <p>Tests are well-organized following the project conventions:</p>
-      <ul>
-        <li>Unit tests colocated with source files or in <code>__tests__</code> directories</li>
-        <li>Integration tests properly separated (e.g., <code>SearchBar.integration.test.tsx</code>)</li>
-        <li>E2E tests in dedicated <code>e2e/</code> directory with Playwright</li>
-        <li>Shared test setup in <code>src/test/setup.ts</code></li>
-      </ul>
-    </div>
-
-    <div class="finding success">
-      <strong>✓ Test patterns</strong>
-      <p>Tests follow consistent patterns with proper use of Testing Library best practices, meaningful test names, and appropriate mocking strategies.</p>
-    </div>
-
-    <div class="finding warning">
-      <strong>⚠ Test maintenance issues</strong>
-      <p>Some test files show maintenance debt:</p>
-      <ul>
-        <li>Unused imports in test files need cleanup</li>
-        <li>Some tests use <code>any</code> types instead of proper typing</li>
-        <li>Mock-heavy tests may be brittle and hard to maintain</li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="section">
-    <h2>Documentation & Maintainability</h2>
-    
-    <h3>Documentation — <span style="color: var(--olive);">Excellent</span></h3>
-    <div class="score-bar"><div class="score-fill success" style="width: 90%;"></div></div>
-
-    <div class="finding success">
-      <strong>✓ Comprehensive documentation</strong>
-      <p>The project includes extensive documentation:</p>
-      <ul>
-        <li><strong>AGENTS.md:</strong> Clear development guidelines and conventions</li>
-        <li><strong>CLAUDE.md:</strong> Detailed architecture and setup instructions</li>
-        <li><strong>docs/</strong> directory with user guides, developer docs, API reference</li>
-        <li><strong>Code comments:</strong> Strategic "why not what" comments explaining complex logic</li>
-      </ul>
-    </div>
-
-    <div class="finding success">
-      <strong>✓ Self-documenting code</strong>
-      <p>Functions and variables have descriptive names that make the code self-explanatory. Complex logic is well-commented with clear explanations of rationale.</p>
-    </div>
-
-    <h3>Maintainability — <span style="color: var(--olive);">Good</span></h3>
-    <div class="score-bar"><div class="score-fill success" style="width: 85%;"></div></div>
-
-    <div class="finding success">
-      <strong>✓ Modular architecture</strong>
-      <p>The codebase demonstrates strong modularity with clear separation of concerns. Store functions are split into logical modules (CRUD, filters, import) making the codebase easier to navigate and maintain.</p>
-    </div>
-
-    <div class="finding success">
-      <strong>✓ Type safety</strong>
-      <p>Comprehensive TypeScript usage with proper type definitions in <code>src/lib/types/</code>. Type guards and validation functions ensure runtime type safety.</p>
-    </div>
-
-    <div class="finding warning">
-      <strong>⚠ Some technical debt</strong>
-      <p>Areas that could benefit from refactoring:</p>
-      <ul>
-        <li>Large dialog components could be decomposed</li>
-        <li>Some repeated patterns could be extracted to shared utilities</li>
-        <li>Test mock setup could be simplified with better test utilities</li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="section">
-    <h2>Security & Best Practices</h2>
-    
-    <h3>Security — <span style="color: var(--olive);">Excellent</span></h3>
-    <div class="score-bar"><div class="score-fill success" style="width: 95%;"></div></div>
-
-    <div class="finding success">
-      <strong>✓ Comprehensive security measures</strong>
-      <p>The project demonstrates strong security practices:</p>
-      <ul>
-        <li><strong>Input sanitization:</strong> Robust security utilities for XSS prevention</li>
-        <li><strong>Rate limiting:</strong> Search rate limiting to prevent abuse</li>
-        <li><strong>UUID validation:</strong> Proper ID validation throughout</li>
-        <li><strong>File validation:</strong> Import file type and size validation</li>
-        <li><strong>Local-first architecture:</strong> No server-side data exposure</li>
-      </ul>
-    </div>
-
-    <div class="finding success">
-      <strong>✓ Error handling</strong>
-      <p>Graceful error handling with user-friendly error messages and recovery mechanisms. The codebase includes proper error boundaries and fallback strategies.</p>
-    </div>
-
-    <h3>Performance — <span style="color: var(--olive);">Good</span></h3>
-    <div class="score-bar"><div class="score-fill success" style="width: 80%;"></div></div>
-
-    <div class="finding success">
-      <strong>✓ Performance optimizations</strong>
-      <p>Several performance optimizations observed:</p>
-      <ul>
-        <li>Dynamic imports for code splitting</li>
-        <li>React.memo for component optimization</li>
-        <li>Efficient state management with Zustand</li>
-        <li>Lazy loading of keyboard components</li>
-        <li>Search result caching</li>
-      </ul>
-    </div>
-
-    <div class="finding warning">
-      <strong>⚠ Bundle size monitoring</strong>
-      <p>While bundle analysis is available, ongoing monitoring and optimization of bundle size could be improved. The current bundle is ~388kB which is reasonable but could benefit from continued optimization.</p>
-    </div>
-  </section>
-
-  <section class="section">
-    <h2>Key Findings & Recommendations</h2>
-    
-    <h3>Priority Issues</h3>
-    
-    <div class="finding warning">
-      <strong>1. Improve Test Coverage to 80%</strong>
-      <p><strong>Impact:</strong> High — Critical for long-term maintainability</p>
-      <p><strong>Recommendations:</strong></p>
-      <ul>
-        <li>Add tests for dialog components (ExportDialog, ImportDialog, SettingsDialog)</li>
-        <li>Create tests for import flow step components</li>
-        <li>Add tests for about page marketing components</li>
-        <li>Improve coverage for utility functions and hooks</li>
-        <li>Focus on high-value, high-risk areas first</li>
-      </ul>
-    </div>
-
-    <div class="finding warning">
-      <strong>2. Resolve ESLint Issues</strong>
-      <p><strong>Impact:</strong> Medium — Code quality and consistency</p>
-      <p><strong>Recommendations:</strong></p>
-      <ul>
-        <li>Fix the Next.js Link component error in test file</li>
-        <li>Remove unused imports across test files</li>
-        <li>Replace <code>any</code> types with proper TypeScript types</li>
-        <li>Consider stricter ESLint rules for better code quality</li>
-      </ul>
-    </div>
-
-    <div class="finding">
-      <strong>3. Component Decomposition</strong>
-      <p><strong>Impact:</strong> Medium — Maintainability and readability</p>
-      <p><strong>Recommendations:</strong></p>
-      <ul>
-        <li>Break down large dialog components into smaller sub-components</li>
-        <li>Extract repeated UI patterns into shared components</li>
-        <li>Consider creating a dialog wrapper component to reduce duplication</li>
-      </ul>
-    </div>
-
-    <h3>Best Practices to Maintain</h3>
-    
-    <div class="finding success">
-      <strong>✓ Continue current patterns</strong>
-      <ul>
-        <li>Maintain the excellent project structure and organization</li>
-        <li>Keep the comprehensive documentation up to date</li>
-        <li>Continue the strong security practices</li>
-        <li>Maintain the modular architecture approach</li>
-        <li>Keep the strategic use of code comments for complex logic</li>
-      </ul>
-    </div>
-
-    <div class="finding success">
-      <strong>✓ Build on existing strengths</strong>
-      <ul>
-        <li>Leverage the well-tested security utilities as models for other areas</li>
-        <li>Use the comprehensive test patterns established in core modules</li>
-        <li>Follow the established naming conventions consistently</li>
-        <li>Maintain the separation of concerns in store architecture</li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="section">
-    <h2>Compliance Scorecard</h2>
-    
-    <div class="metric-grid">
-      <div class="metric-card">
-        <div class="metric-value">95%</div>
-        <div class="metric-label">Project Structure</div>
-        <div class="score-bar"><div class="score-fill success" style="width: 95%;"></div></div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value">75%</div>
-        <div class="metric-label">Code Quality</div>
-        <div class="score-bar"><div class="score-fill warning" style="width: 75%;"></div></div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value">45%</div>
-        <div class="metric-label">Test Coverage</div>
-        <div class="score-bar"><div class="score-fill warning" style="width: 45%;"></div></div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value">80%</div>
-        <div class="metric-label">Test Quality</div>
-        <div class="score-bar"><div class="score-fill success" style="width: 80%;"></div></div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value">90%</div>
-        <div class="metric-label">Documentation</div>
-        <div class="score-bar"><div class="score-fill success" style="width: 90%;"></div></div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value">85%</div>
-        <div class="metric-label">Maintainability</div>
-        <div class="score-bar"><div class="score-fill success" style="width: 85%;"></div></div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value">95%</div>
-        <div class="metric-label">Security</div>
-        <div class="score-bar"><div class="score-fill success" style="width: 95%;"></div></div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value">80%</div>
-        <div class="metric-label">Performance</div>
-        <div class="score-bar"><div class="score-fill success" style="width: 80%;"></div></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <h2>Conclusion</h2>
-    <p>The Kanban Todos codebase demonstrates strong adherence to coding standards with excellent project organization, comprehensive documentation, and robust security practices. The modular architecture and thoughtful separation of concerns make the codebase maintainable and scalable.</p>
-    
-    <p>The primary area for improvement is test coverage, which currently stands at 45.3% against an 80% target. The core business logic is well-tested, but UI components and dialog flows need additional test coverage. Addressing the ESLint issues and considering component decomposition for large files would further improve code quality.</p>
-    
-    <p>Overall, this is a well-maintained project with solid foundations that would benefit from focused effort on test coverage and some code quality improvements to reach excellence.</p>
-    
-    <div style="margin-top: 32px; padding: 24px; border: var(--border); background: var(--gray-50);">
-      <h3 style="margin-top: 0;">Overall Assessment: <strong style="color: var(--accent);">A-</strong></h3>
-      <p>A strong codebase with excellent foundations and clear paths to improvement. The project demonstrates professional development practices with room for growth in testing coverage and some code quality refinements.</p>
-    </div>
-  </section>
-
-  <footer>
-    <p style="color: var(--gray-500); font-size: var(--t-small);">
-      Report generated using Inkwell Design System • 
-      Analysis based on coding standards from AGENTS.md and CLAUDE.md • 
-      Test coverage data from Vitest with v8 coverage provider
-    </p>
-  </footer>
+<footer style="margin:64px 0 32px;padding-top:24px;border-top:var(--border-rule);font:400 12px/1.5 var(--mono);color:var(--gray-500)">
+  Generated 2026-05-10 · Sonar fetched 2026-05-10T16:13:38Z · Inkwell design system (Indigo &amp; Cloud) · Branch <code>main</code> at <code>0c18a7a</code>
+</footer>
+</main>
 </body>
 </html>
