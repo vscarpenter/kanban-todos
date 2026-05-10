@@ -2,9 +2,22 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import { Sidebar } from '@/components/Sidebar'
 
+type NavigationMenuProps = {
+  onExport: () => void;
+  onImport: () => void;
+  onSettings: () => void;
+  onUserGuide: () => void;
+  onArchive: () => void;
+};
+
+type SidebarDialogsProps = {
+  activeDialog: string | null;
+  onDialogChange: (dialog: string | null) => void;
+};
+
 // Mock dependencies
 vi.mock('@/components/ui/button', () => ({
-  Button: ({ children, onClick, className, ...props }: any) => (
+  Button: ({ children, onClick, className, ...props }: React.ComponentProps<'button'>) => (
     <button onClick={onClick} className={className} {...props}>
       {children}
     </button>
@@ -33,7 +46,7 @@ vi.mock('@/components/sidebar/BoardsList', () => ({
 }))
 
 vi.mock('@/components/sidebar/NavigationMenu', () => ({
-  NavigationMenu: ({ onExport, onImport, onSettings, onUserGuide, onArchive }: any) => (
+  NavigationMenu: ({ onExport, onImport, onSettings, onUserGuide, onArchive }: NavigationMenuProps) => (
     <div data-testid="navigation-menu">
       <button onClick={onExport}>Export</button>
       <button onClick={onImport}>Import</button>
@@ -45,7 +58,7 @@ vi.mock('@/components/sidebar/NavigationMenu', () => ({
 }))
 
 vi.mock('@/components/sidebar/SidebarDialogs', () => ({
-  SidebarDialogs: ({ activeDialog, onDialogChange }: any) => (
+  SidebarDialogs: ({ activeDialog, onDialogChange }: SidebarDialogsProps) => (
     <div data-testid="sidebar-dialogs" data-active-dialog={activeDialog}>
       <button onClick={() => onDialogChange(null)}>Close Dialog</button>
     </div>

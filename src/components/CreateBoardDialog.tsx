@@ -24,7 +24,7 @@ interface CreateBoardDialogProps {
 
 export function CreateBoardDialog({ open, onOpenChange }: CreateBoardDialogProps) {
   const { addBoard } = useBoardStore();
-  const { execute, isLoading } = useAsyncOperation({
+  const { execute, isLoading } = useAsyncOperation<boolean>({
     errorMessage: "Failed to create board",
   });
   const [formData, setFormData] = useState<{
@@ -56,6 +56,7 @@ export function CreateBoardDialog({ open, onOpenChange }: CreateBoardDialogProps
         isDefault: false,
         order: 0,
       });
+      return true;
     });
 
     if (result !== undefined) {
