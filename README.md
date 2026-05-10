@@ -1,13 +1,13 @@
 # Cascade - Task Management System
 
-[![Version](https://img.shields.io/badge/version-3.0.1-blue.svg)](https://github.com/vscarpenter/kanban-todos)
+[![Version](https://img.shields.io/badge/version-5.2.0-blue.svg)](https://github.com/vscarpenter/kanban-todos)
 [![Build](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
 
 A modern, privacy-first kanban board task management system built with Next.js, TypeScript, and Tailwind CSS. Features a clean, accessible interface with advanced typography and responsive design.
 
-> **Version 3.0.1** includes major internal refactoring for improved code quality and maintainability while maintaining 100% backward compatibility.
+> **Version 5.2.0** reflects the current app structure, quality cleanup, and the latest Next.js / Vitest stack used in this repo.
 
 ## ✨ Features
 
@@ -22,7 +22,7 @@ A modern, privacy-first kanban board task management system built with Next.js, 
 ### User Experience
 - **Responsive Design**: Optimized for desktop and mobile devices
 - **Accessibility**: WCAG compliant with keyboard navigation support
-- **Modern Typography**: Professional typography system with Inter and JetBrains Mono fonts
+- **Modern Typography**: Editorial serif headings and monospace metadata using platform fonts
 - **Clean Interface**: Minimalist design focused on productivity
 - **User Guide**: Built-in help system and user guidance
 
@@ -43,7 +43,7 @@ A modern, privacy-first kanban board task management system built with Next.js, 
 
 ## 🛠️ Tech Stack
 
-- Framework: Next.js 15 (App Router), React 19
+- Framework: Next.js 16.2.6 (App Router), React 19
 - Language: TypeScript
 - Styling: Tailwind CSS v4
 - UI: shadcn/ui, Lucide icons

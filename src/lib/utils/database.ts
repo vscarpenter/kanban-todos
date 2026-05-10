@@ -55,10 +55,6 @@ export class TaskDatabase {
           db.createObjectStore('settings', { keyPath: 'id' });
         }
 
-        if (!db.objectStoreNames.contains('archive')) {
-          const archiveStore = db.createObjectStore('archive', { keyPath: 'id' });
-          archiveStore.createIndex('archivedAt', 'archivedAt', { unique: false });
-        }
       };
     });
   }
@@ -228,7 +224,7 @@ export class TaskDatabase {
     if (!db) throw new Error('Database not initialized');
 
     // Use a single transaction for atomicity — all-or-nothing
-    const storeNames = ['tasks', 'boards', 'settings', 'archive'] as const;
+    const storeNames = ['tasks', 'boards', 'settings'] as const;
     const transaction = db.transaction([...storeNames], 'readwrite');
 
     return new Promise((resolve, reject) => {
@@ -270,7 +266,7 @@ export class TaskDatabase {
     if (!db) throw new Error('Database not initialized');
 
     // Use a single transaction for atomicity
-    const storeNames = ['tasks', 'boards', 'settings', 'archive'];
+    const storeNames = ['tasks', 'boards', 'settings'];
     const transaction = db.transaction(storeNames, 'readwrite');
 
     return new Promise((resolve, reject) => {

@@ -269,8 +269,9 @@ export function createApplyFilters(get: () => TaskStoreState, set: StoreSetter) 
         updatedCache = new Map(searchCache);
       }
 
-      // Probabilistic cache cleanup
-      if (Math.random() < 0.1) {
+      // Deterministic cache cleanup keeps behavior predictable for tests and
+      // avoids random cache churn during normal searches.
+      if (updatedCache.size > 0) {
         cleanupExpiredCache(updatedCache);
         updatedCache = new Map(updatedCache);
       }
