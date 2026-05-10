@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Codebase Analysis Report — Kanban Todos</title>
+  <link rel="stylesheet" href="public/css/inkwell.css">
+  <style>
+    body {
+      background: var(--ivory);
+      color: var(--slate);
+      font-family: var(--sans);
+      line-height: 1.6;
+    }
+    
+    .report-header {
+      border-bottom: var(--border);
+      padding: 2rem 0;
+      margin-bottom: 2rem;
+    }
+    
+    .report-title {
+      font-family: var(--serif);
+      font-size: var(--t-h1);
+      color: var(--slate);
+      margin-bottom: 0.5rem;
+    }
+    
+    .report-meta {
+      font-family: var(--mono);
+      font-size: var(--t-small);
+      color: var(--gray-500);
+    }
+    
+    .section-title {
+      font-family: var(--serif);
+      font-size: var(--t-h2);
+      color: var(--slate);
+      margin: 2rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: var(--border-hair);
+    }
+    
+    .subsection-title {
+      font-family: var(--serif);
+      font-size: var(--t-h3);
+      color: var(--slate);
+      margin: 1.5rem 0 0.75rem;
+    }
+    
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    
+    .metric-card {
+      background: var(--paper);
+      border: var(--border);
+      border-radius: var(--r-md);
+      padding: 1rem;
+    }
+    
+    .metric-value {
+      font-family: var(--serif);
+      font-size: var(--t-display);
+      color: var(--accent);
+      margin-bottom: 0.25rem;
+    }
+    
+    .metric-label {
+      font-family: var(--mono);
+      font-size: var(--t-caption);
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .grade-badge {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      border-radius: var(--r-pill);
+      font-family: var(--serif);
+      font-size: var(--t-h2);
+      font-weight: 600;
+    }
+    
+    .grade-a { background: var(--olive); color: white; }
+    .grade-b { background: var(--accent); color: white; }
+    .grade-c { background: var(--rust); color: white; }
+    
+    .finding-card {
+      background: var(--paper);
+      border: var(--border);
+      border-radius: var(--r-md);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .finding-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    .severity-badge {
+      padding: 0.25rem 0.5rem;
+      border-radius: var(--r-sm);
+      font-family: var(--mono);
+      font-size: var(--t-caption);
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .severity-blocking { background: var(--rust); color: white; }
+    .severity-important { background: var(--accent); color: white; }
+    .severity-nit { background: var(--gray-300); color: var(--slate); }
+    
+    .finding-title {
+      font-family: var(--serif);
+      font-size: var(--t-h3);
+      color: var(--slate);
+      margin: 0;
+    }
+    
+    .finding-content {
+      color: var(--gray-600);
+      font-size: var(--t-body);
+      margin-bottom: 1rem;
+    }
+    
+    .recommendation {
+      background: var(--ivory);
+      border-left: 3px solid var(--accent);
+      padding: 0.75rem 1rem;
+      margin-top: 1rem;
+      font-size: var(--t-small);
+    }
+    
+    .recommendation strong {
+      color: var(--slate);
+      font-family: var(--mono);
+    }
+    
+    .compliance-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+    
+    .compliance-table th,
+    .compliance-table td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: var(--border-hair);
+    }
+    
+    .compliance-table th {
+      font-family: var(--mono);
+      font-size: var(--t-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--gray-500);
+      border-bottom: var(--border);
+    }
+    
+    .compliance-table td {
+      font-family: var(--sans);
+      font-size: var(--t-body);
+    }
+    
+    .status-excellent { color: var(--olive); font-family: var(--mono); }
+    .status-good { color: var(--accent); font-family: var(--mono); }
+    .status-needs-work { color: var(--rust); font-family: var(--mono); }
+    
+    .file-list {
+      font-family: var(--mono);
+      font-size: var(--t-small);
+      background: var(--ivory);
+      padding: 0.75rem;
+      border-radius: var(--r-sm);
+      margin-top: 0.5rem;
+    }
+    
+    .file-list li {
+      margin-bottom: 0.25rem;
+      color: var(--gray-600);
+    }
+    
+    .summary-section {
+      background: var(--paper);
+      border: var(--border);
+      border-radius: var(--r-md);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    
+    .chart-placeholder {
+      background: var(--ivory);
+      border: var(--border);
+      border-radius: var(--r-md);
+      padding: 2rem;
+      text-align: center;
+      margin: 1rem 0;
+    }
+    
+    .chart-placeholder-text {
+      font-family: var(--mono);
+      font-size: var(--t-small);
+      color: var(--gray-500);
+    }
+    
+    @media (max-width: 768px) {
+      .metric-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div style="max-width: var(--content-wide); margin: 0 auto; padding: 0 var(--page-pad-x);">
+    
+    <!-- Header -->
+    <header class="report-header">
+      <h1 class="report-title">Codebase Analysis Report</h1>
+      <p class="report-meta">
+        Project: Kanban Todos • Date: June 2026 • 
+        Standard: coding-standards.md v14.0
+      </p>
+    </header>
+    
+    <!-- Overall Assessment -->
+    <section class="summary-section">
+      <h2 class="section-title" style="margin-top: 0;">Overall Assessment</h2>
+      
+      <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+        <div>
+          <span class="grade-badge grade-b">B+</span>
+        </div>
+        <div>
+          <p style="font-size: var(--t-body); color: var(--gray-600); margin-bottom: 0.5rem;">
+            <strong style="color: var(--slate);">Good, with room for improvement in testing</strong>
+          </p>
+          <p style="font-size: var(--t-small); color: var(--gray-500);">
+            The codebase demonstrates strong engineering practices in security, type safety, and error handling. 
+            The main area needing attention is test coverage, which significantly deviates from the 80% target.
+          </p>
+        </div>
+      </div>
+      
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-value">43.2%</div>
+          <div class="metric-label">Test Coverage</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value">417</div>
+          <div class="metric-label">Passing Tests</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value">0</div>
+          <div class="metric-label">Security Vulnerabilities</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value">100%</div>
+          <div class="metric-label">Type Safety</div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Compliance Summary Table -->
+    <section>
+      <h2 class="section-title">Compliance Summary</h2>
+      <table class="compliance-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Compliance Level</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Security</strong></td>
+            <td><span class="status-excellent">Excellent</span></td>
+            <td>No secrets, good input validation, no dependency vulnerabilities</td>
+          </tr>
+          <tr>
+            <td><strong>Type Safety</strong></td>
+            <td><span class="status-excellent">Excellent</span></td>
+            <td>No `any`/`object` types, strict TypeScript</td>
+          </tr>
+          <tr>
+            <td><strong>Error Handling</strong></td>
+            <td><span class="status-good">Good</span></td>
+            <td>Proper logging, graceful degradation, no silent failures</td>
+          </tr>
+          <tr>
+            <td><strong>Code Quality</strong></td>
+            <td><span class="status-good">Good</span></td>
+            <td>Good naming, but some files exceed length guidelines</td>
+          </tr>
+          <tr>
+            <td><strong>Testing</strong></td>
+            <td><span class="status-needs-work">Needs Work</span></td>
+            <td>43.2% coverage vs 80% target, naming convention issues</td>
+          </tr>
+          <tr>
+            <td><strong>Architecture</strong></td>
+            <td><span class="status-good">Good</span></td>
+            <td>Reasonable structure, no obvious DRY/YAGNI violations</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    
+    <!-- Strengths -->
+    <section>
+      <h2 class="section-title">✅ Strengths (Standards Met)</h2>
+      
+      <div class="finding-card">
+        <div class="finding-header">
+          <span class="severity-badge severity-blocking" style="background: var(--olive);">EXCELLENT</span>
+          <h3 class="finding-title">Security Practices</h3>
+        </div>
+        <div class="finding-content">
+          <p><strong>No committed secrets:</strong> No API keys, passwords, or tokens found in code</p>
+          <p><strong>Dependency security:</strong> <code>bun audit</code> shows no vulnerabilities</p>
+          <p><strong>Input validation:</strong> Comprehensive security utilities in <code>security.ts</code> with input length limits, rate limiting configuration, XSS prevention, and allowed character patterns</p>
+          <p><strong>Environment variables:</strong> Proper <code>.env.example</code> with no actual secrets</p>
+        </div>
+      </div>
+      
+      <div class="finding-card">
+        <div class="finding-header">
+          <span class="severity-badge severity-blocking" style="background: var(--olive);">EXCELLENT</span>
+          <h3 class="finding-title">Type Safety</h3>
+        </div>
+        <div class="finding-content">
+          <p><strong>No <code>any</code> types:</strong> Zero usage of <code>any</code> type found in codebase</p>
+          <p><strong>No <code>object</code> types:</strong> Zero usage of generic <code>object</code> type found</p>
+          <p><strong>Strict TypeScript:</strong> Project uses strict mode effectively with proper type annotations</p>
+        </div>
+      </div>
+      
+      <div class="finding-card">
+        <div class="finding-header">
+          <span class="severity-badge severity-blocking" style="background: var(--olive);">EXCELLENT</span>
+          <h3 class="finding-title">Code Quality</h3>
+        </div>
+        <div class="finding-content">
+          <p><strong>Descriptive naming:</strong> Variables and functions use clear, descriptive names</p>
+          <p><strong>Constants for magic numbers:</strong> Numeric values are properly defined as constants (e.g., <code>CACHE_TTL</code>, <code>MAX_CACHE_SIZE</code>)</p>
+          <p><strong>Modern React patterns:</strong> Good use of hooks, memoization, and lazy loading</p>
+        </div>
+      </div>
+      
+      <div class="finding-card">
+        <div class="finding-header">
+          <span class="severity-badge severity-important" style="background: var(--olive);">GOOD</span>
+          <h3 class="finding-title">Error Handling</h3>
+        </div>
+        <div class="finding-content">
+          <p><strong>Proper error logging:</strong> Structured logging with context using the logger utility</p>
+          <p><strong>Graceful degradation:</strong> Good recovery patterns (e.g., in task filtering with simplified filters on error)</p>
+          <p><strong>No silent failures:</strong> Errors are properly caught and handled with user feedback</p>
+        </div>
+      </div>
+      
+      <div class="finding-card">
+        <div class="finding-header">
+          <span class="severity-badge severity-important" style="background: var(--olive);">GOOD</span>
+          <h3 class="finding-title">Testing Infrastructure</h3>
+        </div>
+        <div class="finding-content">
+          <p><strong>Core utilities coverage:</strong> Core utilities have 100% coverage (lib/utils directory)</p>
+          <p><strong>Test suite health:</strong> All 417 tests pass successfully</p>
+          <p><strong>Test structure:</strong> Tests follow reasonable Arrange-Act-Assert patterns</p>
+          <p><strong>Security testing:</strong> Comprehensive security test suite (55 tests)</p>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Areas for Improvement -->
+    <section>
+      <h2 class="section-title">⚠️ Areas for Improvement</h2>
+      
+      <div class="finding-card">
+        <div class="finding-header">
+          <span class="severity-badge severity-blocking">BLOCKING</span>
+          <h3 class="finding-title">Test Coverage (43.2% vs 80% target)</h3>
+        </div>
+        <div class="finding-content">
+          <p><strong>Issue:</strong> Overall test coverage is 43.2%, significantly below the 80% target specified in coding standards</p>
+          <p><strong>Details:</strong> Many UI components have 0% coverage including all app routes and most dialog components</p>
+          <p><strong>Impact:</strong> Reduced confidence in UI changes and potential for regressions</p>
+        </div>
+        <div class="recommendation">
+          <strong>Recommendation:</strong> Prioritize testing critical user paths and core UI components. Focus on components with high business value and frequent changes.
+        </div>
+      </div>
+      
+      <div class="finding-card">
+        <div class="finding-header">
+          <span class="severity-badge severity-important">IMPORTANT</span>
+          <h3 class="finding-title">File Length Violations</h3>
+        </div>
+        <div class="finding-content">
+          <p><strong>Issue:</strong> Several files exceed the 350-400 line guideline specified in coding standards</p>
+          <p><strong>Impact:</strong> Reduced maintainability and harder to navigate large files</p>
+        </div>
+        <ul class="file-list">
+          <li><code>boardStore.test.ts</code>: 688 lines</li>
+          <li><code>taskStore.test.ts</code>: 503 lines</li>
+          <li><code>exportImport.test.ts</code>: 486 lines</li>
+          <li><code>SearchBar.integration.test.tsx</code>: 485 lines</li>
+          <li><code>BoardView.integration.test.tsx</code>: 485 lines</li>
+          <li><code>guideSteps.tsx</code>: 477 lines</li>
+          <li><code>security.test.ts</code>: 421 lines</li>
+          <li><code>TaskDialog.tsx</code>: 408 lines</li>
+        </ul>
+        <div class="recommendation">
+          <strong>Recommendation:</strong> Split large test files by feature/test group. Consider breaking down complex components into smaller, focused sub-components.
+        </div>
+      </div>
+      
+      <div class="finding-card">
+        <div class="finding-header">
+          <span class="severity-badge severity-important">IMPORTANT</span>
+          <h3 class="finding-title">Test Naming Convention</h3>
+        </div>
+        <div class="finding-content">
+          <p><strong>Issue:</strong> Test names don't follow the behavior-based naming convention recommended in coding standards</p>
+          <p><strong>Current pattern:</strong> <code>'adds a new board'</code>, <code>'sets current board ID'</code></p>
+          <p><strong>Recommended pattern:</strong> <code>'should_add_new_board_successfully'</code>, <code>'should_set_current_board_id'</code></p>
+          <p><strong>Impact:</strong> Less explicit test intent and harder to understand test behavior from names alone</p>
+        </div>
+        <div class="recommendation">
+          <strong>Recommendation:</strong> Adopt behavior-based naming convention for better test documentation and readability.
+        </div>
+      </div>
+      
+      <div class="finding-card">
+        <div class="finding-header">
+          <span class="severity-badge severity-important">IMPORTANT</span>
+          <h3 class="finding-title">Missing Type Annotations</h3>
+        </div>
+        <div class="finding-content">
+          <p><strong>Issue:</strong> Some functions lack return type annotations, violating the standard that requires type annotations on ALL function signatures</p>
+          <p><strong>Examples:</strong></p>
+        </div>
+        <ul class="file-list">
+          <li><code>getIOSTouchSensorConfig()</code> in <code>iosDetection.ts</code></li>
+          <li>Various store creator functions in <code>taskStore.filters.ts</code></li>
+          <li>Functions in <code>boardStore.importActions.ts</code></li>
+        </ul>
+        <div class="recommendation">
+          <strong>Recommendation:</strong> Add return type annotations to all functions to improve type safety and self-documentation.
+        </div>
+      </div>
+      
+      <div class="finding-card">
+        <div class="finding-header">
+          <span class="severity-badge severity-nit">NIT</span>
+          <h3 class="finding-title">Test Warnings</h3>
+        </div>
+        <div class="finding-content">
+          <p><strong>Issue:</strong> Some React testing warnings that should be addressed</p>
+          <p><strong>Details:</strong></p>
+        </div>
+        <ul class="file-list">
+          <li>Missing aria descriptions in TaskDialog tests</li>
+          <li>React state updates not wrapped in act() for iOS touch tests</li>
+        </ul>
+        <div class="recommendation">
+          <strong>Recommendation:</strong> Fix test warnings to improve test reliability and accessibility compliance.
+        </div>
+      </div>
+      
+      <div class="finding-card">
+        <div class="finding-header">
+          <span class="severity-badge severity-nit">NIT</span>
+          <h3 class="finding-title">Custom Error Types</h3>
+        </div>
+        <div class="finding-content">
+          <p><strong>Issue:</strong> No custom error classes for domain-specific failures, while standards recommend "Typed/custom errors for domain-specific failures"</p>
+          <p><strong>Impact:</strong> Less granular error handling and harder to distinguish between different error types</p>
+        </div>
+        <div class="recommendation">
+          <strong>Recommendation:</strong> Consider custom error types if domain complexity grows. For current complexity level, this is acceptable.
+        </div>
+      </div>
+    </section>
+    
+    <!-- Detailed Metrics -->
+    <section>
+      <h2 class="section-title">Detailed Metrics</h2>
+      
+      <h3 class="subsection-title">Test Coverage by Category</h3>
+      <div class="chart-placeholder">
+        <p class="chart-placeholder-text">
+          Overall Coverage: 43.2% statements, 40.6% branches, 43.07% functions, 44.31% lines
+        </p>
+        <div class="metric-grid" style="margin-top: 1rem;">
+          <div class="metric-card">
+            <div class="metric-value">100%</div>
+            <div class="metric-label">Lib Utils</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value">55.14%</div>
+            <div class="metric-label">Lib Stores</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value">18.25%</div>
+            <div class="metric-label">Components</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value">0%</div>
+            <div class="metric-label">App Routes</div>
+          </div>
+        </div>
+      </div>
+      
+      <h3 class="subsection-title">Code Quality Metrics</h3>
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-value">0</div>
+          <div class="metric-label">Files with 'any' Type</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value">0</div>
+          <div class="metric-label">Files with 'object' Type</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value">8</div>
+          <div class="metric-label">Files > 400 Lines</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value">0</div>
+          <div class="metric-label">Security Vulnerabilities</div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Prioritized Recommendations -->
+    <section>
+      <h2 class="section-title">🎯 Prioritized Recommendations</h2>
+      
+      <div class="finding-card">
+        <div class="finding-header">
+          <span class="severity-badge severity-blocking">HIGH</span>
+          <h3 class="finding-title">Improve Test Coverage to 80%+</h3>
+        </div>
+        <div class="finding-content">
+          <p>Focus on critical UI components and user paths. Prioritize components with high business value and frequent changes.</p>
+        </div>
+        <div class="recommendation">
+          <strong>Action Items:</strong>
+          <ul style="margin: 0.5rem 0 0 1.5rem; padding: 0;">
+            <li>Add tests for core dialog components (TaskDialog, BoardSettingsDialog, etc.)</li>
+            <li>Add integration tests for main app routes</li>
+            <li>Focus on components with 0% coverage first</li>
+            <li>Target 80% coverage as specified in coding standards</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="finding-card">
+        <div class="finding-header">
+          <span class="severity-badge severity-important">MEDIUM</span>
+          <h3 class="finding-title">Split Large Files</h3>
+        </div>
+        <div class="finding-content">
+          <p>Break down files exceeding 400 lines into smaller, more focused modules.</p>
+        </div>
+        <div class="recommendation">
+          <strong>Action Items:</strong>
+          <ul style="margin: 0.5rem 0 0 1.5rem; padding: 0;">
+            <li>Split large test files by feature/test group</li>
+            <li>Consider breaking down complex components like TaskDialog (408 lines)</li>
+            <li>Extract content/data from guideSteps.tsx into separate data files</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="finding-card">
+        <div class="finding-header">
+          <span class="severity-badge severity-important">MEDIUM</span>
+          <h3 class="finding-title">Add Missing Type Annotations</h3>
+        </div>
+        <div class="finding-content">
+          <p>Ensure all functions have proper return type annotations for better type safety.</p>
+        </div>
+        <div class="recommendation">
+          <strong>Action Items:</strong>
+          <ul style="margin: 0.5rem 0 0 1.5rem; padding: 0;">
+            <li>Add return types to functions in iosDetection.ts</li>
+            <li>Add return types to store creator functions</li>
+            <li>Run TypeScript compiler in strict mode to catch missing annotations</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="finding-card">
+        <div class="finding-header">
+          <span class="severity-badge severity-nit">LOW</span>
+          <h3 class="finding-title">Adopt Behavior-Based Test Naming</h3>
+        </div>
+        <div class="finding-content">
+          <p>Update test names to follow the behavior-based naming convention for better documentation.</p>
+        </div>
+        <div class="recommendation">
+          <strong>Action Items:</strong>
+          <ul style="margin: 0.5rem 0 0 1.5rem; padding: 0;">
+            <li>Rename tests from 'adds a new board' to 'should_add_new_board_successfully'</li>
+            <li>Update test naming conventions across all test files</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="finding-card">
+        <div class="finding-header">
+          <span class="severity-badge severity-nit">LOW</span>
+          <h3 class="finding-title">Fix Test Warnings</h3>
+        </div>
+        <div class="finding-content">
+          <p>Address React testing warnings to improve test reliability.</p>
+        </div>
+        <div class="recommendation">
+          <strong>Action Items:</strong>
+          <ul style="margin: 0.5rem 0 0 1.5rem; padding: 0;">
+            <li>Add missing aria descriptions to TaskDialog tests</li>
+            <li>Wrap React state updates in act() for iOS touch tests</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Conclusion -->
+    <section class="summary-section">
+      <h2 class="section-title" style="margin-top: 0;">Conclusion</h2>
+      <p style="font-size: var(--t-body); color: var(--gray-600); margin-bottom: 1rem;">
+        The Kanban Todos codebase demonstrates <strong>strong engineering practices</strong> in security, type safety, and error handling. 
+        The development team has clearly invested in building a robust, maintainable codebase with excellent security practices and type safety.
+      </p>
+      <p style="font-size: var(--t-body); color: var(--gray-600); margin-bottom: 1rem;">
+        The <strong>primary area for improvement</strong> is test coverage, which currently stands at 43.2% against the 80% target specified in the coding standards. 
+        This gap is primarily due to limited UI component testing, while core utilities enjoy comprehensive coverage.
+      </p>
+      <p style="font-size: var(--t-body); color: var(--gray-600);">
+        With focused effort on improving test coverage and addressing the medium-priority recommendations, this codebase can achieve 
+        <strong>A-level compliance</strong> with the coding standards while maintaining its already excellent security and type safety foundations.
+      </p>
+    </section>
+    
+    <!-- Footer -->
+    <footer style="border-top: var(--border); padding: 2rem 0; margin-top: 3rem; text-align: center;">
+      <p style="font-family: var(--mono); font-size: var(--t-small); color: var(--gray-500);">
+        Generated using Inkwell Design System • Analysis based on coding-standards.md v14.0
+      </p>
+    </footer>
+    
+  </div>
+</body>
+</html>

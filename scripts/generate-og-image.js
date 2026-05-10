@@ -91,4 +91,4 @@ badges.forEach(badge => {
 const buffer = canvas.toBuffer('image/png');
 fs.writeFileSync('/Users/vinnycarpenter/Projects/kanban-todos/public/images/og-image.png', buffer);
 
-console.log('OG image generated successfully!');
+console.info('OG image generated successfully!');
