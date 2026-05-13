@@ -3,819 +3,1011 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Kanban Todos Codebase Analysis</title>
+  <title>Kanban Todos — Codebase Analysis Report</title>
   <style>
     :root {
-      --ivory: #f4f4f0;
-      --paper: #ffffff;
-      --slate: #13141b;
+      --ivory: #f5f4ef;
+      --paper: #fbfaf6;
+      --paper-2: #f1efe8;
+      --slate: #1a1c24;
+      --gray-100: #ecebe5;
+      --gray-200: #dedcd4;
+      --gray-300: #c8c5bb;
+      --gray-400: #a8a59a;
+      --gray-500: #74716a;
+      --gray-700: #3b3a37;
       --accent: #3b4a8c;
       --accent-d: #2a3768;
-      --olive: #788c5d;
-      --rust: #b04a3f;
-      --warning: #c78e3f;
-      --info: #5c7ca3;
-      --gray-100: #ededea;
-      --gray-200: #e1e1de;
-      --gray-300: #cfcfcc;
-      --gray-500: #6f6f75;
-      --gray-700: #3a3b41;
-      --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
-      --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      --mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
-      --border: 1px solid var(--gray-300);
+      --accent-tint: #e7e9f5;
+      --olive: #6b7d4a;
+      --olive-tint: #ecefe1;
+      --rust: #a4423a;
+      --rust-tint: #f5e3df;
+      --warn: #a87922;
+      --warn-tint: #f5ebd5;
+      --sky: #4a6b85;
+      --sky-tint: #e1e8ee;
+      --serif: ui-serif, Georgia, "Iowan Old Style", "Times New Roman", Times, serif;
+      --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
+      --border: 1.5px solid var(--gray-300);
+      --border-strong: 1.5px solid var(--slate);
       --border-hair: 1px solid var(--gray-100);
-      --shadow-sm: 0 1px 2px rgba(20, 20, 19, 0.06);
-      --shadow-md: 0 4px 14px rgba(20, 20, 19, 0.08);
-      --shadow-lg: 0 12px 28px rgba(20, 20, 19, 0.12);
-      --radius: 14px;
+      --border-rule: 1px solid var(--gray-300);
+      --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-xl: 20px; --r-pill: 999px;
+      --content-wide: 1120px; --page-pad-x: 24px;
     }
-
-    html {
-      scroll-behavior: smooth;
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ivory: #16171c; --paper: #1c1d23; --paper-2: #23242b; --slate: #e9e7df;
+        --gray-100: #2a2b32; --gray-200: #353640; --gray-300: #494a55; --gray-400: #6a6b76;
+        --gray-500: #9a9a9f; --gray-700: #c8c7c0; --accent: #9aa6df; --accent-d: #b7bee6;
+        --accent-tint: #2a3050; --olive: #a8be7d; --olive-tint: #283021; --rust: #d98a82;
+        --rust-tint: #3a201d; --warn: #d5ad5e; --warn-tint: #3a2e16; --sky: #8ba9c3;
+        --sky-tint: #1f2a35;
+      }
     }
-
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
-      margin: 0;
-      background: var(--ivory);
-      color: var(--slate);
-      font-family: var(--sans);
-      line-height: 1.55;
-      text-rendering: optimizeLegibility;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
+      margin: 0; background: var(--ivory); color: var(--slate);
+      font-family: var(--sans); font-size: 15px; line-height: 1.6;
+      -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
     }
-
-    a {
-      color: var(--accent);
-      text-decoration-thickness: 1px;
-      text-underline-offset: 2px;
-    }
-
-    a:hover {
-      color: var(--accent-d);
-    }
-
+    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    a:hover { color: var(--accent-d); }
     .skip-link {
-      position: absolute;
-      left: 12px;
-      top: -40px;
-      z-index: 1000;
-      padding: 8px 12px;
-      border: var(--border);
-      border-radius: 999px;
-      background: var(--paper);
-      color: var(--slate);
-      text-decoration: none;
+      position: absolute; left: 12px; top: -48px; z-index: 1000;
+      padding: 8px 14px; border: var(--border); border-radius: var(--r-pill);
+      background: var(--paper); color: var(--slate); text-decoration: none;
+      font-family: var(--mono); font-size: 12px;
     }
-
-    .skip-link:focus {
-      top: 12px;
-    }
-
-    .wrap {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 24px;
-    }
-
-    .hero {
-      background: var(--paper);
-      border: var(--border);
-      border-radius: 24px;
-      box-shadow: var(--shadow-lg);
-      padding: 28px;
-    }
-
+    .skip-link:focus { top: 12px; }
+    .wrap { max-width: var(--content-wide); margin: 0 auto; padding: 32px var(--page-pad-x) 64px; }
     .eyebrow {
-      font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: var(--gray-500);
-      margin: 0 0 12px;
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--gray-500); margin: 0 0 12px;
     }
-
-    h1, h2, h3 {
-      font-family: var(--serif);
-      font-weight: 500;
-      margin: 0;
-      text-wrap: balance;
+    h1, h2, h3, h4 { font-family: var(--serif); color: var(--slate); letter-spacing: -0.005em; margin: 0; }
+    h1 { font-size: 40px; line-height: 1.1; font-weight: 600; }
+    h2 { font-size: 26px; line-height: 1.2; font-weight: 600; margin: 0 0 16px; }
+    h3 { font-size: 19px; line-height: 1.3; font-weight: 600; margin: 0 0 8px; }
+    h4 { font-size: 15px; line-height: 1.35; font-weight: 600; margin: 0 0 6px; font-family: var(--sans); }
+    p { margin: 0 0 12px; }
+    .hero { background: var(--paper); border: var(--border); border-radius: var(--r-xl); padding: 32px; margin-bottom: 28px; }
+    .hero h1 { margin-bottom: 6px; }
+    .hero .lede {
+      font-family: var(--serif); font-style: italic; font-size: 18px;
+      color: var(--gray-700); margin: 8px 0 0; max-width: 64ch;
     }
-
-    h1 {
-      font-size: clamp(2.4rem, 4vw, 4.4rem);
-      line-height: 1.05;
-      letter-spacing: -0.03em;
-      margin-bottom: 12px;
+    .hero-meta {
+      display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 22px;
+      padding-top: 22px; border-top: var(--border-rule);
+      font-family: var(--mono); font-size: 12px; color: var(--gray-500);
     }
-
-    h2 {
-      font-size: clamp(1.6rem, 2.5vw, 2.4rem);
-      line-height: 1.15;
-      margin-bottom: 16px;
+    .hero-meta dt, .hero-meta dd { display: inline; }
+    .hero-meta dd { margin: 0 0 0 6px; color: var(--slate); }
+    .hero-meta > div { white-space: nowrap; }
+    nav.toc { background: var(--paper); border: var(--border); border-radius: var(--r-lg); padding: 18px 22px; margin-bottom: 28px; }
+    nav.toc ol {
+      list-style: none; padding: 0; margin: 0; counter-reset: section;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 6px 18px;
     }
-
-    h3 {
-      font-size: 1.15rem;
-      line-height: 1.25;
-      margin-bottom: 8px;
+    nav.toc li { counter-increment: section; font-size: 13px; padding: 4px 0; }
+    nav.toc li::before {
+      content: counter(section, decimal-leading-zero);
+      font-family: var(--mono); color: var(--gray-500); margin-right: 10px; font-size: 11px;
     }
-
-    p {
-      margin: 0 0 12px;
+    section.panel { background: var(--paper); border: var(--border); border-radius: var(--r-lg); padding: 26px 28px; margin-bottom: 22px; }
+    section.panel > header { margin-bottom: 18px; }
+    .score-grid { display: grid; grid-template-columns: 240px 1fr; gap: 28px; align-items: start; }
+    @media (max-width: 720px) { .score-grid { grid-template-columns: 1fr; } }
+    .score-card { border: var(--border); border-radius: var(--r-md); padding: 22px 18px 18px; background: var(--paper-2); text-align: center; }
+    .score-card .num {
+      font-family: var(--serif); font-size: 72px; line-height: 1;
+      font-weight: 600; color: var(--slate); letter-spacing: -0.02em;
     }
-
-    .subhead {
-      max-width: 72ch;
-      color: var(--gray-700);
-      font-size: 1.05rem;
-      margin-bottom: 20px;
+    .score-card .num small { font-size: 24px; color: var(--gray-500); font-weight: 400; }
+    .score-card .label {
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--gray-500); margin-top: 10px;
     }
-
-    .score-row {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 14px;
-      margin-top: 18px;
+    .score-card .verdict { font-family: var(--serif); font-style: italic; font-size: 13.5px; color: var(--gray-700); margin-top: 8px; }
+    .summary-cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 22px; }
+    @media (max-width: 900px) { .summary-cols { grid-template-columns: 1fr; } }
+    .summary-cols h4 {
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--gray-500); margin: 0 0 10px;
     }
-
-    .score-card {
-      background: var(--ivory);
-      border: var(--border);
-      border-radius: 18px;
-      padding: 16px;
-      box-shadow: var(--shadow-sm);
+    .summary-cols ol, .summary-cols ul { margin: 0; padding-left: 20px; }
+    .summary-cols li { font-size: 14px; margin-bottom: 10px; padding-left: 4px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    table th, table td { text-align: left; padding: 10px 12px; border-bottom: var(--border-hair); vertical-align: top; }
+    table th {
+      font-family: var(--mono); font-size: 11px; font-weight: 500;
+      letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray-500);
+      border-bottom: var(--border-rule);
     }
-
-    .score-value {
-      font-family: var(--serif);
-      font-size: 2rem;
-      line-height: 1;
-      margin-bottom: 6px;
+    table tbody tr:last-child td { border-bottom: 0; }
+    table code, table .path {
+      font-family: var(--mono); font-size: 12px; color: var(--gray-700);
+      background: var(--paper-2); padding: 1px 5px; border-radius: var(--r-sm);
     }
-
-    .score-label {
-      font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--gray-500);
-      margin-bottom: 8px;
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
+    .metric { border: var(--border); border-radius: var(--r-md); padding: 16px; background: var(--paper-2); }
+    .metric .label {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--gray-500); margin: 0 0 6px;
     }
-
-    .score-note {
-      color: var(--gray-700);
-      font-size: 0.92rem;
-    }
-
-    .nav {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      margin: 18px 0;
-      padding: 12px 14px;
-      border: var(--border);
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.86);
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .nav-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px 16px;
-      padding: 0;
-      margin: 0;
-      list-style: none;
-    }
-
-    .nav-list a {
-      font-family: var(--mono);
-      font-size: 12px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--gray-700);
-    }
-
-    .grid {
-      display: grid;
-      gap: 18px;
-    }
-
-    .grid-2 {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .grid-3 {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .panel {
-      background: var(--paper);
-      border: var(--border);
-      border-radius: 20px;
-      box-shadow: var(--shadow-md);
-      padding: 20px;
-    }
-
-    .table-wrap {
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.95rem;
-    }
-
-    th, td {
-      padding: 12px 10px;
-      text-align: left;
-      border-bottom: var(--border-hair);
-      vertical-align: top;
-    }
-
-    th {
-      font-family: var(--mono);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-size: 11px;
-      color: var(--gray-500);
-    }
-
-    tbody tr:hover {
-      background: rgba(237, 237, 234, 0.45);
-    }
-
+    .metric .value { font-family: var(--serif); font-size: 30px; font-weight: 600; line-height: 1.05; letter-spacing: -0.01em; }
+    .metric .value small { font-size: 13px; color: var(--gray-500); font-weight: 400; margin-left: 4px; }
+    .metric .note { font-size: 11.5px; color: var(--gray-500); margin-top: 6px; }
     .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      border: var(--border);
-      background: var(--paper);
-      white-space: nowrap;
+      display: inline-block; font-family: var(--mono); font-size: 10.5px;
+      letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 8px;
+      border-radius: var(--r-pill); border: 1.5px solid var(--gray-300);
+      background: var(--paper-2); color: var(--gray-700); white-space: nowrap;
     }
-
-    .badge-critical {
-      background: rgba(176, 74, 63, 0.12);
-      color: var(--rust);
-      border-color: rgba(176, 74, 63, 0.28);
+    .badge.sev-critical { background: var(--rust-tint); border-color: var(--rust); color: var(--rust); }
+    .badge.sev-high     { background: var(--warn-tint); border-color: var(--warn); color: var(--warn); }
+    .badge.sev-medium   { background: var(--sky-tint);  border-color: var(--sky);  color: var(--sky); }
+    .badge.sev-low      { background: var(--olive-tint); border-color: var(--olive); color: var(--olive); }
+    .badge.ok           { background: var(--olive-tint); border-color: var(--olive); color: var(--olive); }
+    details.finding {
+      border: var(--border); border-radius: var(--r-md); padding: 0;
+      margin-bottom: 12px; background: var(--paper); overflow: hidden;
     }
-
-    .badge-high {
-      background: rgba(199, 142, 63, 0.12);
-      color: var(--warning);
-      border-color: rgba(199, 142, 63, 0.28);
+    details.finding > summary {
+      list-style: none; cursor: pointer; padding: 14px 18px;
+      display: grid; grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center; gap: 12px;
     }
-
-    .badge-medium {
-      background: rgba(59, 74, 140, 0.12);
-      color: var(--accent);
-      border-color: rgba(59, 74, 140, 0.24);
+    details.finding > summary::-webkit-details-marker { display: none; }
+    details.finding > summary::after { content: "+"; font-family: var(--mono); font-size: 18px; color: var(--gray-500); }
+    details.finding[open] > summary::after { content: "−"; }
+    details.finding > summary > .summary-title { font-family: var(--serif); font-size: 16px; font-weight: 600; }
+    details.finding > summary > .summary-meta { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+    details.finding > .body { padding: 4px 18px 18px; border-top: var(--border-hair); }
+    details.finding > .body p { margin: 10px 0; font-size: 14px; }
+    details.finding > .body .path { font-family: var(--mono); font-size: 12px; color: var(--accent); }
+    details.finding > .body .label {
+      font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--gray-500); margin-top: 12px; margin-bottom: 2px;
     }
-
-    .badge-low {
-      background: rgba(120, 140, 93, 0.12);
-      color: var(--olive);
-      border-color: rgba(120, 140, 93, 0.24);
+    details.finding pre {
+      background: var(--paper-2); border: var(--border-hair); border-radius: var(--r-sm);
+      padding: 12px 14px; overflow-x: auto; font-family: var(--mono);
+      font-size: 12px; line-height: 1.5; margin: 6px 0;
     }
-
-    .badge-neutral {
-      background: var(--ivory);
-      color: var(--gray-700);
+    details.finding code:not(pre code) {
+      font-family: var(--mono); font-size: 12.5px; background: var(--paper-2);
+      padding: 1px 5px; border-radius: var(--r-sm);
     }
-
-    .list {
-      margin: 0;
-      padding-left: 18px;
+    .dimension-header {
+      display: flex; align-items: baseline; justify-content: space-between;
+      gap: 12px; flex-wrap: wrap; margin-bottom: 14px;
     }
-
-    .list li + li {
-      margin-top: 8px;
+    .dimension-header .counts { font-family: var(--mono); font-size: 12px; color: var(--gray-500); }
+    .roadmap { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+    @media (max-width: 900px) { .roadmap { grid-template-columns: 1fr; } }
+    .roadmap .lane { border: var(--border); border-radius: var(--r-md); padding: 18px 18px 14px; background: var(--paper-2); }
+    .roadmap .lane h3 { font-family: var(--serif); font-size: 17px; margin-bottom: 4px; }
+    .roadmap .lane .horizon {
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--gray-500); margin-bottom: 12px;
     }
-
-    details {
-      border: var(--border);
-      border-radius: 18px;
-      background: var(--paper);
-      box-shadow: var(--shadow-sm);
-      overflow: clip;
-    }
-
-    details + details {
-      margin-top: 14px;
-    }
-
-    summary {
-      cursor: pointer;
-      list-style: none;
-      padding: 18px 18px 0;
-    }
-
-    summary::-webkit-details-marker {
-      display: none;
-    }
-
-    .finding-head {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-
-    .finding-body {
-      padding: 0 18px 18px;
-    }
-
-    .finding-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 14px;
-    }
-
-    .finding-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 16px;
-      align-items: start;
-    }
-
-    .callout {
-      border: var(--border);
-      border-radius: 16px;
-      padding: 14px;
-      background: var(--ivory);
-    }
-
-    .callout h3 {
-      margin-bottom: 10px;
-    }
-
-    pre {
-      margin: 0;
-      padding: 14px;
-      border-radius: 14px;
-      border: var(--border);
-      background: #fbfbf9;
-      overflow-x: auto;
-      font-family: var(--mono);
-      font-size: 12px;
-      line-height: 1.5;
-      white-space: pre-wrap;
-    }
-
-    .roadmap {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
-    }
-
-    .roadmap h3 {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .muted {
-      color: var(--gray-700);
-    }
-
-    .footer-note {
-      margin-top: 18px;
-      color: var(--gray-700);
-      font-size: 0.95rem;
-    }
-
-    @media (max-width: 960px) {
-      .score-row,
-      .grid-2,
-      .grid-3,
-      .roadmap,
-      .finding-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .wrap {
-        padding: 14px;
-      }
-
-      .hero {
-        padding: 20px;
-      }
-    }
+    .roadmap ul { margin: 0; padding-left: 18px; }
+    .roadmap li { font-size: 13.5px; margin-bottom: 8px; }
+    .footnote { font-family: var(--mono); font-size: 11.5px; color: var(--gray-500); margin-top: 4px; }
+    .legend { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+    hr { border: 0; border-top: var(--border-rule); margin: 22px 0; }
+    .strength { color: var(--olive); }
+    .risk { color: var(--rust); }
+    ::selection { background: var(--accent-tint); color: var(--slate); }
   </style>
 </head>
 <body>
-  <a class="skip-link" href="#content">Skip to content</a>
-  <div class="wrap" id="content">
-    <header class="hero" id="executive-summary">
-      <p class="eyebrow">Codebase Analysis Report</p>
-      <h1>Kanban Todos</h1>
-      <p class="subhead">
-        Comprehensive review of production source, tests, config, and docs against the repo's coding standards.
-        This snapshot reflects the post-fix state after the previously highlighted correctness, tooling, and
-        documentation issues were remediated and revalidated.
-      </p>
+<a class="skip-link" href="#summary">Skip to content</a>
+<main class="wrap" id="top">
 
-      <div class="score-row">
-        <div class="score-card">
-          <div class="score-label">Health score</div>
-          <div class="score-value">8.4 / 10</div>
-          <div class="score-note">Core correctness gaps were fixed; remaining work is mostly follow-up hardening.</div>
-        </div>
-        <div class="score-card">
-          <div class="score-label">Tests</div>
-          <div class="score-value">492 / 492</div>
-          <div class="score-note">Vitest plus the repaired Playwright smoke test passed in this post-fix run.</div>
-        </div>
-        <div class="score-card">
-          <div class="score-label">Coverage</div>
-          <div class="score-value">59.67%</div>
-          <div class="score-note">Coverage is slightly improved after the new regression tests and cleanup.</div>
-        </div>
-        <div class="score-card">
-          <div class="score-label">Repo size</div>
-          <div class="score-value">148 files</div>
-          <div class="score-note">Average production file length: 122.6 LOC; 7 files exceed 350 lines.</div>
-        </div>
-      </div>
-    </header>
+<section class="hero" aria-labelledby="hero-title">
+  <p class="eyebrow">Codebase Analysis — Inkwell Edition</p>
+  <h1 id="hero-title">Kanban Todos</h1>
+  <p class="lede">A client-side kanban PWA built on Next.js 16 static export, Zustand, and IndexedDB. This audit measures the codebase against its own <code>coding-standards.md</code> (v14.0) and the OWASP, performance, and accessibility baselines required of a production frontend.</p>
+  <dl class="hero-meta" aria-label="Report metadata">
+    <div><dt>Report date</dt><dd>2026-05-13</dd></div>
+    <div><dt>App version</dt><dd>5.2.1</dd></div>
+    <div><dt>Branch</dt><dd>main</dd></div>
+    <div><dt>Commit</dt><dd>04a848b</dd></div>
+    <div><dt>Files audited</dt><dd>169 TS/TSX + 34 vitest + 11 Playwright</dd></div>
+    <div><dt>Standards</dt><dd>coding-standards.md v14.0</dd></div>
+  </dl>
+</section>
 
-    <nav class="nav" aria-label="Report sections">
-      <ul class="nav-list">
-        <li><a href="#summary">Summary</a></li>
-        <li><a href="#metrics">Metrics</a></li>
-        <li><a href="#findings">Findings</a></li>
-        <li><a href="#roadmap">Follow-up</a></li>
-        <li><a href="#methodology">Methodology</a></li>
-      </ul>
-    </nav>
+<nav class="toc" aria-label="Report contents">
+  <p class="eyebrow">Contents</p>
+  <ol>
+    <li><a href="#summary">Executive summary</a></li>
+    <li><a href="#metrics">Metrics dashboard</a></li>
+    <li><a href="#standards">Standards compliance</a></li>
+    <li><a href="#testing">Test quality &amp; coverage</a></li>
+    <li><a href="#security">Security &amp; supply chain</a></li>
+    <li><a href="#architecture">Architecture</a></li>
+    <li><a href="#maintainability">Maintainability</a></li>
+    <li><a href="#dependencies">Dependencies</a></li>
+    <li><a href="#performance">Performance</a></li>
+    <li><a href="#error-obs">Error handling &amp; observability</a></li>
+    <li><a href="#docs">Documentation &amp; onboarding</a></li>
+    <li><a href="#debt">Tech debt</a></li>
+    <li><a href="#config">Configuration &amp; type safety</a></li>
+    <li><a href="#roadmap">30 / 60 / 90 day roadmap</a></li>
+    <li><a href="#method">Methodology &amp; limitations</a></li>
+  </ol>
+</nav>
 
-    <section class="panel" id="summary">
-      <h2>Executive Summary</h2>
-      <div class="grid grid-2">
-        <div>
-          <h3>Top 5 remediated items</h3>
-          <ol class="list">
-            <li>Search recovery now preserves unrelated filters when the fallback path is exercised.</li>
-            <li>The cross-board Playwright smoke test now seeds real app state and uses production-aligned selectors.</li>
-            <li>Vitest and <code>@vitest/coverage-v8</code> are aligned again, so the coverage warning is gone.</li>
-            <li>The README now matches the live app's version, typography, and manifest details.</li>
-            <li>The dead IndexedDB archive surface was removed from the database layer.</li>
-          </ol>
-        </div>
-        <div>
-          <h3>Top 3 strengths</h3>
-          <ul class="list">
-            <li>Strong XSS/CSP posture. The codebase explicitly avoids `dangerouslySetInnerHTML` and centralizes sanitization.</li>
-            <li>Good modular decomposition in the store layer. Task, board, and import concerns are separated into focused modules.</li>
-            <li>Automated coverage now includes a repaired Playwright smoke path, giving the test surface more credibility.</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="grid grid-3" style="margin-top: 18px;">
-        <div class="callout">
-          <h3>Top priorities for next sprint</h3>
-          <ol class="list">
-            <li>Increase coverage in the remaining low-signal utility and validation paths.</li>
-            <li>Add a second Playwright smoke path for cross-board workflows to reduce single-spec risk.</li>
-            <li>Trim the remaining long files only if they continue to complicate ownership or change safety.</li>
-          </ol>
-        </div>
-        <div class="callout">
-          <h3>Security readout</h3>
-          <p>No high-confidence application security issues were confirmed in this pass.</p>
-          <p class="muted">Security findings by severity: Critical 0, High 0, Medium 0, Low 0.</p>
-        </div>
-        <div class="callout">
-          <h3>Debt snapshot</h3>
-          <p>TODO/FIXME markers in reviewed source: 0.</p>
-          <p class="muted">Heuristic dead-code candidates from the original audit were either removed or reclassified after the fix pass.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="panel" id="metrics" style="margin-top: 18px;">
-      <h2>Metrics Dashboard</h2>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Metric</th>
-              <th>Value</th>
-              <th>Interpretation</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Coverage</td>
-              <td>59.67% statements, 54.29% branches, 57.9% functions, 61.52% lines</td>
-              <td>Still modest overall, but the snapshot now includes the new regression coverage.</td>
-            </tr>
-            <tr>
-              <td>Large files</td>
-              <td>7 production files over 350 LOC</td>
-              <td>Several files are at or above the repo's stated maintainability target.</td>
-            </tr>
-            <tr>
-              <td>Average production file size</td>
-              <td>122.6 LOC</td>
-              <td>Reasonable overall, with a few high-complexity outliers.</td>
-            </tr>
-            <tr>
-              <td>Dependencies</td>
-              <td>28 prod, 23 dev, 12 overrides</td>
-              <td>Dependency graph is moderate, but version discipline matters.</td>
-            </tr>
-            <tr>
-              <td>Tests</td>
-              <td>492 passing tests across 34 files</td>
-              <td>Vitest and Playwright both passed in the fixed-state validation run.</td>
-            </tr>
-            <tr>
-              <td>TODO / FIXME markers</td>
-              <td>0 in reviewed source</td>
-              <td>No obvious comment debt, which is a positive signal.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="grid grid-3" style="margin-top: 16px;">
-        <div class="callout">
-          <h3>Coverage hotspots</h3>
-          <ul class="list">
-            <li><code>src/lib/utils/taskFiltering.ts</code> - 17.64%</li>
-            <li><code>src/lib/utils/validation.ts</code> - 36%</li>
-            <li><code>src/lib/stores/taskStore.ts</code> - 29.54%</li>
-          </ul>
-        </div>
-        <div class="callout">
-          <h3>Largest production files</h3>
-          <ul class="list">
-            <li><code>src/components/userGuide/guideSteps.tsx</code> - 478 LOC</li>
-            <li><code>src/components/ExportDialog.tsx</code> - 410 LOC</li>
-            <li><code>src/components/TaskDialog.tsx</code> - 409 LOC</li>
-            <li><code>src/lib/stores/taskStore.filters.ts</code> - 388 LOC</li>
-            <li><code>src/lib/utils/validation.ts</code> - 373 LOC</li>
-          </ul>
-        </div>
-        <div class="callout">
-          <h3>Dependency hygiene</h3>
-          <p><code>vitest</code> and <code>@vitest/coverage-v8</code> now share the same <code>4.1.5</code> patch line.</p>
-          <p class="muted">The version-mismatch warning no longer appears during coverage.</p>
-        </div>
-      </div>
-    </section>
-
-    <section id="findings" style="margin-top: 18px;">
-      <h2>Resolved Findings</h2>
-
-      <details open>
-        <summary>
-          <div class="finding-head">
-            <span class="badge badge-low">Low</span>
-            <span class="badge badge-high">Validated</span>
-            <span class="badge badge-neutral">Correctness</span>
-            <h3 style="display:inline;">Search recovery now preserves unrelated filters</h3>
-          </div>
-        </summary>
-        <div class="finding-body">
-          <div class="finding-meta">
-            <span class="badge badge-neutral">Files: <code>src/lib/stores/taskStore.ts</code>, <code>src/lib/stores/taskStore.filters.ts</code>, <code>src/lib/stores/__tests__/taskStore.test.ts</code></span>
-            <span class="badge badge-neutral">Effort: Small to medium</span>
-          </div>
-          <div class="finding-grid">
-            <div>
-              <p>
-                The recovery path was updated so a double failure no longer strips unrelated filters from the
-                user's active state. Search fallback behavior is now isolated instead of replacing the full filter
-                object.
-              </p>
-              <p>
-                The nondeterministic cache cleanup branch was also removed, which makes the module easier to reason
-                about and validate.
-              </p>
-              <pre>set({
-  error: 'Search functionality is temporarily unavailable. Please refresh the page.',
-  isSearching: false,
-  filteredTasks: get().tasks,
-  filters: { ...get().filters, search: '', tags: [] },
-});</pre>
-            </div>
-            <div class="callout">
-              <h3>Validation</h3>
-              <p>A regression test now covers the search-recovery path and confirms the non-search filters survive the fallback.</p>
-              <p class="muted">This item is fixed and revalidated in the current snapshot.</p>
-            </div>
-          </div>
-        </div>
-      </details>
-
-      <details>
-        <summary>
-          <div class="finding-head">
-            <span class="badge badge-low">Low</span>
-            <span class="badge badge-high">Validated</span>
-            <span class="badge badge-neutral">Test quality</span>
-            <h3 style="display:inline;">Cross-board Playwright coverage now maps to the real UI</h3>
-          </div>
-        </summary>
-        <div class="finding-body">
-          <div class="finding-meta">
-            <span class="badge badge-neutral">File: <code>e2e/crossBoardSearch.spec.ts</code></span>
-            <span class="badge badge-neutral">Effort: Medium</span>
-          </div>
-          <div class="finding-grid">
-            <div>
-              <p>
-                The placeholder helpers were replaced with a real UI-driven smoke test that seeds boards and tasks
-                through the app and then exercises cross-board search against production selectors.
-              </p>
-              <p>
-                That gives the E2E suite a concrete path through the live interface rather than asserting against
-                fabricated data or missing test IDs.
-              </p>
-            </div>
-            <div class="callout">
-              <h3>Validation</h3>
-              <p>The repaired spec executed successfully as part of the post-fix E2E run.</p>
-              <p class="muted">This item is fixed and revalidated in the current snapshot.</p>
-            </div>
-          </div>
-        </div>
-      </details>
-
-      <details>
-        <summary>
-          <div class="finding-head">
-            <span class="badge badge-low">Low</span>
-            <span class="badge badge-high">Validated</span>
-            <span class="badge badge-neutral">Dependency hygiene</span>
-            <h3 style="display:inline;">Vitest and coverage plugin versions are aligned</h3>
-          </div>
-        </summary>
-        <div class="finding-body">
-          <div class="finding-meta">
-            <span class="badge badge-neutral">Files: <code>package.json</code>, <code>bun.lock</code></span>
-            <span class="badge badge-neutral">Effort: Small</span>
-          </div>
-          <div class="finding-grid">
-            <div>
-              <p>
-                The manifest and lockfile now keep <code>vitest</code> and <code>@vitest/coverage-v8</code> on the
-                same <code>4.1.5</code> line, which removes the warning that previously appeared during coverage.
-              </p>
-            </div>
-            <div class="callout">
-              <h3>Validation</h3>
-              <p>Coverage reran cleanly after the dependency alignment.</p>
-              <p class="muted">This item is fixed and revalidated in the current snapshot.</p>
-            </div>
-          </div>
-        </div>
-      </details>
-
-      <details>
-        <summary>
-          <div class="finding-head">
-            <span class="badge badge-low">Low</span>
-            <span class="badge badge-high">Validated</span>
-            <span class="badge badge-neutral">Documentation</span>
-            <h3 style="display:inline;">README now matches the live app and manifest</h3>
-          </div>
-        </summary>
-        <div class="finding-body">
-          <div class="finding-meta">
-            <span class="badge badge-neutral">File: <code>README.md</code></span>
-            <span class="badge badge-neutral">Effort: Small</span>
-          </div>
-          <div class="finding-grid">
-            <div>
-              <p>
-                The README was updated to reflect the current app version, Next.js release line, and the platform
-                font stack used in the live layout.
-              </p>
-              <p>
-                That removes the mismatch between the written onboarding story and the shipped code.
-              </p>
-            </div>
-            <div class="callout">
-              <h3>Validation</h3>
-              <p>The docs now match the manifest and application shell.</p>
-              <p class="muted">This item is fixed and revalidated in the current snapshot.</p>
-            </div>
-          </div>
-        </div>
-      </details>
-
-      <details>
-        <summary>
-          <div class="finding-head">
-            <span class="badge badge-low">Low</span>
-            <span class="badge badge-high">Validated</span>
-            <span class="badge badge-neutral">Architecture / dead code</span>
-            <h3 style="display:inline;">Archive persistence surface was removed</h3>
-          </div>
-        </summary>
-        <div class="finding-body">
-          <div class="finding-meta">
-            <span class="badge badge-neutral">File: <code>src/lib/utils/database.ts</code></span>
-            <span class="badge badge-neutral">Effort: Medium</span>
-          </div>
-          <div class="finding-grid">
-            <div>
-              <p>
-                The database layer no longer creates or clears the separate <code>archive</code> object store that
-                the original audit identified as dead surface area.
-              </p>
-              <p>
-                Production import flows still use the dedicated store actions directly, so the database schema and the
-                runtime behavior are now aligned.
-              </p>
-            </div>
-            <div class="callout">
-              <h3>Validation</h3>
-              <p>The archive surface no longer appears in the runtime schema path.</p>
-              <p class="muted">This item is fixed and revalidated in the current snapshot.</p>
-            </div>
-          </div>
-        </div>
-      </details>
-    </section>
-
-    <section class="panel" id="roadmap" style="margin-top: 18px;">
-      <h2>30 / 60 / 90 Day Follow-up Roadmap</h2>
-      <div class="roadmap">
-        <div class="callout">
-          <h3><span class="badge badge-medium">30 days</span> Broaden confidence</h3>
-          <ul class="list">
-            <li>Add another Playwright smoke path around board switching or task movement.</li>
-            <li>Keep the search-recovery regression test as a guard against future filter drift.</li>
-            <li>Watch dependency drift so the toolchain stays aligned after future updates.</li>
-          </ul>
-        </div>
-        <div class="callout">
-          <h3><span class="badge badge-high">60 days</span> Reduce friction</h3>
-          <ul class="list">
-            <li>Raise coverage on <code>taskFiltering.ts</code>, <code>validation.ts</code>, and import flows.</li>
-            <li>Review the longest files only if they continue to slow down ownership or reviews.</li>
-            <li>Fold repeated test setup into reusable helpers if more E2E coverage lands.</li>
-          </ul>
-        </div>
-        <div class="callout">
-          <h3><span class="badge badge-low">90 days</span> Keep architecture tidy</h3>
-          <ul class="list">
-            <li>Continue standardizing test seeding patterns across Vitest and Playwright.</li>
-            <li>Keep the docs and manifest in sync with the actual shipped app state.</li>
-            <li>Revisit file-size outliers only if they become a maintenance bottleneck.</li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
-    <section class="panel" id="methodology" style="margin: 18px 0 28px;">
-      <h2>Methodology and Limitations</h2>
-      <div class="grid grid-2">
-        <div>
-          <p>
-            This review covered production source, tests, configuration, docs, and top-level scripts. I read the
-            repository standards file, the codebase-analysis prompt, and the Inkwell instructions, then inspected the
-            major store, utility, and UI surfaces. I also ran <code>npm run lint</code>, <code>npm run test:coverage</code>,
-            and <code>npm run test:e2e -- e2e/crossBoardSearch.spec.ts</code>.
-          </p>
-          <p>
-            The fixed-state validation run passed with 492 tests, and the report now reflects the updated metrics
-            and repaired E2E path instead of the original audit snapshot.
-          </p>
-        </div>
-        <div>
-          <p>
-            Limitations:
-          </p>
-          <ul class="list">
-            <li>No live browser QA or screenshot review beyond the repaired smoke path was performed.</li>
-            <li>No external dependency audit or CVE scan was run beyond manifest-level inspection and coverage validation.</li>
-            <li>Generated files, build artifacts, and lockfiles were excluded from the core review scope except where needed to reflect the fix state.</li>
-          </ul>
-        </div>
-      </div>
-      <p class="footer-note">
-        Overall: the previously highlighted issues have been addressed and revalidated. The remaining work is
-        incremental follow-up on coverage depth, file-size outliers, and future test-surface growth.
-      </p>
-    </section>
+<section class="panel" id="summary" aria-labelledby="summary-h">
+  <header><p class="eyebrow">01 — Executive Summary</p><h2 id="summary-h">Health verdict</h2></header>
+  <div class="score-grid">
+    <div class="score-card">
+      <div class="num">8.0<small>&thinsp;/10</small></div>
+      <div class="label">Overall Health</div>
+      <p class="verdict">Mature, disciplined codebase. Two specific gaps to close in the next sprint.</p>
+    </div>
+    <div>
+      <p>Kanban Todos is a well-engineered client-side application with strong type discipline, comprehensive ADRs, clean security baseline, and a passing test suite (492/492). The standards bar set in <code>coding-standards.md</code> v14.0 is largely met. The most consequential remaining gaps are operational rather than structural: <strong>no React error boundary</strong> at the application root means an unhandled render error blanks the UI, and the <strong>store initialization error path</strong> swallows failures by setting <code>isInitialized</code> regardless of outcome. Both are small fixes with disproportionate impact on user-visible reliability.</p>
+      <p>Coverage sits at <strong>61.46% lines</strong>, well above the configured baseline (37%) but below the standards target (80%). The shortfall concentrates in three specific surfaces — <code>guideSteps.tsx</code> (0%, 477 lines), the wizard step components under <code>components/import/</code>, and several Radix-wrapped UI primitives — rather than being broadly distributed, which makes it tractable.</p>
+    </div>
   </div>
+
+  <hr />
+
+  <div class="summary-cols">
+    <div>
+      <h4 class="risk">Top 5 risks</h4>
+      <ol>
+        <li><strong>No app-level error boundary.</strong> A render error in any component crashes the UI to a blank page. <a href="#f-no-error-boundary">See finding</a></li>
+        <li><strong>Init errors are swallowed.</strong> <code>KanbanBoard.tsx:63-65</code> sets <code>isInitialized=true</code> in both success and catch branches, hiding DB failures. <a href="#f-init-swallow">See finding</a></li>
+        <li><strong>JSON import lacks prototype-pollution guard.</strong> <code>fileHandling.ts:78</code> uses <code>JSON.parse</code> without a reviver to reject <code>__proto__</code>/<code>constructor</code> keys. <a href="#f-proto-pollution">See finding</a></li>
+        <li><strong>Logger underused.</strong> A structured logger exists at <code>lib/utils/logger.ts</code> but 31 raw <code>console.*</code> sites bypass it, fragmenting observability. <a href="#f-logger-bypass">See finding</a></li>
+        <li><strong>IndexedDB has no migration path.</strong> <code>DB_VERSION = 1</code> is hardcoded; <code>onupgradeneeded</code> only creates missing stores. A future schema change has no safe rollout. <a href="#f-db-migrations">See finding</a></li>
+      </ol>
+    </div>
+    <div>
+      <h4 class="strength">Top 3 strengths</h4>
+      <ol>
+        <li><strong>Type discipline is exemplary.</strong> Zero <code>any</code>, zero <code>@ts-ignore</code>, zero non-null assertions in production code; strict mode enabled.</li>
+        <li><strong>Security baseline is comprehensive.</strong> <code>bun audit</code> clean, CSP with <code>frame-ancestors 'none'</code> + HSTS + Permissions-Policy, ESLint <code>react/no-danger: error</code>, RFC-4122 UUID validation, <code>crypto.randomUUID</code> for IDs, rate limiter on search.</li>
+        <li><strong>Process artifacts are present and current.</strong> 5 ADRs covering every major hard-to-reverse decision, <code>tasks/todo.md</code> + <code>tasks/lessons.md</code> in place, 100% conventional-commit compliance over the last 30 commits, zero TODOs/FIXMEs across 169 source files.</li>
+      </ol>
+    </div>
+    <div>
+      <h4>Top 3 priorities — next sprint</h4>
+      <ol>
+        <li>Add <code>ErrorBoundary</code> at the app root and fix the init catch-and-mask in <code>KanbanBoard</code>. Both are small, both ship reliability. <span class="badge effort">~1 day</span></li>
+        <li>Add a <code>JSON.parse</code> reviver in <code>fileHandling.readJsonFile</code> that rejects prototype keys and SVG/event-handler patterns before schema validation runs. <span class="badge effort">~½ day</span></li>
+        <li>Migrate the 31 production <code>console.*</code> calls to <code>logger</code> and raise the vitest coverage thresholds from baseline (37%) toward the actual measured floor (60%) so regressions are caught. <span class="badge effort">~1 day</span></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section class="panel" id="metrics" aria-labelledby="metrics-h">
+  <header><p class="eyebrow">02 — Metrics Dashboard</p><h2 id="metrics-h">By the numbers</h2></header>
+  <div class="metrics-grid">
+    <div class="metric"><p class="label">Line coverage</p><div class="value">61.5<small>%</small></div><p class="note">2,002 / 3,257 lines · v8 reporter</p></div>
+    <div class="metric"><p class="label">Function coverage</p><div class="value">57.9<small>%</small></div><p class="note">619 / 1,069 functions</p></div>
+    <div class="metric"><p class="label">Branch coverage</p><div class="value">54.3<small>%</small></div><p class="note">1,208 / 2,225 branches</p></div>
+    <div class="metric"><p class="label">Tests</p><div class="value">492<small> pass</small></div><p class="note">34 vitest files · 3.5s runtime</p></div>
+    <div class="metric"><p class="label">Vulnerabilities</p><div class="value">0</div><p class="note"><code>bun audit</code> — clean</p></div>
+    <div class="metric"><p class="label">Production deps</p><div class="value">28</div><p class="note">15 dev · pinned via bun.lock</p></div>
+    <div class="metric"><p class="label">Source files</p><div class="value">169</div><p class="note">TS/TSX · 6 over 350 lines</p></div>
+    <div class="metric"><p class="label">TODO/FIXME</p><div class="value">0</div><p class="note">across all source files</p></div>
+    <div class="metric"><p class="label"><code>any</code> in prod</p><div class="value">0</div><p class="note">0 <code>@ts-ignore</code> · 0 <code>!.</code></p></div>
+    <div class="metric"><p class="label">JS, gzipped</p><div class="value">364<small> KB</small></div><p class="note">All static chunks · matches CLAUDE.md target</p></div>
+    <div class="metric"><p class="label">ADRs</p><div class="value">5</div><p class="note">docs/adr/0001 – 0005</p></div>
+    <div class="metric"><p class="label">Conventional commits</p><div class="value">100<small>%</small></div><p class="note">last 30 commits</p></div>
+  </div>
+
+  <hr />
+
+  <h3>Findings by severity</h3>
+  <table>
+    <thead><tr><th>Severity</th><th>Count</th><th>Distribution</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge sev-critical">Critical</span></td><td>0</td><td>—</td></tr>
+      <tr><td><span class="badge sev-high">High</span></td><td>4</td><td>Error boundary, init swallow, store-test isolation, notification interval leak</td></tr>
+      <tr><td><span class="badge sev-medium">Medium</span></td><td>8</td><td>Prototype-pollution guard, logger fragmentation, DB migrations, 3 untested large files, search-cache invalidation, boardStore SRP, type casts</td></tr>
+      <tr><td><span class="badge sev-low">Low</span></td><td>7</td><td>Naming style, magic number, dep ranges, inline styles, taskStore.import sparse tests, bundle audit, JSDoc gaps</td></tr>
+    </tbody>
+  </table>
+
+  <hr />
+
+  <h3>Coverage hotspots — bottom 10 by line coverage</h3>
+  <table>
+    <thead><tr><th>File</th><th>Lines</th><th>Coverage</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td><code>components/userGuide/guideSteps.tsx</code></td><td>477</td><td><span class="badge sev-critical">0%</span></td><td>No test file exists</td></tr>
+      <tr><td><code>components/about/ScrollReveal.tsx</code></td><td>—</td><td><span class="badge sev-medium">0%</span></td><td>Animation primitive</td></tr>
+      <tr><td><code>components/ui/date-time-picker.tsx</code></td><td>~295</td><td><span class="badge sev-medium">0%</span></td><td>Untested form control</td></tr>
+      <tr><td><code>lib/utils/appCompletion.ts</code></td><td>~66</td><td><span class="badge sev-high">4%</span></td><td>Confetti / completion side effects</td></tr>
+      <tr><td><code>lib/stores/taskStore.import.ts</code></td><td>~98</td><td><span class="badge sev-high">12.5%</span></td><td>Critical import path — 2 tests only</td></tr>
+      <tr><td><code>lib/utils/taskFiltering.ts</code></td><td>~128</td><td><span class="badge sev-high">17.6%</span></td><td>Filtering helpers</td></tr>
+      <tr><td><code>lib/utils/conflictResolution.ts</code></td><td>~299</td><td><span class="badge sev-high">23.2%</span></td><td>Sync conflict resolution</td></tr>
+      <tr><td><code>components/import/CompleteStep.tsx</code></td><td>~64</td><td><span class="badge sev-medium">0%</span></td><td>Wizard final step</td></tr>
+      <tr><td><code>lib/utils/validation.ts</code></td><td>372</td><td><span class="badge sev-medium">36.0%</span></td><td>Exercised indirectly via stores</td></tr>
+      <tr><td><code>lib/stores/taskStore.ts</code></td><td>~217</td><td><span class="badge sev-medium">42.5%</span></td><td>Composition root for task actions</td></tr>
+    </tbody>
+  </table>
+
+  <hr />
+
+  <h3>Largest production files</h3>
+  <table>
+    <thead><tr><th>File</th><th>Lines</th><th>Verdict</th></tr></thead>
+    <tbody>
+      <tr><td><code>components/userGuide/guideSteps.tsx</code></td><td>477</td><td><span class="badge sev-low">Acceptable</span> — data structure (step objects)</td></tr>
+      <tr><td><code>components/ExportDialog.tsx</code></td><td>409</td><td><span class="badge sev-medium">Split</span> — extract <code>&lt;ExportOptions&gt;</code> + <code>&lt;ValidationResults&gt;</code></td></tr>
+      <tr><td><code>components/TaskDialog.tsx</code></td><td>408</td><td><span class="badge sev-medium">Split</span> — extract field sub-components</td></tr>
+      <tr><td><code>lib/stores/taskStore.filters.ts</code></td><td>388</td><td><span class="badge ok">Justified</span> — cohesive filter/search/cache module</td></tr>
+      <tr><td><code>lib/utils/validation.ts</code></td><td>372</td><td><span class="badge ok">Justified</span> — centralized validators</td></tr>
+      <tr><td><code>lib/utils/security.ts</code></td><td>351</td><td><span class="badge ok">Justified</span> — sanitization + rate limit + UUID</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="panel" id="standards" aria-labelledby="standards-h">
+  <header><p class="eyebrow">03 — Dimension</p>
+    <div class="dimension-header"><h2 id="standards-h">Standards compliance</h2><p class="counts">Source of truth: <code>coding-standards.md</code> v14.0 · 0 Critical · 0 High · 2 Medium · 3 Low</p></div>
+  </header>
+  <p>The codebase honours the spirit and most of the letter of its own standards. Function-length and nesting limits are respected; the few outliers are JSX-heavy render bodies that are linear, not deeply nested. Files over 350 lines are largely justified by single-responsibility cohesion (validators, security utilities, filter logic). Three readability concerns remain, all small.</p>
+
+  <details class="finding">
+    <summary><span class="summary-title">Two dialog components exceed the file-size guideline</span>
+      <span class="summary-meta"><span class="badge sev-medium">Medium</span><span class="badge conf-high">High confidence</span><span class="badge effort">Small</span></span></summary>
+    <div class="body">
+      <p class="path">src/components/TaskDialog.tsx · 408 lines</p>
+      <p class="path">src/components/ExportDialog.tsx · 409 lines</p>
+      <p>Both render large monolithic forms with mixed state, side effects, and UI. The standards target is ~350-400 lines split by responsibility. <code>TaskDialog</code>'s form fields (title, description, tags, schedule) are natural extraction boundaries; <code>ExportDialog</code> can split into <code>&lt;ExportOptions&gt;</code> (the control surface) and <code>&lt;ValidationResults&gt;</code> (the results pane).</p>
+      <p class="label">Recommendation</p>
+      <p>Extract one cohesive sub-component per dialog. Do not introduce abstraction layers — direct component decomposition only, per YAGNI.</p>
+      <p class="label">Effort</p>
+      <p>Small (1 day, both dialogs together).</p>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">Magic number for file-size limit</span>
+      <span class="summary-meta"><span class="badge sev-medium">Medium</span><span class="badge conf-high">High confidence</span><span class="badge effort">Small</span></span></summary>
+    <div class="body">
+      <p class="path">src/lib/utils/security.ts:203</p>
+      <p>The import file-size check uses an inline literal: <code>const maxSize = 10 * 1024 * 1024;</code>. The rest of <code>security.ts</code> uses named constants (<code>INPUT_LIMITS</code>, <code>RATE_LIMIT_CONFIG</code>), so this is an inconsistency rather than a pattern violation.</p>
+      <p class="label">Recommendation</p>
+      <pre>const MAX_IMPORT_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB</pre>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">31 console.* sites bypass the structured logger</span>
+      <span class="summary-meta"><span class="badge sev-low">Low</span><span class="badge conf-high">High confidence</span><span class="badge effort">Small</span></span></summary>
+    <div class="body" id="f-logger-bypass">
+      <p>A well-designed logger lives at <code>src/lib/utils/logger.ts</code> (SSR-guarded, JSON output in production, plain console in dev), but only ~5 modules call it. Components and stores still write to <code>console.error</code> directly. <code>next.config.ts</code> strips <code>console.*</code> from the production bundle, so this is a development-experience and observability concern rather than a leak.</p>
+      <p class="label">Examples</p>
+      <p class="path">src/components/KanbanBoard.tsx:63 — console.error('Failed to initialize stores:', error)</p>
+      <p class="path">src/components/PwaUpdater.tsx:56,69,88 — three different SW failure modes, no structured context</p>
+      <p class="path">src/components/ExportDialog.tsx:161 — console.error('Export failed:', error)</p>
+      <p class="label">Recommendation</p>
+      <p>Migrate to <code>logger.error(message, { context })</code>. Once the migration is complete, add an ESLint rule banning bare <code>console</code> calls outside <code>logger.ts</code>.</p>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">Test naming leans imperative rather than behavioural</span>
+      <span class="summary-meta"><span class="badge sev-low">Low</span><span class="badge conf-high">High confidence</span><span class="badge effort">Medium</span></span></summary>
+    <div class="body">
+      <p>~17% of test descriptions use the standards-preferred <code>should_X_when_Y</code> form (e.g. <em>"should disable up button for first board"</em>). The remaining 83% use <em>"renders &hellip;"</em>, <em>"applies &hellip;"</em>, <em>"handles &hellip;"</em>. The tests themselves assert behaviour, so this is a stylistic gap rather than a quality defect.</p>
+      <p class="label">Recommendation</p>
+      <p>Renaming is invasive (34 files) for limited payoff. Defer unless you adopt a snapshot-style report that benefits from sentence-form test names. Note in <code>coding-standards.md</code> that "renders X" is an acceptable shorthand for component tests.</p>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">No commented-out code; no <code>any</code>; no escape hatches</span>
+      <span class="summary-meta"><span class="badge ok">Strength</span></span></summary>
+    <div class="body">
+      <p>Audit returned zero matches for: multi-line commented code blocks, <code>any</code> outside tests, <code>@ts-ignore</code>, <code>@ts-expect-error</code>, non-null assertions <code>!</code> in production. Six <code>as unknown as</code> casts exist in <code>conflictMerge.ts</code> (lines 123, 132, 136, 151, 155, 171) — they bridge typed entities and a generic record-based merger. They are not justified by inline comment; the standards require one.</p>
+      <p class="label">Recommendation</p>
+      <p>Add a single block comment at the top of <code>conflictMerge.ts</code> explaining the cast pattern, or wrap the conversions in a typed helper like <code>function asRecord&lt;T&gt;(x: T): Record&lt;string, unknown&gt; { return x as unknown as Record&lt;string, unknown&gt;; }</code> with one comment at the helper.</p>
+    </div>
+  </details>
+</section>
+
+<section class="panel" id="testing" aria-labelledby="testing-h">
+  <header><p class="eyebrow">04 — Dimension</p>
+    <div class="dimension-header"><h2 id="testing-h">Test quality &amp; coverage</h2><p class="counts">0 Critical · 1 High · 3 Medium · 1 Low · 492/492 passing</p></div>
+  </header>
+  <p>The test infrastructure is solid: <code>vitest</code> + <code>jsdom</code> + <code>@testing-library/react</code> + <code>fake-indexeddb</code> for unit/integration, Playwright for end-to-end. The full suite passes in 3.5 seconds. Strengths concentrate at the boundaries: <code>database.test.ts</code> uses <code>fake-indexeddb</code> against the real <code>TaskDatabase</code> class (correct boundary testing), and the 11 Playwright suites cover every golden path. Weaknesses concentrate in the middle: store tests reach for <code>setState()</code> to set up preconditions instead of using the actions themselves, and three large surfaces (<code>guideSteps</code>, <code>ExportDialog</code>, the import wizard steps) sit at 0% coverage.</p>
+
+  <details class="finding">
+    <summary><span class="summary-title">Store tests mutate state directly with setState() inside test bodies</span>
+      <span class="summary-meta"><span class="badge sev-high">High</span><span class="badge conf-high">High confidence</span><span class="badge effort">Medium</span></span></summary>
+    <div class="body">
+      <p class="path">src/lib/stores/__tests__/taskStore.test.ts — multiple sites (e.g. 146, 194, 212)</p>
+      <p class="path">src/lib/stores/__tests__/boardStore.test.ts — similar pattern</p>
+      <p>The standards-preferred pattern is: arrange state by calling the store's public actions, act by calling the action under test, assert against the resulting state. These tests bypass the actions, reaching into <code>useStore.setState()</code> to seed fixtures mid-test. This is brittle (renames break tests), couples tests to internal shape, and produces tests that pass even when the action paths regress. Combined with the global database mock in <code>src/test/setup.ts:68-70</code>, the store layer is largely tested in isolation from the persistence layer it exists to coordinate.</p>
+      <p class="label">Recommendation</p>
+      <p>(1) Remove the global database mock in <code>src/test/setup.ts</code> and let store tests use <code>fake-indexeddb</code> like <code>database.test.ts</code> does. (2) Replace mid-test <code>setState</code> calls with action-based setup. (3) Add a contract-level test per action: <em>"after addTask, the task is reachable via filteredTasks and persisted in IndexedDB"</em>.</p>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">guideSteps.tsx (477 lines) has zero test coverage</span>
+      <span class="summary-meta"><span class="badge sev-medium">Medium</span><span class="badge conf-high">High confidence</span><span class="badge effort">Medium</span></span></summary>
+    <div class="body">
+      <p class="path">src/components/userGuide/guideSteps.tsx</p>
+      <p>The file is largely a data structure (array of step objects with embedded JSX), which is why its risk is mitigated — there is little branching logic to break. The risk is regression on rendering: a malformed JSX node or missing key would surface only at runtime in the guide dialog, a low-traffic path.</p>
+      <p class="label">Recommendation</p>
+      <p>Add a smoke test that renders each step's JSX and asserts the heading and primary copy. Even a 5-test snapshot would close the regression window. Treat coverage on this file as nice-to-have, not blocking.</p>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">taskStore.import.test.ts covers only 2 cases for a critical path</span>
+      <span class="summary-meta"><span class="badge sev-medium">Medium</span><span class="badge conf-high">High confidence</span><span class="badge effort">Medium</span></span></summary>
+    <div class="body">
+      <p class="path">src/lib/stores/__tests__/taskStore.import.test.ts</p>
+      <p>Import is one of two paths where user-controlled JSON enters the system (the other being export round-trip), and the existing security audit identified prototype-pollution as the main gap there. Two tests is not enough surface to catch regressions in conflict resolution, version mismatch, partial imports, or malformed data.</p>
+      <p class="label">Recommendation</p>
+      <p>Add tests for: (a) duplicate-ID merge strategies, (b) version mismatch handling, (c) JSON containing <code>__proto__</code> keys (should reject after Medium-severity fix lands), (d) partial-import error reporting, (e) round-trip equality.</p>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">crypto.randomUUID is globally mocked to a fixed value</span>
+      <span class="summary-meta"><span class="badge sev-medium">Medium</span><span class="badge conf-high">High confidence</span><span class="badge effort">Small</span></span></summary>
+    <div class="body">
+      <p class="path">src/test/setup.ts:40-45</p>
+      <p>Every test sees the same UUID. This makes "two distinct entities have distinct IDs" untestable and lets bugs that rely on ID collisions slip through.</p>
+      <p class="label">Recommendation</p>
+      <p>Either return a monotonic counter UUID from the global mock or remove the global mock entirely and let tests that need a stable ID use <code>vi.spyOn(crypto, 'randomUUID')</code> locally.</p>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">Coverage thresholds set at the baseline floor</span>
+      <span class="summary-meta"><span class="badge sev-medium">Medium</span><span class="badge conf-high">High confidence</span><span class="badge effort">Small</span></span></summary>
+    <div class="body">
+      <p class="path">vitest.config.ts:30-35</p>
+      <p>Thresholds are configured at 37% / 38% / 35% / 36% labelled <em>"baseline thresholds as of initial compliance pass (raise over time toward 80%)"</em>. Actual measured coverage is 61.5% / 57.9% / 54.3% / 61.5%. The threshold is now a ceiling on regression, not a floor.</p>
+      <p class="label">Recommendation</p>
+      <p>Raise thresholds to within ~2 points of the current measured values (e.g. 59 / 55 / 52 / 59). Re-tighten after each coverage push.</p>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">A few component tests assert on DOM tagName / class — brittle to markup changes</span>
+      <span class="summary-meta"><span class="badge sev-low">Low</span><span class="badge conf-medium">Medium confidence</span><span class="badge effort">Small</span></span></summary>
+    <div class="body">
+      <p class="path">src/components/__tests__/BoardView.integration.test.tsx:164-169</p>
+      <p>Asserting <code>el.tagName === 'H1'</code> couples tests to the heading level chosen at write time. Re-leveling a heading for a11y or layout becomes a test failure unrelated to behaviour.</p>
+      <p class="label">Recommendation</p>
+      <p>Prefer <code>screen.getByRole('heading', { level: 1 })</code> or query by accessible name. The Testing Library API discourages tagName/class assertions for exactly this reason.</p>
+    </div>
+  </details>
+</section>
+
+<section class="panel" id="security" aria-labelledby="security-h">
+  <header><p class="eyebrow">05 — Dimension</p>
+    <div class="dimension-header"><h2 id="security-h">Security &amp; supply chain</h2><p class="counts">0 Critical · 0 High · 2 Medium · 0 Low · OWASP-relevant</p></div>
+  </header>
+  <p>This is a client-only static-export PWA with no backend, so the OWASP Top 10 surface is narrow: XSS via untrusted strings, malicious file imports, supply chain on the dependency tree, and missing security headers in transit. Defences are well-layered. <strong>React auto-escaping</strong> is the primary XSS control, backed by the ESLint <code>react/no-danger: error</code> rule that forbids the only unsafe-HTML escape hatch, and CSP delivered via the CloudFront response-headers policy. <code>bun audit</code> reports zero advisories. Two specific gaps remain in the import path.</p>
+
+  <details class="finding" id="f-proto-pollution">
+    <summary><span class="summary-title">JSON import is not guarded against prototype pollution</span>
+      <span class="summary-meta"><span class="badge sev-medium">Medium</span><span class="badge conf-high">High confidence</span><span class="badge effort">Small</span></span></summary>
+    <div class="body">
+      <p class="path">src/lib/utils/fileHandling.ts:78 — jsonData = JSON.parse(fileContent)</p>
+      <p>A malicious import file containing <code>"__proto__": { "polluted": true }</code> or <code>"constructor": { "prototype": &hellip; }</code> reaches <code>JSON.parse</code> unfiltered. Downstream schema validation and <code>sanitizeData()</code> (when called with <code>removeInvalidFields: true</code>) strip unknown fields, but prototype-chain mutation can occur during the parse itself in some engines, and not all import paths set the strict sanitization flag.</p>
+      <p class="label">Recommendation</p>
+      <pre>jsonData = JSON.parse(fileContent, (key, value) =&gt; {
+  if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+    throw new Error('Invalid property name in import');
+  }
+  return value;
+});</pre>
+      <p>Optionally extend the reviver to reject strings containing <code>&lt;</code>, <code>javascript:</code>, or <code>on\w+=</code> patterns as defence-in-depth even though React escaping protects the render path. Pair with a test in <code>taskStore.import.test.ts</code> that asserts rejection.</p>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">No JSON size check after parse — only file-size check before</span>
+      <span class="summary-meta"><span class="badge sev-medium">Medium</span><span class="badge conf-medium">Medium confidence</span><span class="badge effort">Small</span></span></summary>
+    <div class="body">
+      <p class="path">src/lib/utils/fileHandling.ts (file size limit: 10 MB upfront)</p>
+      <p>A deeply-nested JSON file under the 10 MB byte threshold can still expand to a much larger in-memory structure and either OOM the browser tab or stall validation. The 10 MB pre-parse limit is reasonable; the practical risk is low for a personal-data PWA.</p>
+      <p class="label">Recommendation</p>
+      <p>Add a post-parse depth check (e.g. reject nesting deeper than 16 levels) and a count check (e.g. reject &gt;10,000 tasks or &gt;500 boards). Both are O(1) to add and bound the worst case.</p>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">CSP, transport, and content-type headers — all present and verified</span>
+      <span class="summary-meta"><span class="badge ok">Strength</span></span></summary>
+    <div class="body">
+      <p class="path">docs/security-headers-baseline.json + scripts/test-security-headers.sh</p>
+      <p>The CSP is enforced via CloudFront response-headers policy and includes:</p>
+      <pre>default-src 'self'
+script-src 'self' 'unsafe-inline'   # Next.js anti-FOUC + RSC hydration
+style-src 'self' 'unsafe-inline'
+img-src 'self' data: blob:
+connect-src 'self'
+object-src 'none'
+base-uri 'self'
+form-action 'self'
+frame-ancestors 'none'              # clickjacking defence
+worker-src 'self'                   # PWA service worker
+upgrade-insecure-requests</pre>
+      <p>Plus <code>Strict-Transport-Security: max-age=31536000; includeSubDomains</code>, <code>X-Frame-Options: DENY</code>, <code>X-Content-Type-Options: nosniff</code>, <code>Referrer-Policy: strict-origin-when-cross-origin</code>, and a tight <code>Permissions-Policy</code> denying camera/microphone/geolocation/payment/usb/sensors. <code>'unsafe-inline'</code> on script/style is the standard Next.js static-export trade-off; the baseline JSON acknowledges it as follow-up tech debt.</p>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">No secrets, strict UUID validation, crypto.randomUUID for IDs</span>
+      <span class="summary-meta"><span class="badge ok">Strength</span></span></summary>
+    <div class="body">
+      <p>Repo-wide grep for <code>password</code>, <code>api_key</code>, <code>secret</code>, <code>token</code>, AWS access-key patterns returned only documentation references — no real values. <code>.env.example</code> is a documentation file. UUID validation in <code>security.ts</code> uses RFC 4122 regex (version bits, variant bits enforced). IDs are generated by <code>crypto.randomUUID()</code>, not <code>Math.random()</code>.</p>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">Search rate-limited to defeat regex CPU exhaustion</span>
+      <span class="summary-meta"><span class="badge ok">Strength</span></span></summary>
+    <div class="body">
+      <p class="path">src/lib/utils/security.ts:270-309 + applied at taskStore.filters.ts:182</p>
+      <p>A sliding-window rate limiter caps search to 10 requests per 1000 ms. This is appropriate for a client-only PWA where the threat is "search query that triggers an expensive linear scan over many tasks", not network-level DoS.</p>
+    </div>
+  </details>
+</section>
+
+<section class="panel" id="architecture" aria-labelledby="architecture-h">
+  <header><p class="eyebrow">06 — Dimension</p>
+    <div class="dimension-header"><h2 id="architecture-h">Architecture, coupling &amp; cohesion</h2><p class="counts">0 Critical · 0 High · 3 Medium · 1 Low</p></div>
+  </header>
+  <p>The architecture is conventional and clean: three Zustand stores (board, task, settings) over a singleton <code>TaskDatabase</code> that wraps IndexedDB. There are <strong>no circular dependencies</strong>, the <code>tasks</code>/<code>boards</code>/<code>settings</code>/<code>archive</code> object stores are independently indexed, and Components import from stores via the standard Zustand hook pattern. Five ADRs in <code>docs/adr/</code> document every major hard-to-reverse decision (IndexedDB, Zustand, static export, Tailwind+shadcn, dnd-kit). The store layer is split into action files (<code>taskStore.crudActions</code>, <code>taskStore.filters</code>, <code>taskStore.import</code>) which keeps individual modules at a tractable size.</p>
+
+  <details class="finding" id="f-db-migrations">
+    <summary><span class="summary-title">IndexedDB has no migration strategy beyond v1</span>
+      <span class="summary-meta"><span class="badge sev-medium">Medium</span><span class="badge conf-high">High confidence</span><span class="badge effort">Medium</span></span></summary>
+    <div class="body">
+      <p class="path">src/lib/utils/database.ts:4 — DB_VERSION = 1</p>
+      <p>The <code>onupgradeneeded</code> handler only creates object stores if they're missing. Any future schema change — adding an index, renaming a field, splitting a store — requires bumping the version, but there is no scaffolding for the migration callback. The first schema change will need to write the migration plumbing under deadline, which is the wrong time.</p>
+      <p class="label">Recommendation</p>
+      <pre>const MIGRATIONS = [
+  // v1 → v2 example
+  (db: IDBDatabase, tx: IDBTransaction) =&gt; {
+    const store = tx.objectStore('tasks');
+    if (!store.indexNames.contains('priority')) store.createIndex('priority', 'priority');
+  },
+];
+request.onupgradeneeded = (event) =&gt; {
+  const oldVersion = event.oldVersion;
+  const tx = request.transaction!;
+  for (let v = oldVersion; v &lt; DB_VERSION; v++) MIGRATIONS[v]?.(request.result, tx);
+};</pre>
+      <p>Write an ADR (<code>0006-indexeddb-migrations.md</code>) describing the versioning policy.</p>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">boardStore mixes sanitization with state mutation</span>
+      <span class="summary-meta"><span class="badge sev-medium">Medium</span><span class="badge conf-high">High confidence</span><span class="badge effort">Small</span></span></summary>
+    <div class="body">
+      <p class="path">src/lib/stores/boardStore.ts:179-211 (updateBoard)</p>
+      <p>The store calls <code>sanitizeBoardData()</code> inline before persisting. The store should be a thin coordinator between actions and persistence; sanitization belongs in a validation layer the action calls into. This is a small SRP violation, mitigated by the fact that the sanitization is short and clearly delineated.</p>
+      <p class="label">Recommendation</p>
+      <p>Extract <code>sanitizeBoardUpdates(existing, updates)</code> into <code>lib/utils/boardHelpers.ts</code> and have the store call it directly. The store keeps the responsibility of "thin coordinator" intact.</p>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">Six <code>as unknown as</code> casts in conflictMerge lack justification comments</span>
+      <span class="summary-meta"><span class="badge sev-medium">Medium</span><span class="badge conf-high">High confidence</span><span class="badge effort">Small</span></span></summary>
+    <div class="body">
+      <p class="path">src/lib/utils/conflictMerge.ts:123, 132, 136, 151, 155, 171</p>
+      <p>The casts bridge typed entities (<code>Board</code>, <code>Task</code>, <code>Settings</code>) and an internal <code>Record&lt;string, unknown&gt;</code>-based generic merger. The pattern is defensible — a strictly-typed merger would either lose ergonomics or require runtime reflection — but the standards demand a justification comment on every escape hatch.</p>
+      <p class="label">Recommendation</p>
+      <p>Add one block comment at the top of the file explaining the pattern, or extract a single typed helper as shown in the Standards section. Either closes the standards gap without introducing structural change.</p>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">Singletons (taskDB, searchRateLimiter) couple tests to module load order</span>
+      <span class="summary-meta"><span class="badge sev-low">Low</span><span class="badge conf-medium">Medium confidence</span><span class="badge effort">Medium</span></span></summary>
+    <div class="body">
+      <p class="path">src/lib/utils/database.ts (taskDB) · src/lib/utils/security.ts (searchRateLimiter)</p>
+      <p>Both are module-level singletons. The global mock in <code>src/test/setup.ts</code> defangs <code>taskDB</code> for store tests, and the rate limiter uses an in-memory <code>Map</code> that persists across tests in the same module. This is a low-grade testability concern; it materialises as the store-test isolation issue documented in the Testing section.</p>
+      <p class="label">Recommendation</p>
+      <p>Expose factory functions (<code>createTaskDatabase()</code>, <code>createRateLimiter()</code>) alongside the singletons. Tests that need isolation construct their own; production code keeps the singleton. No callers need to change.</p>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">Five ADRs covering every hard-to-reverse decision</span>
+      <span class="summary-meta"><span class="badge ok">Strength</span></span></summary>
+    <div class="body">
+      <p class="path">docs/adr/0001 – 0005</p>
+      <p>IndexedDB storage, Zustand state management, Next.js static export, Tailwind + shadcn/ui, and dnd-kit are each documented with context, decision, consequences, and alternatives. This is the standards-prescribed pattern and is rare to see fully populated. A new ADR for the IndexedDB migration policy is the natural next addition.</p>
+    </div>
+  </details>
+</section>
+
+<section class="panel" id="maintainability" aria-labelledby="maintainability-h">
+  <header><p class="eyebrow">07 — Dimension</p>
+    <div class="dimension-header"><h2 id="maintainability-h">Maintainability</h2><p class="counts">0 Critical · 0 High · 1 Medium · 1 Low</p></div>
+  </header>
+  <p>Maintainability indicators are strong. No file has more than 3 levels of nesting in production code; the longest function bodies are JSX render trees that are linear, not deeply branched. Names are descriptive (no <code>data</code>, <code>temp</code>, or single letters outside loop counters). Comment hygiene is excellent — comments explain <em>why</em> (see <code>security.ts:30-50</code> for a textbook example documenting the threat model and historical revisions of the sanitizer). The codebase has zero commented-out code blocks.</p>
+
+  <details class="finding">
+    <summary><span class="summary-title">JSX-heavy components push function-body line counts above the 40-line guide</span>
+      <span class="summary-meta"><span class="badge sev-low">Low</span><span class="badge conf-high">High confidence</span><span class="badge effort">Small</span></span></summary>
+    <div class="body">
+      <p class="path">src/components/kanban/KanbanColumn.tsx — render body 100+ lines (mostly JSX)</p>
+      <p class="path">src/components/board/EmptyState.tsx, MoveTaskDialog.tsx, BoardIndicator.tsx — similar pattern</p>
+      <p>The 40-line standard targets logical complexity. JSX-heavy bodies satisfy the spirit of the rule when they remain linear and single-responsibility. KanbanColumn is wrapped in <code>memo(_, isEqual)</code> with <code>fast-deep-equal</code> as the comparator, which is the correct pattern for a list-row component.</p>
+      <p class="label">Recommendation</p>
+      <p>Extract the inline "empty column" JSX into <code>&lt;EmptyColumn&gt;</code> and the drop placeholder is already extracted. No further refactor needed. Consider noting in <code>coding-standards.md</code> that JSX render bodies are exempted from the 40-line rule when linear.</p>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">Cognitive density: filter pipeline in taskStore.filters.ts</span>
+      <span class="summary-meta"><span class="badge sev-medium">Medium</span><span class="badge conf-medium">Medium confidence</span><span class="badge effort">Small</span></span></summary>
+    <div class="body">
+      <p class="path">src/lib/stores/taskStore.filters.ts:65-114 (applyFiltersToTasks)</p>
+      <p>The function chains multiple filter predicates with intermediate state for short-circuit optimization. It's correct and efficient (early-exits when filters reduce results to zero) but reads denser than the standards prefer. Two passes by a reader to understand control flow.</p>
+      <p class="label">Recommendation</p>
+      <p>Split into <code>applySearchFilter</code>, <code>applyStatusFilter</code>, <code>applyTagFilter</code>, <code>applyDateFilter</code> helpers and have <code>applyFiltersToTasks</code> orchestrate them with the early-exit logic at the orchestrator level. Each helper becomes individually testable.</p>
+    </div>
+  </details>
+</section>
+
+<section class="panel" id="dependencies" aria-labelledby="dependencies-h">
+  <header><p class="eyebrow">08 — Dimension</p>
+    <div class="dimension-header"><h2 id="dependencies-h">Dependencies</h2><p class="counts">0 Critical · 0 High · 1 Medium · 1 Low · 0 vulnerabilities</p></div>
+  </header>
+  <p>Dependency hygiene is strong. 28 production packages — small for a stack that includes drag-and-drop, 12 Radix components, a date library, and animation. <code>bun audit</code> reports zero advisories, the lockfile (<code>bun.lock</code>) pins all transitive versions, and overrides in <code>package.json</code> address known issues in <code>brace-expansion</code>, <code>flatted</code>, <code>picomatch</code>, and <code>postcss</code>. The stack is modern but boring: Next.js 16, React 19, Zustand 5, Vitest 4, Playwright. No deprecated packages observed in the dependency tree.</p>
+
+  <details class="finding">
+    <summary><span class="summary-title">All direct dependencies use caret ranges in package.json</span>
+      <span class="summary-meta"><span class="badge sev-low">Low</span><span class="badge conf-high">High confidence</span><span class="badge effort">Small</span></span></summary>
+    <div class="body">
+      <p class="path">package.json — all <code>"^"</code> ranges in <code>dependencies</code> and <code>devDependencies</code></p>
+      <p>The standards say "Pin versions in lockfiles. No floating ranges in production." The lockfile pins (<code>bun.lock</code>), so the production install is reproducible. The caret in <code>package.json</code> still permits <code>bun install</code> on a fresh checkout to upgrade across minor versions, which is the supply-chain risk the rule targets — particularly relevant when Claude Code can install packages autonomously.</p>
+      <p class="label">Recommendation</p>
+      <p>Either: (a) drop carets to pin exact versions in <code>package.json</code> and rely on a quarterly upgrade cadence with <code>bun outdated</code>, or (b) leave caret ranges but document the policy in CLAUDE.md/coding-standards so the lockfile is authoritative. Option (a) is the standards-aligned choice; option (b) is the pragmatic one.</p>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">date-fns imported via barrel rather than per-function subpath</span>
+      <span class="summary-meta"><span class="badge sev-low">Low</span><span class="badge conf-high">High confidence</span><span class="badge effort">Small</span></span></summary>
+    <div class="body">
+      <p class="path">src/lib/utils/taskCardHelpers.tsx:2 — import { format } from 'date-fns'</p>
+      <p>date-fns v4 is ESM-first and Next.js + Turbopack tree-shake it correctly in this codebase. There is only one import site, so the bundle impact is whatever <code>format</code>'s transitive dependencies pull in (locale data is typically the main concern).</p>
+      <p class="label">Recommendation</p>
+      <p>Verify with <code>bun run build:analyze</code> that no extra locale data is bundled. If it is, switch to <code>import format from 'date-fns/format'</code>.</p>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">Zero advisories, locked versions, version overrides</span>
+      <span class="summary-meta"><span class="badge ok">Strength</span></span></summary>
+    <div class="body">
+      <p>The <code>overrides</code> block in <code>package.json</code> proactively pins known-problematic transitive dependencies. <code>bun audit</code> returns clean. The Radix primitives are imported as separate packages (each tree-shakeable), and <code>lucide-react</code> exports are centralised in <code>src/lib/icons.ts</code> (a single tree-shake point).</p>
+    </div>
+  </details>
+</section>
+
+<section class="panel" id="performance" aria-labelledby="performance-h">
+  <header><p class="eyebrow">09 — Dimension</p>
+    <div class="dimension-header"><h2 id="performance-h">Performance</h2><p class="counts">0 Critical · 1 High · 2 Medium · 1 Low</p></div>
+  </header>
+  <p>The bundle is well-tuned: 364 KB of JS gzipped across all chunks, with the largest single chunk at 256 KB (uncompressed). 25 dynamic imports drive route- and feature-level code splitting; the drag-and-drop provider is lazy-loaded. Critical render paths (KanbanColumn, TaskCard) are memoized with <code>fast-deep-equal</code> as the comparator. The performance findings concentrate in two areas: notification interval lifecycle and search-cache invalidation.</p>
+
+  <details class="finding">
+    <summary><span class="summary-title">Notification interval can leak on rapid toggle</span>
+      <span class="summary-meta"><span class="badge sev-high">High</span><span class="badge conf-medium">Medium confidence</span><span class="badge effort">Small</span></span></summary>
+    <div class="body">
+      <p class="path">src/lib/utils/notifications.ts:91-93 (startPeriodicCheck)</p>
+      <p><code>startPeriodicCheck</code> assigns <code>this.checkInterval = setInterval(&hellip;)</code> without first clearing an existing interval. If <code>startPeriodicCheck</code> is invoked twice without an intervening <code>stopPeriodicCheck</code> — possible when <code>enableNotifications</code> toggles quickly, or during React Strict Mode double-effects — the old interval is orphaned and continues firing.</p>
+      <p class="label">Recommendation</p>
+      <pre>startPeriodicCheck(tasks: Task[]) {
+  this.stopPeriodicCheck(); // idempotent guard
+  this.checkInterval = setInterval(() =&gt; this.checkDueTasks(tasks), 5 * 60 * 1000);
+  this.checkDueTasks(tasks);
+}</pre>
+      <p>Additionally, the <code>tasks</code> closure is captured at call time, so toggling boards keeps notifying about the original task list. Pass <code>tasks</code> via a ref (the pattern is already in <code>KanbanBoard.tsx:79-83</code> for this exact reason — extend it through to <code>notificationManager</code>).</p>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">Search cache may not invalidate on every mutation path</span>
+      <span class="summary-meta"><span class="badge sev-medium">Medium</span><span class="badge conf-medium">Medium confidence</span><span class="badge effort">Small</span></span></summary>
+    <div class="body">
+      <p class="path">src/lib/stores/taskStore.filters.ts:~245 (searchCache) · taskStore.crudActions.ts:45 (cache clear on add/update)</p>
+      <p>The search cache is cleared in the primary mutation paths, but cross-store mutations (e.g. <code>moveTask</code> when board changes, archive operations) may not always reset it. The bug surface is stale search results immediately after a mutation, healing on the next user keystroke.</p>
+      <p class="label">Recommendation</p>
+      <p>Centralise cache invalidation: make every mutation in <code>taskStore</code> call a single <code>invalidateSearchCache()</code> helper, or use a derived computed selector that re-runs on dependency change instead of a manual cache. Add a test that asserts cache clears after each mutation type.</p>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">Per-task board lookup in render loop</span>
+      <span class="summary-meta"><span class="badge sev-medium">Medium</span><span class="badge conf-high">High confidence</span><span class="badge effort">Small</span></span></summary>
+    <div class="body">
+      <p class="path">src/components/kanban/KanbanColumn.tsx:157 — boards.find(b =&gt; b.id === task.boardId)</p>
+      <p>For each rendered task, the component scans the <code>boards</code> array linearly. With 5-10 boards (the realistic upper bound for a personal kanban) and ~100 tasks visible, this is ~1,000 comparisons per render — not a hot-path problem. With cross-board search enabled and the limit pushed higher, this is O(N×M).</p>
+      <p class="label">Recommendation</p>
+      <p>Build a <code>Map&lt;boardId, Board&gt;</code> in <code>KanbanBoard</code> (or a derived selector) and pass it in, or call <code>useMemo</code> at the column level. Trivial fix; only worth doing now because the call site is in a memoized component and stable references improve cache hit rate.</p>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">Inline style objects in KanbanColumn produce new references per render</span>
+      <span class="summary-meta"><span class="badge sev-low">Low</span><span class="badge conf-high">High confidence</span><span class="badge effort">Small</span></span></summary>
+    <div class="body">
+      <p class="path">src/components/kanban/KanbanColumn.tsx:55-66 (column drop style) and :170 (animationDelay on each task)</p>
+      <p>The inline-style objects are recreated per render. Children downstream that compare style references will see a change. The column wraps in <code>memo(_, isEqual)</code> with deep equality, so the immediate parent is protected; the children may not be.</p>
+      <p class="label">Recommendation</p>
+      <p>Move the conditional drop-zone style into a CSS class toggled by <code>data-isover</code>. Move the staggered <code>animationDelay</code> to a CSS variable on the wrapper. Both convert React reconciliation work into CSS, which the browser handles efficiently.</p>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">Bundle within target — 364 KB gzipped total static JS</span>
+      <span class="summary-meta"><span class="badge ok">Strength</span></span></summary>
+    <div class="body">
+      <p>Total gzipped JS across all static chunks is 364 KB, matching the ~388 KB target documented in CLAUDE.md. Largest single chunk uncompressed is 256 KB. 25 <code>import()</code> sites drive route- and feature-level splitting. <code>next.config.ts</code> uses <code>optimizePackageImports</code> for <code>lucide-react</code>, <code>@radix-ui/react-icons</code>, and <code>@dnd-kit/core</code>.</p>
+    </div>
+  </details>
+</section>
+
+<section class="panel" id="error-obs" aria-labelledby="error-obs-h">
+  <header><p class="eyebrow">10 — Dimension</p>
+    <div class="dimension-header"><h2 id="error-obs-h">Error handling &amp; observability</h2><p class="counts">0 Critical · 2 High · 1 Medium · 0 Low</p></div>
+  </header>
+  <p>Store-level error handling is consistent: every action sets <code>error</code> state on failure, which the UI surfaces via toast. A structured logger exists and is correct (JSON output in production, SSR-safe). Two operational gaps undermine the otherwise solid foundation: no React error boundary, and an init catch that masks failure.</p>
+
+  <details class="finding" id="f-no-error-boundary">
+    <summary><span class="summary-title">No React error boundary at the application root</span>
+      <span class="summary-meta"><span class="badge sev-high">High</span><span class="badge conf-high">High confidence</span><span class="badge effort">Small</span></span></summary>
+    <div class="body">
+      <p class="path">src/app/layout.tsx · src/components/KanbanBoard.tsx · grep returned zero ErrorBoundary / componentDidCatch / getDerivedStateFromError matches</p>
+      <p>Any render error in any component bubbles to React's default behaviour and blanks the UI. The standards list "Frontend interactive elements not keyboard-accessible" and absent error boundaries adjacent in their red-flags taxonomy; React itself documents this as the default-violating case.</p>
+      <p class="label">Recommendation</p>
+      <pre>// src/components/ErrorBoundary.tsx
+'use client';
+import { Component, ReactNode } from 'react';
+import { logger } from '@/lib/utils/logger';
+
+interface State { error: Error | null; }
+export class ErrorBoundary extends Component&lt;{ children: ReactNode; fallback?: ReactNode }, State&gt; {
+  state: State = { error: null };
+  static getDerivedStateFromError(error: Error) { return { error }; }
+  componentDidCatch(error: Error, info: { componentStack?: string | null }) {
+    logger.error('Render error', { message: error.message, stack: error.stack, componentStack: info.componentStack });
+  }
+  render() {
+    if (this.state.error) return this.props.fallback ?? &lt;DefaultFallback onReset={() =&gt; this.setState({ error: null })} /&gt;;
+    return this.props.children;
+  }
+}</pre>
+      <p>Wrap <code>&lt;KanbanBoard&gt;</code> (or the entire app body in <code>layout.tsx</code>) in the boundary. Include a "Try again" button in the fallback that resets the error state, and a "Reset app data" link to <code>resetApp.ts</code> for the catastrophic case.</p>
+    </div>
+  </details>
+
+  <details class="finding" id="f-init-swallow">
+    <summary><span class="summary-title">KanbanBoard.initializeStores swallows errors</span>
+      <span class="summary-meta"><span class="badge sev-high">High</span><span class="badge conf-high">High confidence</span><span class="badge effort">Small</span></span></summary>
+    <div class="body">
+      <p class="path">src/components/KanbanBoard.tsx:60-66</p>
+      <pre>try {
+  await Promise.all([initializeSettings(), initializeBoards(), initializeStore()]);
+  setIsInitialized(true);
+} catch (error) {
+  console.error('Failed to initialize stores:', error);
+  setIsInitialized(true); // ← sets initialized even on failure
+}</pre>
+      <p>The catch sets <code>isInitialized=true</code> regardless of outcome, so the UI proceeds as if initialization succeeded. Symptoms surface later as cascading failures with no link to root cause — the user sees an empty board with no error message.</p>
+      <p class="label">Recommendation</p>
+      <pre>const [initError, setInitError] = useState&lt;Error | null&gt;(null);
+try {
+  await Promise.all([initializeSettings(), initializeBoards(), initializeStore()]);
+  setIsInitialized(true);
+} catch (error) {
+  logger.error('Failed to initialize stores', { error });
+  setInitError(error instanceof Error ? error : new Error(String(error)));
+}
+if (initError) return &lt;InitFailureScreen error={initError} onRetry={() =&gt; { setInitError(null); /* re-run effect */ }} /&gt;;</pre>
+      <p>Combined with the error boundary above, init failures become recoverable and visible instead of silent.</p>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">Logger underused; 31 ad-hoc console.* sites in production code</span>
+      <span class="summary-meta"><span class="badge sev-medium">Medium</span><span class="badge conf-high">High confidence</span><span class="badge effort">Small</span></span></summary>
+    <div class="body">
+      <p class="path">src/lib/utils/logger.ts exists (correctly designed) — used in &lt; 5 modules</p>
+      <p class="path">31 raw <code>console.*</code> sites across components and stores (e.g. KanbanBoard:63, ExportDialog:161, PwaUpdater:56/69/88, NotificationProvider:40)</p>
+      <p><code>next.config.ts</code>'s <code>compiler.removeConsole</code> strips them in production, so the runtime impact is zero. The cost is observability: every failure becomes opaque in production. Reasons a user might hit one of these paths (SW registration failure, notification permission denied, export error) are exactly the cases an operator would want structured.</p>
+      <p class="label">Recommendation</p>
+      <p>Migrate to <code>logger.error/warn/info(message, { context })</code>. Once migrated, add an ESLint rule to forbid bare <code>console.*</code> outside <code>logger.ts</code> — this is the standards' "if a standard can be enforced by a hook, it should be" principle applied to ESLint.</p>
+    </div>
+  </details>
+</section>
+
+<section class="panel" id="docs" aria-labelledby="docs-h">
+  <header><p class="eyebrow">11 — Dimension</p>
+    <div class="dimension-header"><h2 id="docs-h">Documentation &amp; onboarding</h2><p class="counts">0 findings · all strengths</p></div>
+  </header>
+  <p>Documentation is comprehensive and well-organised. README is 267 lines and accurate. <code>docs/</code> contains: <code>getting-started.md</code> (177), <code>user-guide.md</code> (477), <code>developer-guide.md</code> (792), <code>api-reference.md</code> (656), <code>testing-guide.md</code> (717), <code>installation-guide.md</code> (244), <code>REFACTORING-V3.md</code> (296), and five ADRs. <code>CLAUDE.md</code> is current and maps to the actual codebase. <code>tasks/todo.md</code> and <code>tasks/lessons.md</code> exist per the standards. Local dev friction is low: <code>bun install</code> + <code>bun run dev</code>, no manual setup steps.</p>
+
+  <details class="finding">
+    <summary><span class="summary-title">Documentation is current and complete</span>
+      <span class="summary-meta"><span class="badge ok">Strength</span></span></summary>
+    <div class="body">
+      <p>Coverage of: getting started · daily user guide · developer architecture · API reference · testing playbook · installation/deployment · refactoring history · five ADRs. CLAUDE.md captures stack, commands, structure, and key implementation notes. The standards-required <code>tasks/todo.md</code> + <code>tasks/lessons.md</code> are present.</p>
+      <p class="label">Recommendation</p>
+      <p>Add an ADR <code>0006-indexeddb-migrations.md</code> once the migration plumbing lands. Otherwise no documentation work is outstanding.</p>
+    </div>
+  </details>
+</section>
+
+<section class="panel" id="debt" aria-labelledby="debt-h">
+  <header><p class="eyebrow">12 — Dimension</p>
+    <div class="dimension-header"><h2 id="debt-h">Tech debt</h2><p class="counts">Lowest in the audit</p></div>
+  </header>
+  <p>Tech debt is the strongest dimension. <strong>Zero TODOs, FIXMEs, HACKs, or XXX comments</strong> across 169 source files. Zero multi-line commented-out code blocks. Zero <code>@ts-ignore</code> or <code>@ts-expect-error</code> directives. The only items that even qualify as debt are documented in their own ADRs or in <code>security-headers-baseline.json</code> (CSP <code>'unsafe-inline'</code> follow-up, IndexedDB migration plumbing — covered above).</p>
+  <details class="finding">
+    <summary><span class="summary-title">Six <code>as unknown as</code> casts as documented debt</span>
+      <span class="summary-meta"><span class="badge sev-low">Low</span></span></summary>
+    <div class="body">
+      <p>Already covered in <a href="#architecture">Architecture</a> and <a href="#standards">Standards</a>. They count as debt only because they lack inline justification comments — the casts themselves are defensible.</p>
+    </div>
+  </details>
+  <details class="finding">
+    <summary><span class="summary-title">CSP <code>'unsafe-inline'</code> on script-src and style-src — known follow-up</span>
+      <span class="summary-meta"><span class="badge sev-low">Low</span></span></summary>
+    <div class="body">
+      <p class="path">docs/security-headers-baseline.json (CSP notes)</p>
+      <p>The baseline JSON acknowledges the trade-off: Next.js App Router static export emits inline scripts for next-themes anti-FOUC and RSC hydration. Tightening this via <code>'strict-dynamic'</code> + per-page hashes is tracked as a follow-up. This is debt with an owner; it is correctly classified and visible.</p>
+    </div>
+  </details>
+</section>
+
+<section class="panel" id="config" aria-labelledby="config-h">
+  <header><p class="eyebrow">13 — Dimension</p>
+    <div class="dimension-header"><h2 id="config-h">Configuration &amp; type safety</h2><p class="counts">0 Critical · 0 High · 0 Medium · 1 Low</p></div>
+  </header>
+  <p>TypeScript <code>strict: true</code> is on. ESLint enforces <code>react/no-danger: error</code> (no unsafe-HTML rendering), <code>@typescript-eslint/no-explicit-any: warn</code>, <code>@typescript-eslint/no-non-null-assertion: warn</code>. Build environment variables (<code>NEXT_PUBLIC_APP_VERSION</code>, <code>NEXT_PUBLIC_BUILD_TIME</code>, <code>NEXT_PUBLIC_BUILD_HASH</code>, <code>NEXT_PUBLIC_BUILD_TIMESTAMP</code>) are derived from <code>package.json</code> and git at build time, not hardcoded. CloudFront distribution IDs <em>are</em> hardcoded in <code>package.json</code> deploy scripts — appropriate for the deployment surface.</p>
+
+  <details class="finding">
+    <summary><span class="summary-title">No feature-flag system; ad-hoc <code>enableDebugMode</code> / <code>enableDeveloperMode</code> in settings</span>
+      <span class="summary-meta"><span class="badge sev-low">Low</span><span class="badge conf-medium">Medium confidence</span><span class="badge effort">Small</span></span></summary>
+    <div class="body">
+      <p>For a client-only PWA without remote configuration, a heavyweight flag system would be over-engineering. The two existing settings flags (<code>enableDebugMode</code>, <code>enableDeveloperMode</code>) are persistent user settings, not deploy-time toggles. The standards rule about "every flag must have an owner and a removal date" doesn't apply cleanly here because these are not feature gates.</p>
+      <p class="label">Recommendation</p>
+      <p>No action. If you ever introduce true server-driven feature flags (e.g. for opt-in beta features behind a build-time env var), apply the standards' naming/owner/removal-date policy.</p>
+    </div>
+  </details>
+
+  <details class="finding">
+    <summary><span class="summary-title">Strict TypeScript, no escape hatches, comprehensive ESLint</span>
+      <span class="summary-meta"><span class="badge ok">Strength</span></span></summary>
+    <div class="body">
+      <p>Build runs <code>tsc</code> + <code>next build</code> in 2.6 s + 1.4 s respectively, both clean. ESLint emits a single warning for the explicit-<code>any</code> rule (a project-wide exemption is configured as <code>warn</code> not <code>error</code> intentionally to allow gradual tightening). Zero non-null assertions, zero <code>@ts-ignore</code>, zero <code>@ts-expect-error</code> in production.</p>
+    </div>
+  </details>
+</section>
+
+<section class="panel" id="roadmap" aria-labelledby="roadmap-h">
+  <header><p class="eyebrow">14 — Plan</p><h2 id="roadmap-h">30 / 60 / 90 day remediation roadmap</h2></header>
+  <div class="roadmap">
+    <div class="lane">
+      <p class="horizon">Next 30 days</p>
+      <h3>Reliability &amp; safety</h3>
+      <ul>
+        <li><strong>Add app-level <code>ErrorBoundary</code></strong> with logger integration and a "reset app data" recovery link. <span class="badge effort">~½ day</span></li>
+        <li><strong>Fix <code>KanbanBoard</code> init catch</strong> — don't set <code>isInitialized</code> on failure; render a visible init-failure screen with retry. <span class="badge effort">~½ day</span></li>
+        <li><strong>Add <code>JSON.parse</code> reviver</strong> in <code>fileHandling.readJsonFile</code> rejecting <code>__proto__</code>/<code>constructor</code>/<code>prototype</code> keys; cover with a test. <span class="badge effort">~½ day</span></li>
+        <li><strong>Fix notification interval lifecycle</strong> — make <code>startPeriodicCheck</code> idempotent; pass tasks via ref. <span class="badge effort">~½ day</span></li>
+        <li><strong>Raise vitest thresholds</strong> from baseline 37% to the measured floor (~59% lines). <span class="badge effort">~15 min</span></li>
+      </ul>
+    </div>
+    <div class="lane">
+      <p class="horizon">Next 60 days</p>
+      <h3>Observability &amp; coverage</h3>
+      <ul>
+        <li><strong>Migrate 31 <code>console.*</code> sites to <code>logger</code></strong> and add ESLint rule forbidding bare <code>console.*</code> outside <code>logger.ts</code>. <span class="badge effort">~1 day</span></li>
+        <li><strong>Remove global database mock</strong> in <code>src/test/setup.ts</code>; let store tests use <code>fake-indexeddb</code> for true boundary coverage. <span class="badge effort">~2 days</span></li>
+        <li><strong>Refactor store tests</strong> away from mid-test <code>setState()</code>; assert against public contract. <span class="badge effort">~3 days</span></li>
+        <li><strong>Expand <code>taskStore.import.test.ts</code></strong> with duplicate-ID, version-mismatch, malformed-JSON, partial-import cases. <span class="badge effort">~2 days</span></li>
+        <li><strong>Split <code>ExportDialog</code> and <code>TaskDialog</code></strong> into per-section sub-components. <span class="badge effort">~1 day</span></li>
+      </ul>
+    </div>
+    <div class="lane">
+      <p class="horizon">Next 90 days</p>
+      <h3>Architecture posture</h3>
+      <ul>
+        <li><strong>Write IndexedDB migration plumbing</strong> + <code>0006-indexeddb-migrations.md</code> ADR documenting the policy. <span class="badge effort">~2 days</span></li>
+        <li><strong>Extract sanitization out of <code>boardStore.updateBoard</code></strong> into <code>boardHelpers</code>; tighten store-as-coordinator boundary. <span class="badge effort">~½ day</span></li>
+        <li><strong>Centralise search-cache invalidation</strong> in <code>taskStore</code>; add a test per mutation type. <span class="badge effort">~1 day</span></li>
+        <li><strong>Document or eliminate the six <code>as unknown as</code> casts</strong> in <code>conflictMerge.ts</code> per the standards. <span class="badge effort">~½ day</span></li>
+        <li><strong>Add smoke tests</strong> for <code>guideSteps.tsx</code> rendering and the wizard step components. <span class="badge effort">~1-2 days</span></li>
+        <li><strong>Investigate CSP <code>'strict-dynamic'</code></strong> migration — already tracked as debt in <code>security-headers-baseline.json</code>. <span class="badge effort">~3 days</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="panel" id="method" aria-labelledby="method-h">
+  <header><p class="eyebrow">15 — Methodology</p><h2 id="method-h">Methodology &amp; limitations</h2></header>
+
+  <h3>What was inspected</h3>
+  <ul>
+    <li><strong>Source code</strong> — 169 TS/TSX files under <code>src/</code> including all components, stores, utilities, hooks, and tests.</li>
+    <li><strong>Configuration</strong> — <code>package.json</code>, <code>tsconfig.json</code>, <code>eslint.config.mjs</code>, <code>vitest.config.ts</code>, <code>next.config.ts</code>, <code>deploy.config.js</code>, <code>playwright.config.ts</code>, <code>postcss.config.mjs</code>.</li>
+    <li><strong>Tests</strong> — full vitest run with coverage (<code>bun run test:coverage</code>); 492 tests passed in 3.5s. Playwright e2e suites enumerated by filename, not executed.</li>
+    <li><strong>Documentation</strong> — <code>README.md</code>, <code>CLAUDE.md</code>, <code>AGENTS.md</code>, all files under <code>docs/</code> including 5 ADRs.</li>
+    <li><strong>Build artefacts</strong> — fresh <code>bun run build</code> (Turbopack), bundle-size measured directly from <code>out/_next/static/chunks/*</code> with gzip.</li>
+    <li><strong>Dependencies</strong> — <code>bun audit</code> (clean), <code>bun.lock</code> presence verified, <code>package.json</code> overrides reviewed.</li>
+    <li><strong>Security headers</strong> — <code>docs/security-headers-baseline.json</code> + <code>scripts/test-security-headers.sh</code> + <code>scripts/update-security-headers.sh</code>.</li>
+    <li><strong>Git history</strong> — last 30 commits scanned for conventional-commit compliance.</li>
+  </ul>
+
+  <h3>What was not inspected (deliberately)</h3>
+  <ul>
+    <li><strong>Generated files</strong> — <code>.next/</code>, <code>out/types/</code>, <code>next-env.d.ts</code>.</li>
+    <li><strong>Vendor &amp; lockfile</strong> — <code>node_modules/</code>, <code>bun.lock</code> (read for presence only).</li>
+    <li><strong>Build artefacts</strong> — <code>out/index.html</code>, <code>playwright-report/</code>, <code>test-results/</code>.</li>
+    <li><strong>External infrastructure</strong> — CloudFront distribution policy and S3 bucket configuration were not queried against AWS APIs; assertions about CSP rely on the <code>security-headers-baseline.json</code> + verification script.</li>
+    <li><strong>Runtime behaviour</strong> — Playwright suites were not executed in this audit; functional coverage claims are derived from suite enumeration.</li>
+    <li><strong>Bundle composition</strong> — <code>bun run build:analyze</code> was not executed; size assertions are based on direct measurement of static chunks, not per-package contribution.</li>
+  </ul>
+
+  <h3>Verification posture</h3>
+  <p>Each finding was traced to a specific file and line range. Subagent claims were verified by direct file reads before inclusion. Severity is calibrated against the standards' own thresholds (function length 40, file length 350-400, coverage 80% target). Confidence is High when the finding was directly observed in source, Medium when inferred from secondary evidence, Low when based on heuristic pattern-matching.</p>
+
+  <h3>Severity definitions</h3>
+  <ul>
+    <li><span class="badge sev-critical">Critical</span> — Active exploit path, data-loss risk, or user-visible UI failure with no recovery.</li>
+    <li><span class="badge sev-high">High</span> — Reliability regression on a primary user path; standards red-flag that would block merge if flagged in review.</li>
+    <li><span class="badge sev-medium">Medium</span> — Quality or testability gap with concrete remediation; addressable within a sprint.</li>
+    <li><span class="badge sev-low">Low</span> — Style, consistency, or nice-to-have. Defer unless touching the affected area.</li>
+  </ul>
+
+  <h3>Coverage of original prompt dimensions</h3>
+  <table>
+    <thead><tr><th>Prompt dimension</th><th>Section</th><th>Findings</th></tr></thead>
+    <tbody>
+      <tr><td>1. Standards compliance</td><td><a href="#standards">§03</a></td><td>0/0/2/3</td></tr>
+      <tr><td>2. Test quality &amp; coverage</td><td><a href="#testing">§04</a></td><td>0/1/3/1</td></tr>
+      <tr><td>3. Security &amp; supply chain</td><td><a href="#security">§05</a></td><td>0/0/2/0</td></tr>
+      <tr><td>4. Architecture</td><td><a href="#architecture">§06</a></td><td>0/0/3/1</td></tr>
+      <tr><td>5. Maintainability</td><td><a href="#maintainability">§07</a></td><td>0/0/1/1</td></tr>
+      <tr><td>6. Dependencies</td><td><a href="#dependencies">§08</a></td><td>0/0/0/2</td></tr>
+      <tr><td>7. Performance</td><td><a href="#performance">§09</a></td><td>0/1/2/1</td></tr>
+      <tr><td>8. Error handling &amp; observability</td><td><a href="#error-obs">§10</a></td><td>0/2/1/0</td></tr>
+      <tr><td>9. Documentation &amp; onboarding</td><td><a href="#docs">§11</a></td><td>0/0/0/0 (strengths only)</td></tr>
+      <tr><td>10. Tech debt</td><td><a href="#debt">§12</a></td><td>0/0/0/2</td></tr>
+      <tr><td>11. Configuration &amp; type safety</td><td><a href="#config">§13</a></td><td>0/0/0/1</td></tr>
+    </tbody>
+  </table>
+
+  <hr />
+  <p class="footnote">Report generated 2026-05-13 against commit <code>04a848b</code> on <code>main</code>. Inkwell design system applied per <a href="https://github.com/vscarpenter/inkwell">vscarpenter/inkwell</a>. Severity counts reflect deduplication across overlapping subagent reports.</p>
+</section>
+
+</main>
 </body>
 </html>

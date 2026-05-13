@@ -38,16 +38,16 @@ vi.mock('@/lib/utils/logger', () => ({
   },
 }))
 
-const mockSearchTasks = searchTasks as any
-const mockSanitizeSearchQuery = sanitizeSearchQuery as any
+const mockSearchTasks = vi.mocked(searchTasks)
+const mockSanitizeSearchQuery = vi.mocked(sanitizeSearchQuery)
 
 describe('taskStore.filters', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(mockSearchTasks).mockImplementation((tasks: Task[], query: string) => 
+    mockSearchTasks.mockImplementation((tasks: Task[], query: string) =>
       tasks.filter((task: Task) => task.title.toLowerCase().includes(query.toLowerCase()))
     )
-    vi.mocked(mockSanitizeSearchQuery).mockImplementation((query: string) => query.trim())
+    mockSanitizeSearchQuery.mockImplementation((query: string) => query.trim())
   })
 
   const sampleTasks: Task[] = [
