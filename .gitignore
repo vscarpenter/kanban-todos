@@ -13,6 +13,7 @@
 # testing
 /coverage
 test-results
+playwright-report/
 
 # next.js
 /.next/
@@ -44,6 +45,7 @@ next-env.d.ts
 
 # claude code local settings
 .claude/settings.local.json
+.claude/worktrees/
 
 # exclude directories and files
 .kiro/
