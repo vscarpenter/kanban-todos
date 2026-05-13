@@ -1,6 +1,12 @@
 import { test, expect } from '@playwright/test'
 
 test.describe('Kanban App', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('cascade_has_visited', 'true');
+    });
+  });
+
   test('loads homepage and shows kanban board', async ({ page }) => {
     await page.goto('/')
     
