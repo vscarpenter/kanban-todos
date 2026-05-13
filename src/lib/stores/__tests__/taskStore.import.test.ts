@@ -20,7 +20,7 @@ const mockTaskDB = {
   updateTask: vi.fn().mockResolvedValue(undefined),
 }
 
-const mockExportTasksUtil = exportTasksUtil as any
+const mockExportTasksUtil = vi.mocked(exportTasksUtil)
 
 describe('taskStore.import', () => {
   beforeEach(() => {
