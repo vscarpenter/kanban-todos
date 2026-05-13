@@ -35,7 +35,7 @@ function getInitialFormData(board: Board | null) {
 
 export function BoardSettingsDialog({ open, onOpenChange, board }: BoardSettingsDialogProps) {
   const { updateBoard } = useBoardStore();
-  const { execute, isLoading } = useAsyncOperation({
+  const { execute, isLoading } = useAsyncOperation<true>({
     errorMessage: "Failed to update board settings",
   });
   const [formData, setFormData] = useState(() => getInitialFormData(board));
@@ -52,7 +52,7 @@ export function BoardSettingsDialog({ open, onOpenChange, board }: BoardSettings
 
     if (!formData.name.trim() || !board) return;
 
-    const result = await execute(async () => {
+    const succeeded = await execute(async () => {
       await updateBoard(board.id, {
         name: formData.name.trim(),
         description: formData.description.trim() || undefined,
@@ -60,9 +60,10 @@ export function BoardSettingsDialog({ open, onOpenChange, board }: BoardSettings
         iconKey: formData.iconKey,
         dotColor: formData.dotColor,
       });
+      return true as const;
     });
 
-    if (result !== undefined) {
+    if (succeeded) {
       handleOpenChange(false);
     }
   };

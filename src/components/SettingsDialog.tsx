@@ -41,7 +41,7 @@ interface SettingsDialogProps {
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const { settings, updateSettings, resetSettings } = useSettingsStore();
   const { theme, setTheme } = useTheme();
-  const { execute, isLoading } = useAsyncOperation({
+  const { execute, isLoading } = useAsyncOperation<true>({
     errorMessage: "Failed to save settings",
   });
   const [localSettings, setLocalSettings] = useState<Settings>(settings);
@@ -99,29 +99,29 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   }, [localSettings.theme, onOpenChange, setTheme]);
 
   const handleSave = async () => {
-    const result = await execute(async () => {
+    const succeeded = await execute(async () => {
       // Ensure next-themes is in sync with local settings
       if (localSettings.theme !== theme) {
         setTheme(localSettings.theme);
       }
       await updateSettings(localSettings);
+      return true as const;
     });
 
-    // Only close dialog on success
-    if (result !== undefined) {
+    if (succeeded) {
       onOpenChange(false);
     }
   };
 
   const handleResetConfirm = async () => {
-    const result = await execute(async () => {
+    const succeeded = await execute(async () => {
       await resetSettings();
       setTheme('system'); // Reset theme in next-themes
       setLocalSettings(settings);
+      return true as const;
     });
 
-    // Only close dialog on success
-    if (result !== undefined) {
+    if (succeeded) {
       onOpenChange(false);
     }
   };
