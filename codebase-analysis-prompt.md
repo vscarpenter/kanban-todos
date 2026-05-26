@@ -11,7 +11,7 @@ mark it explicitly and lower its confidence.
 Analyze across these dimensions:
 1. Standards compliance with @coding-standards.md
 2. Test quality and coverage, including brittleness, mocking patterns,
-   and unit vs integration balance
+   and unit vs integration balance and e2e tests
 3. Security and supply chain: OWASP Top 10, secrets, CVEs, license risk,
    auth and authz patterns
 4. Architecture: coupling, cohesion, circular dependencies, layering,
