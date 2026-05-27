@@ -11,6 +11,7 @@ import { Settings } from "@/lib/types";
 import { ConfirmationDialog } from "./ConfirmationDialog";
 import { AppResetDialog } from "./AppResetDialog";
 import { resetApplication } from "@/lib/utils/resetApp";
+import { logger } from "@/lib/utils/logger";
 import {
   AppearanceSection,
   TaskManagementSection,
@@ -132,7 +133,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       // Note: resetApplication() will reload the page, so we don't need to close dialogs
       await resetApplication();
     } catch (error) {
-      console.error('Failed to reset application:', error);
+      logger.error('Failed to reset application', error);
       const { toast } = await import("sonner");
       toast.error("Failed to reset application");
       // Only reset loading state if we didn't reload the page

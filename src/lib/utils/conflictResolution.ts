@@ -42,7 +42,7 @@ export interface ConflictResolutionResult {
   backupData?: ExportData;
 }
 
-interface ResolutionAction {
+export interface ResolutionAction {
   type: 'skip' | 'overwrite' | 'merge' | 'rename' | 'generate_id';
   itemType: 'task' | 'board' | 'settings';
   itemId: string;
@@ -292,8 +292,21 @@ export function generateResolutionSummary(resolutionLog: ResolutionAction[]): { 
   };
 
   for (const action of resolutionLog) {
-    const key = `${action.itemType}s${action.type.charAt(0).toUpperCase() + action.type.slice(1).replace('_', '')}`;
-    if (key in details) details[key]++;
+    if (action.itemType === 'settings') {
+      if (action.type === 'merge') details.settingsMerged++;
+      continue;
+    }
+
+    const itemPrefix = action.itemType === 'task' ? 'tasks' : 'boards';
+    const actionSuffix: Record<ResolutionAction['type'], string> = {
+      skip: 'Skipped',
+      overwrite: 'Overwritten',
+      merge: 'Merged',
+      rename: 'Renamed',
+      generate_id: 'WithNewIds',
+    };
+    const key = `${itemPrefix}${actionSuffix[action.type]}`;
+    details[key]++;
   }
 
   return { summary: `Resolved ${Object.values(details).reduce((a, b) => a + b, 0)} conflicts`, details };

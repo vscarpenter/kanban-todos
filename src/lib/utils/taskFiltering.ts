@@ -1,5 +1,6 @@
 import { Task, TaskFilters } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
+import { logger } from '@/lib/utils/logger';
 
 // Cache configuration
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
@@ -22,11 +23,13 @@ export async function validateBoardAccess(tasks: Task[]): Promise<Task[]> {
 
     const accessibleTasks = tasks.filter(task => validBoardIds.has(task.boardId));
     if (accessibleTasks.length !== tasks.length) {
-      console.info(`Filtered out ${tasks.length - accessibleTasks.length} tasks from inaccessible boards`);
+      logger.info('Filtered tasks from inaccessible boards', {
+        filteredCount: tasks.length - accessibleTasks.length,
+      });
     }
     return accessibleTasks;
   } catch (error: unknown) {
-    console.warn('Failed to validate board access, proceeding with existing tasks:', error);
+    logger.warn('Failed to validate board access, proceeding with existing tasks', error);
     return tasks;
   }
 }
@@ -108,7 +111,7 @@ export function cacheResults(
       timestamp: Date.now()
     });
   } catch (error: unknown) {
-    console.warn('Failed to cache search results:', error);
+    logger.warn('Failed to cache search results', error);
     searchCache.clear();
   }
 }
@@ -125,7 +128,7 @@ export function cleanupExpiredCache(searchCache: SearchCache): void {
       }
     }
   } catch (error: unknown) {
-    console.warn('Cache cleanup failed:', error);
+    logger.warn('Cache cleanup failed', error);
   }
 }
 

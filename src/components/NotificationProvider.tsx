@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useTaskStore } from "@/lib/stores/taskStore";
 import { useSettingsStore } from "@/lib/stores/settingsStore";
 import { notificationManager } from "@/lib/utils/notifications";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * NotificationProvider manages browser notifications for task due dates.
@@ -37,7 +38,7 @@ export function NotificationProvider() {
         if (!mounted) return;
 
         if (!granted) {
-          console.info("Notification permission not granted");
+          logger.info("Notification permission not granted");
           return;
         }
       }

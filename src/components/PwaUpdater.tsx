@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { logger } from "@/lib/utils/logger";
 
 export default function PwaUpdater() {
   const [waiting, setWaiting] = useState<ServiceWorker | null>(null);
@@ -53,7 +54,7 @@ export default function PwaUpdater() {
         const onVisibility = () => {
           if (document.visibilityState === "visible") {
             registration.update().catch((error) => {
-              console.warn("Service worker update check failed:", error);
+              logger.warn("Service worker update check failed", error);
             });
           }
         };
@@ -66,7 +67,7 @@ export default function PwaUpdater() {
         };
       })
       .catch((error) => {
-        console.warn("Service worker registration failed:", error);
+        logger.warn("Service worker registration failed", error);
       });
 
     // Reload the page when the new SW takes control
@@ -85,7 +86,7 @@ export default function PwaUpdater() {
     try {
       waiting?.postMessage({ type: "SKIP_WAITING" });
     } catch (error) {
-      console.warn("Failed to signal service worker to skip waiting:", error);
+      logger.warn("Failed to signal service worker to skip waiting", error);
     }
   };
 

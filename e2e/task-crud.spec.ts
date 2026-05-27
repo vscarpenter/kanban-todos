@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page, type Locator } from '@playwright/test';
 
 test.describe('Task CRUD and Drag-Drop', () => {
   test.beforeEach(async ({ page }) => {
@@ -117,7 +117,8 @@ test.describe('Task CRUD and Drag-Drop', () => {
     await createTask(page, taskTitle);
     await moveTaskToColumn(page, taskTitle, 'In Progress');
 
-    await expect(taskCard(page, taskTitle)).toBeVisible();
+    await expect(column(page, 'In Progress').locator('.task-card', { hasText: taskTitle })).toBeVisible();
+    await expect(column(page, 'To Do').locator('.task-card', { hasText: taskTitle })).toHaveCount(0);
   });
 
   test('moves task to Done column via menu', async ({ page }) => {
@@ -126,6 +127,36 @@ test.describe('Task CRUD and Drag-Drop', () => {
     await createTask(page, taskTitle);
     await moveTaskToColumn(page, taskTitle, 'Done');
 
+    await expect(column(page, 'Done').locator('.task-card', { hasText: taskTitle })).toBeVisible();
+    await expect(column(page, 'To Do').locator('.task-card', { hasText: taskTitle })).toHaveCount(0);
+  });
+
+  test('moves task to another board with confirmation', async ({ page }) => {
+    const taskTitle = 'Cross-board Task';
+    const targetBoard = 'Destination Board';
+
+    await createBoard(page, targetBoard);
+    await selectBoard(page, 'Work Tasks');
+    await createTask(page, taskTitle);
+
+    await openTaskMenu(page, taskTitle);
+    await page.getByRole('menuitem', { name: 'Move to Board' }).click();
+
+    await expect(page.getByRole('heading', { name: 'Move Task to Board' })).toBeVisible();
+    await page.getByRole('dialog').locator('[data-slot="card"]', { hasText: targetBoard }).click();
+    await page.getByRole('button', { name: 'Move Task' }).click();
+
+    await expect(page.getByRole('heading', { name: 'Confirm Move' })).toBeVisible();
+    await page.getByRole('button', { name: 'Confirm Move' }).click();
+    await expect(page.getByRole('dialog')).toBeHidden();
+
+    await expect(taskCard(page, taskTitle)).toHaveCount(0);
+
+    await selectBoard(page, targetBoard);
+    await expect(taskCard(page, taskTitle)).toBeVisible();
+
+    await page.reload();
+    await expect(page.getByRole('heading', { name: targetBoard })).toBeVisible();
     await expect(taskCard(page, taskTitle)).toBeVisible();
   });
 
@@ -236,6 +267,32 @@ test.describe('Task CRUD and Drag-Drop', () => {
 
 function taskCard(page: Page, title: string) {
   return page.locator('.task-card', { hasText: title });
+}
+
+function column(page: Page, title: string): Locator {
+  return page
+    .locator('.kanban-column')
+    .filter({ has: page.locator('.kanban-column__header').filter({ hasText: title }) })
+    .first();
+}
+
+function boardItem(page: Page, name: string): Locator {
+  return page.locator('[role="button"]', {
+    has: page.getByText(name, { exact: true }),
+  }).filter({ hasNotText: 'Move ' });
+}
+
+async function createBoard(page: Page, name: string): Promise<void> {
+  await page.getByRole('button', { name: 'Add board' }).click();
+  await page.getByLabel('Board Name *').fill(name);
+  await page.getByRole('button', { name: 'Create Board' }).click();
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await expect(boardItem(page, name).first()).toBeVisible();
+}
+
+async function selectBoard(page: Page, name: string): Promise<void> {
+  await boardItem(page, name).first().click();
+  await expect(page.getByRole('heading', { name })).toBeVisible();
 }
 
 async function createTask(page: Page, title: string): Promise<void> {

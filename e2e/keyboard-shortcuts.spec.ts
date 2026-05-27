@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { pressShortcutUntilVisible } from './helpers/keyboard';
 
 test.describe('Keyboard Shortcuts', () => {
   test.beforeEach(async ({ page }) => {
@@ -10,78 +11,63 @@ test.describe('Keyboard Shortcuts', () => {
   });
 
   test('press N opens new task dialog', async ({ page }) => {
-    await page.keyboard.press('n');
-
-    await expect(page.getByRole('heading', { name: 'Create New Task' })).toBeVisible();
+    await pressShortcutUntilVisible(page, 'n', page.getByRole('heading', { name: 'Create New Task' }));
 
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toBeHidden();
   });
 
   test('press Ctrl+K opens new task dialog', async ({ page }) => {
-    await page.keyboard.press('Control+K');
-
-    await expect(page.getByRole('heading', { name: 'Create New Task' })).toBeVisible();
+    await pressShortcutUntilVisible(page, 'Control+K', page.getByRole('heading', { name: 'Create New Task' }));
 
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toBeHidden();
   });
 
   test('press Cmd+K opens new task dialog', async ({ page }) => {
-    await page.keyboard.press('Meta+K');
-
-    await expect(page.getByRole('heading', { name: 'Create New Task' })).toBeVisible();
+    await pressShortcutUntilVisible(page, 'Meta+K', page.getByRole('heading', { name: 'Create New Task' }));
 
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toBeHidden();
   });
 
   test('press H opens keyboard shortcuts help', async ({ page }) => {
-    await page.keyboard.press('h');
-
-    await expect(page.getByRole('heading', { name: 'Keyboard Shortcuts' })).toBeVisible();
+    await pressShortcutUntilVisible(page, 'h', page.getByRole('heading', { name: 'Keyboard Shortcuts' }));
 
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toBeHidden();
   });
 
   test('press F1 opens user guide', async ({ page }) => {
-    await page.keyboard.press('F1');
-
-    await expect(page.getByRole('dialog')).toBeVisible();
+    await pressShortcutUntilVisible(page, 'F1', page.getByRole('dialog'));
 
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toBeHidden();
   });
 
   test('press Ctrl+, opens settings', async ({ page }) => {
-    await page.keyboard.press('Control+,');
-
-    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
+    await pressShortcutUntilVisible(page, 'Control+,', page.getByRole('heading', { name: 'Settings' }));
 
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toBeHidden();
   });
 
   test('press Cmd+, opens settings', async ({ page }) => {
-    await page.keyboard.press('Meta+,');
-
-    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
+    await pressShortcutUntilVisible(page, 'Meta+,', page.getByRole('heading', { name: 'Settings' }));
 
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toBeHidden();
   });
 
   test('Escape closes the new task dialog', async ({ page }) => {
-    await page.keyboard.press('n');
-    await expect(page.getByRole('dialog')).toBeVisible();
+    await pressShortcutUntilVisible(page, 'n', page.getByRole('dialog'));
 
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toBeHidden();
   });
 
   test('Enter in new task dialog creates task', async ({ page }) => {
-    await page.keyboard.press('n');
+    await pressShortcutUntilVisible(page, 'n', page.getByRole('dialog'));
     await page.getByLabel('Title *').fill('Quick Task');
     await page.keyboard.press('Enter');
 
@@ -109,7 +95,7 @@ test.describe('Keyboard Shortcuts', () => {
   });
 
   test('shortcuts are suppressed while typing in inputs', async ({ page }) => {
-    await page.keyboard.press('n');
+    await pressShortcutUntilVisible(page, 'n', page.getByRole('dialog'));
     await page.getByLabel('Title *').focus();
 
     // Typing 'n' inside the input should not open another dialog.
@@ -121,8 +107,7 @@ test.describe('Keyboard Shortcuts', () => {
   });
 
   test('Escape closes nested confirmation dialog', async ({ page }) => {
-    await page.keyboard.press('Control+,');
-    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
+    await pressShortcutUntilVisible(page, 'Control+,', page.getByRole('heading', { name: 'Settings' }));
 
     await page.getByRole('button', { name: 'Reset Settings' }).click();
     await expect(page.getByRole('heading', { name: 'Reset Settings' })).toBeVisible();
@@ -136,7 +121,7 @@ test.describe('Keyboard Shortcuts', () => {
   });
 
   test('Tab navigates focus inside the dialog', async ({ page }) => {
-    await page.keyboard.press('n');
+    await pressShortcutUntilVisible(page, 'n', page.getByRole('dialog'));
 
     await expect(page.getByLabel('Title *')).toBeFocused();
 

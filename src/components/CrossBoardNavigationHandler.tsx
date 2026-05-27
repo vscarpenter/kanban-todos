@@ -4,6 +4,7 @@ import { useEffect, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import { useTaskStore } from "@/lib/stores/taskStore";
 import { useBoardStore } from "@/lib/stores/boardStore";
+import { logger } from "@/lib/utils/logger";
 
 interface CrossBoardNavigationHandlerProps {
   children: React.ReactNode;
@@ -78,7 +79,7 @@ export function CrossBoardNavigationHandler({ children }: CrossBoardNavigationHa
 
       return false;
     } catch (error) {
-      console.error('Cross-board navigation error:', error);
+      logger.error('Cross-board navigation error', error);
       toast.error("Couldn't navigate to task", {
         description: "Something went wrong. Try again.",
         action: {

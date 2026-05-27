@@ -25,12 +25,12 @@ export default defineConfig({
         'src/**/*.d.ts',
         'src/app/layout.tsx',  // boilerplate Next.js layout
       ],
-      // Baseline thresholds as of initial compliance pass (raise over time toward 80%)
+      // Ratchet baseline for the next sprint; keep raising in small increments.
       thresholds: {
-        lines: 37,
-        functions: 38,
-        branches: 35,
-        statements: 36,
+        lines: 55,
+        functions: 55,
+        branches: 50,
+        statements: 55,
       },
     },
   },

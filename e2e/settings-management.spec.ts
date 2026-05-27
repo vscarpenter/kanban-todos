@@ -172,6 +172,32 @@ test.describe('Settings Management', () => {
     await cancelOrDiscard(page);
   });
 
+  test('reset app clears persisted boards and tasks', async ({ page }) => {
+    await createBoard(page, 'Reset Board');
+    await selectBoard(page, 'Reset Board');
+    await createTask(page, 'Reset Task');
+
+    await openSettings(page);
+    await ensureAdvancedExpanded(page);
+    await page.getByRole('button', { name: 'Reset App to Default' }).click();
+
+    await expect(page.getByRole('heading', { name: 'Reset Application' })).toBeVisible();
+    await page.getByRole('button', { name: 'Continue to reset' }).click();
+
+    await expect(page.getByRole('heading', { name: 'Final Confirmation' })).toBeVisible();
+    await page.getByRole('button', { name: 'Reset Everything' }).click();
+
+    await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 15000 });
+    await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
+    await expect(boardItem(page, 'Reset Board')).toHaveCount(0);
+    await expect(taskCard(page, 'Reset Task')).toHaveCount(0);
+
+    await page.reload();
+    await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
+    await expect(boardItem(page, 'Reset Board')).toHaveCount(0);
+    await expect(taskCard(page, 'Reset Task')).toHaveCount(0);
+  });
+
   test('cancels settings changes without modifications', async ({ page }) => {
     await openSettings(page);
 
@@ -263,6 +289,36 @@ async function ensureAdvancedExpanded(page: Page): Promise<void> {
     await page.getByRole('button', { name: 'Advanced' }).click();
     await expect(debugSwitch).toBeVisible();
   }
+}
+
+function boardItem(page: Page, name: string): Locator {
+  return page.locator('[role="button"]', {
+    has: page.getByText(name, { exact: true }),
+  }).filter({ hasNotText: 'Move ' });
+}
+
+function taskCard(page: Page, title: string): Locator {
+  return page.locator('.task-card', { hasText: title });
+}
+
+async function createBoard(page: Page, name: string): Promise<void> {
+  await page.getByRole('button', { name: 'Add board' }).click();
+  await page.getByLabel('Board Name *').fill(name);
+  await page.getByRole('button', { name: 'Create Board' }).click();
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await expect(boardItem(page, name).first()).toBeVisible();
+}
+
+async function selectBoard(page: Page, name: string): Promise<void> {
+  await boardItem(page, name).first().click();
+  await expect(page.getByRole('heading', { name })).toBeVisible();
+}
+
+async function createTask(page: Page, title: string): Promise<void> {
+  await page.getByRole('button', { name: 'New Task' }).click();
+  await page.getByLabel('Title *').fill(title);
+  await page.getByRole('button', { name: 'Create Task' }).click();
+  await expect(taskCard(page, title).first()).toBeVisible();
 }
 
 async function cancelOrDiscard(page: Page): Promise<void> {

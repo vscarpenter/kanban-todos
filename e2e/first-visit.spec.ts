@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { pressShortcutUntilVisible } from './helpers/keyboard';
 
 test.describe('First Visit and Onboarding', () => {
   test('first-time visitor is redirected to /about/', async ({ page }) => {
@@ -56,7 +57,7 @@ test.describe('First Visit and Onboarding', () => {
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
 
-    await page.keyboard.press('F1');
+    await pressShortcutUntilVisible(page, 'F1', page.getByRole('dialog'));
 
     // The guide dialog opens; renders Previous (disabled on step 0) and Next
     await expect(page.getByRole('dialog')).toBeVisible();
@@ -79,8 +80,7 @@ test.describe('First Visit and Onboarding', () => {
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
 
-    await page.keyboard.press('F1');
-    await expect(page.getByRole('dialog')).toBeVisible();
+    await pressShortcutUntilVisible(page, 'F1', page.getByRole('dialog'));
 
     await page.getByRole('dialog').getByRole('button', { name: 'Next' }).click();
     await expect(page.getByText(/^2 of \d+$/)).toBeVisible();
