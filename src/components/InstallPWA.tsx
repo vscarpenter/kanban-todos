@@ -3,6 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { X, Download, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { logger } from "@/lib/utils/logger";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -108,7 +109,7 @@ export default function InstallPWA() {
         setDeferredPrompt(null);
       }
     } catch (error) {
-      console.error("Install prompt error:", error);
+      logger.error("Install prompt error", error);
     }
   };
 

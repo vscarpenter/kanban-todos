@@ -10,6 +10,7 @@ import { BoardHeader } from "./board/BoardHeader";
 import { BoardStats } from "./board/BoardStats";
 import { KanbanBoard } from "./board/KanbanBoard";
 import { CrossBoardGroups } from "./board/CrossBoardGroups";
+import { logger } from "@/lib/utils/logger";
 
 export function BoardView() {
   const { currentBoardId, getCurrentBoard, boards, selectBoard } = useBoardStore();
@@ -37,7 +38,7 @@ export function BoardView() {
         setHighlightedTask(undefined);
       }, 3000);
     } catch (error) {
-      console.error('Failed to navigate to board:', error);
+      logger.error('Failed to navigate to board', error);
     }
   }, [selectBoard, setHighlightedTask, clearSearch]);
 

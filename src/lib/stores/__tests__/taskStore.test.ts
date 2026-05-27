@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { taskDB } from '@/lib/utils/database';
+import type { Board, Task } from '@/lib/types';
 import { useTaskStore } from '../taskStore';
 
 // Mock the database
@@ -8,6 +10,7 @@ vi.mock('@/lib/utils/database', () => ({
     addTask: vi.fn().mockResolvedValue(undefined),
     updateTask: vi.fn().mockResolvedValue(undefined),
     deleteTask: vi.fn().mockResolvedValue(undefined),
+    getBoards: vi.fn().mockResolvedValue([]),
     getTasks: vi.fn().mockResolvedValue([]),
     getSettings: vi.fn().mockResolvedValue(null),
     updateSettings: vi.fn().mockResolvedValue(undefined),
@@ -27,6 +30,31 @@ vi.mock('../boardStore', () => ({
 }));
 
 describe('taskStore', () => {
+  const now = new Date('2026-01-15T12:00:00.000Z');
+
+  const makeTask = (overrides: Partial<Task> = {}): Task => ({
+    id: 'task-1',
+    title: 'Task',
+    status: 'todo',
+    boardId: 'board-1',
+    priority: 'medium',
+    tags: [],
+    createdAt: now,
+    updatedAt: now,
+    ...overrides,
+  });
+
+  const makeBoard = (overrides: Partial<Board> = {}): Board => ({
+    id: 'board-1',
+    name: 'Work',
+    color: '#2563eb',
+    isDefault: false,
+    order: 0,
+    createdAt: now,
+    updatedAt: now,
+    ...overrides,
+  });
+
   beforeEach(() => {
     // Reset store state before each test
     useTaskStore.setState({
@@ -47,6 +75,12 @@ describe('taskStore', () => {
       searchCache: new Map(),
     });
     vi.clearAllMocks();
+    vi.mocked(taskDB.getBoards).mockResolvedValue([
+      makeBoard({ id: 'board-1' }),
+      makeBoard({ id: 'board-archived', archivedAt: now }),
+    ]);
+    vi.mocked(taskDB.getTasks).mockResolvedValue([]);
+    vi.mocked(taskDB.getSettings).mockResolvedValue(null);
   });
 
   describe('initial state', () => {
@@ -477,6 +511,73 @@ describe('taskStore', () => {
       expect(filters.crossBoardSearch).toBe(true);
       expect(error).toBe('Search functionality temporarily unavailable. Please refresh the page.');
       expect(filteredTasks).toHaveLength(1);
+    });
+  });
+
+  describe('validation and initialization', () => {
+    it('validates board access against active boards only', async () => {
+      const { validateBoardAccess } = useTaskStore.getState();
+
+      await expect(validateBoardAccess('board-1')).resolves.toBe(true);
+      await expect(validateBoardAccess('board-archived')).resolves.toBe(false);
+      await expect(validateBoardAccess('missing-board')).resolves.toBe(false);
+    });
+
+    it('returns false when board access validation cannot load boards', async () => {
+      vi.mocked(taskDB.getBoards).mockRejectedValueOnce(new Error('database offline'));
+
+      await expect(useTaskStore.getState().validateBoardAccess('board-1')).resolves.toBe(false);
+    });
+
+    it('removes tasks and board filters when a board is deleted', () => {
+      useTaskStore.setState({
+        tasks: [
+          makeTask({ id: 'deleted-board-task', boardId: 'board-deleted' }),
+          makeTask({ id: 'kept-task', boardId: 'board-1' }),
+        ],
+        filteredTasks: [
+          makeTask({ id: 'deleted-board-task', boardId: 'board-deleted' }),
+          makeTask({ id: 'kept-task', boardId: 'board-1' }),
+        ],
+        filters: {
+          search: '',
+          tags: [],
+          boardId: 'board-deleted',
+          crossBoardSearch: false,
+        },
+      });
+
+      useTaskStore.getState().handleBoardDeletion('board-deleted');
+
+      const { tasks, filteredTasks, filters, error } = useTaskStore.getState();
+      expect(tasks.map(task => task.id)).toEqual(['kept-task']);
+      expect(filteredTasks.map(task => task.id)).toEqual(['kept-task']);
+      expect(filters.boardId).toBeUndefined();
+      expect(error).toBeNull();
+    });
+
+    it('initializes tasks from storage and restores date fields', async () => {
+      vi.mocked(taskDB.getTasks).mockResolvedValueOnce([
+        {
+          ...makeTask({ id: 'stored-task' }),
+          createdAt: '2026-01-01T00:00:00.000Z',
+          updatedAt: '2026-01-02T00:00:00.000Z',
+          completedAt: '2026-01-03T00:00:00.000Z',
+          archivedAt: '2026-01-04T00:00:00.000Z',
+        } as unknown as Task,
+      ]);
+
+      await useTaskStore.getState().initializeStore();
+
+      const { tasks, filteredTasks, isLoading } = useTaskStore.getState();
+      expect(taskDB.init).toHaveBeenCalled();
+      expect(taskDB.getSettings).toHaveBeenCalled();
+      expect(isLoading).toBe(false);
+      expect(tasks[0].createdAt).toBeInstanceOf(Date);
+      expect(tasks[0].updatedAt).toBeInstanceOf(Date);
+      expect(tasks[0].completedAt).toBeInstanceOf(Date);
+      expect(tasks[0].archivedAt).toBeInstanceOf(Date);
+      expect(filteredTasks).toEqual(tasks);
     });
   });
 

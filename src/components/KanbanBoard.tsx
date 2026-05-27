@@ -13,6 +13,7 @@ import { useBoardStore } from "@/lib/stores/boardStore";
 import { useSettingsStore } from "@/lib/stores/settingsStore";
 import { notificationManager } from "@/lib/utils/notifications";
 import { detectTouchCapabilities } from "@/lib/utils/iosDetection";
+import { logger } from "@/lib/utils/logger";
 
 // Lazy load keyboard components
 const GlobalHotkeys = dynamic(() => import("./GlobalHotkeys").then(mod => ({ default: mod.GlobalHotkeys })), {
@@ -60,7 +61,7 @@ export function KanbanBoard() {
         await Promise.all([initializeSettings(), initializeBoards(), initializeStore()]);
         setIsInitialized(true);
       } catch (error) {
-        console.error('Failed to initialize stores:', error);
+        logger.error('Failed to initialize stores', error);
         setIsInitialized(true);
       }
     };

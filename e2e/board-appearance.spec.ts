@@ -68,7 +68,7 @@ test.describe('Board Appearance', () => {
     await expect(boardItem(page, boardName)).toBeVisible();
 
     await page.reload();
-    await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
+    await expect(boardItem(page, boardName).first()).toBeVisible();
 
     // Open Edit on the board to verify the saved appearance round-tripped
     const item = boardItem(page, boardName).first();

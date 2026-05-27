@@ -9,6 +9,7 @@ import { AlertTriangle, Trash2 } from "lucide-react";
 import { useBoardStore } from "@/lib/stores/boardStore";
 import { useTaskStore } from "@/lib/stores/taskStore";
 import { Board } from "@/lib/types";
+import { logger } from "@/lib/utils/logger";
 
 interface BoardDeleteDialogProps {
   open: boolean;
@@ -39,7 +40,7 @@ export function BoardDeleteDialog({ open, onOpenChange, board }: BoardDeleteDial
       onOpenChange(false);
       setConfirmationText("");
     } catch (error) {
-      console.error('Failed to delete board:', error);
+      logger.error('Failed to delete board', error);
     } finally {
       setIsLoading(false);
     }

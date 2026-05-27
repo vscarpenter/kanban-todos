@@ -4,6 +4,7 @@ import { BoardView } from '../BoardView'
 import { useBoardStore } from '@/lib/stores/boardStore'
 import { useTaskStore } from '@/lib/stores/taskStore'
 import { Task, Board, TaskFilters, SearchState } from '@/lib/types'
+import { logger } from '@/lib/utils/logger'
 
 // Mock the stores
 vi.mock('@/lib/stores/boardStore')
@@ -379,7 +380,7 @@ describe('BoardView - Cross-board Navigation', () => {
     })
 
     it('handles navigation errors gracefully', async () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const loggerSpy = vi.spyOn(logger, 'error').mockImplementation(() => {})
       const failingBoardStore: MockBoardStore = {
         ...mockBoardStore,
         selectBoard: vi.fn().mockRejectedValue(new Error('Navigation failed')),
@@ -406,10 +407,10 @@ describe('BoardView - Cross-board Navigation', () => {
       fireEvent.click(kanbanTask)
       
       await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith('Failed to navigate to board:', expect.any(Error))
+        expect(loggerSpy).toHaveBeenCalledWith('Failed to navigate to board', expect.any(Error))
       })
 
-      consoleSpy.mockRestore()
+      loggerSpy.mockRestore()
     })
   })
 

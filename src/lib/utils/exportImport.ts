@@ -9,6 +9,7 @@ export {
   DATA_FORMAT_VERSION,
   type ExportData,
   type ExportOptions,
+  type SerializedTask,
   type SerializedBoard,
   type ImportValidationResult,
   type ImportConflicts,

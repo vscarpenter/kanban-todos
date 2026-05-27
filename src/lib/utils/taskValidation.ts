@@ -1,4 +1,5 @@
 import { Task } from '@/lib/types';
+import { logger } from '@/lib/utils/logger';
 
 // Valid enum values for task fields
 const VALID_STATUSES = ['todo', 'in-progress', 'done'] as const;
@@ -9,7 +10,7 @@ const VALID_PRIORITIES = ['low', 'medium', 'high'] as const;
  */
 function hasRequiredFields(task: Task): boolean {
   if (!task.id || !task.title || !task.boardId) {
-    console.warn('Task missing required fields:', {
+    logger.warn('Task missing required fields', {
       id: task.id,
       title: task.title,
       boardId: task.boardId
@@ -30,19 +31,19 @@ function hasValidDataTypes(task: Task): boolean {
     typeof task.title !== 'string' ||
     typeof task.boardId !== 'string'
   ) {
-    console.warn('Task has invalid field types:', task);
+    logger.warn('Task has invalid field types', task);
     return false;
   }
 
   // Check date fields - must be Date objects, not strings
   if (!(task.createdAt instanceof Date) || !(task.updatedAt instanceof Date)) {
-    console.warn('Task has invalid date fields:', task);
+    logger.warn('Task has invalid date fields', task);
     return false;
   }
 
   // Check tags is array
   if (!Array.isArray(task.tags)) {
-    console.warn('Task tags is not an array:', task);
+    logger.warn('Task tags is not an array', task);
     return false;
   }
 
@@ -56,7 +57,7 @@ function hasValidDataTypes(task: Task): boolean {
 function hasValidEnumValues(task: Task): boolean {
   // Validate status
   if (!VALID_STATUSES.includes(task.status)) {
-    console.warn('Task has invalid status:', {
+    logger.warn('Task has invalid status', {
       taskId: task.id,
       status: task.status,
       validStatuses: VALID_STATUSES
@@ -66,7 +67,7 @@ function hasValidEnumValues(task: Task): boolean {
 
   // Validate priority (optional field)
   if (task.priority && !VALID_PRIORITIES.includes(task.priority)) {
-    console.warn('Task has invalid priority:', {
+    logger.warn('Task has invalid priority', {
       taskId: task.id,
       priority: task.priority,
       validPriorities: VALID_PRIORITIES
@@ -97,7 +98,7 @@ export function validateTaskIntegrity(task: Task): boolean {
       hasValidEnumValues(task)
     );
   } catch (error: unknown) {
-    console.error('Error validating task integrity:', error);
+    logger.error('Error validating task integrity', error);
     return false;
   }
 }
@@ -122,9 +123,9 @@ export function validateTaskCollection(
   const validTasks = tasks.filter(validator);
 
   if (validTasks.length !== initialCount) {
-    console.warn(
-      `Filtered out ${initialCount - validTasks.length} invalid tasks from collection`
-    );
+    logger.warn('Filtered invalid tasks from collection', {
+      filteredCount: initialCount - validTasks.length,
+    });
   }
 
   return validTasks;

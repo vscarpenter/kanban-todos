@@ -12,6 +12,7 @@ import {
 import { MoreHorizontal, Settings, Trash2, Copy } from "lucide-react";
 import { Board } from "@/lib/types";
 import { useBoardStore } from "@/lib/stores/boardStore";
+import { logger } from "@/lib/utils/logger";
 import { BoardSettingsDialog } from "./BoardSettingsDialog";
 import { BoardDeleteDialog } from "./BoardDeleteDialog";
 
@@ -32,7 +33,7 @@ export function BoardMenu({ board }: BoardMenuProps) {
     try {
       await duplicateBoard(board.id);
     } catch (error) {
-      console.error('Failed to duplicate board:', error);
+      logger.error('Failed to duplicate board', error);
     } finally {
       setIsLoading(false);
     }

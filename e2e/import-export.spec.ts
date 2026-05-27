@@ -1,3 +1,4 @@
+import { readFile, writeFile } from 'node:fs/promises';
 import { test, expect, type Page } from '@playwright/test';
 
 test.describe('Import/Export', () => {
@@ -31,6 +32,33 @@ test.describe('Import/Export', () => {
 
     // The Tasks badge shows "{count} total"
     await expect(page.getByText('2 total').first()).toBeVisible();
+  });
+
+  test('exports a downloadable JSON backup with current boards, tasks, and settings', async ({ page }) => {
+    await createBoard(page, 'Export Board', 'Board included in backup');
+    await selectBoard(page, 'Export Board');
+    await createTask(page, 'Exported Task');
+
+    await openExport(page);
+
+    const downloadPromise = page.waitForEvent('download');
+    await exportSubmitButton(page).click();
+    const download = await downloadPromise;
+
+    expect(download.suggestedFilename()).toMatch(/^cascade-full-export-\d{4}-\d{2}-\d{2}\.json$/);
+
+    const path = await download.path();
+    expect(path).not.toBeNull();
+
+    const backup = JSON.parse(await readFile(path as string, 'utf8')) as ExportBackup;
+    const exportedBoard = backup.boards.find(board => board.name === 'Export Board');
+    const exportedTask = backup.tasks.find(task => task.title === 'Exported Task');
+
+    expect(backup.version).toBe('1.0.0');
+    expect(exportedBoard).toBeDefined();
+    expect(exportedTask).toBeDefined();
+    expect(exportedTask?.boardId).toBe(exportedBoard?.id);
+    expect(backup.settings?.theme).toBeDefined();
   });
 
   test('can toggle export option switches', async ({ page }) => {
@@ -115,6 +143,47 @@ test.describe('Import/Export', () => {
     await expect(page.getByRole('button', { name: 'Review import' })).toHaveCount(0);
   });
 
+  test('imports valid JSON backup and renders imported board task', async ({ page }, testInfo) => {
+    const importPath = testInfo.outputPath('valid-import.json');
+    await writeFile(importPath, JSON.stringify(createImportBackup(), null, 2), 'utf8');
+
+    await openImport(page);
+    await page.locator('input[type="file"]').setInputFiles(importPath);
+
+    await expect(page.getByText('valid-import.json')).toBeVisible();
+    await page.getByRole('button', { name: 'Review import' }).click();
+
+    await expect(page.getByRole('heading', { name: 'Preview Data' })).toBeVisible();
+    await expect(page.getByText('Imported QA Task')).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Start import' }).click();
+    await expect(page.getByText('Import Complete!')).toBeVisible();
+    await expect(page.getByText('Tasks imported:')).toBeVisible();
+    await expect(page.getByText('Boards imported:')).toBeVisible();
+
+    await page.getByRole('button', { name: 'Close import' }).click();
+    await expect(page.getByRole('dialog')).toBeHidden();
+
+    await expect(boardItem(page, 'Imported Roadmap')).toBeVisible();
+    await selectBoard(page, 'Imported Roadmap');
+    await expect(page.locator('.task-card', { hasText: 'Imported QA Task' })).toBeVisible();
+
+    await page.reload();
+    await expect(page.getByRole('heading', { name: 'Imported Roadmap' })).toBeVisible();
+    await expect(page.locator('.task-card', { hasText: 'Imported QA Task' })).toBeVisible();
+  });
+
+  test('shows import error for malformed JSON file', async ({ page }, testInfo) => {
+    const importPath = testInfo.outputPath('malformed-import.json');
+    await writeFile(importPath, '{ this is not valid json', 'utf8');
+
+    await openImport(page);
+    await page.locator('input[type="file"]').setInputFiles(importPath);
+
+    await expect(page.getByText(/Invalid JSON format/i)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Review import' })).toHaveCount(0);
+  });
+
   test('closes import dialog with Escape', async ({ page }) => {
     await openImport(page);
     await page.keyboard.press('Escape');
@@ -161,6 +230,32 @@ test.describe('Import/Export', () => {
 
 // Helper functions
 
+interface ExportBackup {
+  version: string;
+  exportedAt: string;
+  tasks: Array<{
+    id: string;
+    title: string;
+    status: string;
+    boardId: string;
+    createdAt: string;
+    updatedAt: string;
+    priority: string;
+    tags: string[];
+  }>;
+  boards: Array<{
+    id: string;
+    name: string;
+    description?: string;
+    color: string;
+    isDefault: boolean;
+    order: number;
+    createdAt: string;
+    updatedAt: string;
+  }>;
+  settings?: { theme?: string };
+}
+
 async function openSidebar(page: Page): Promise<void> {
   const menuButton = page.getByRole('button', { name: /Open sidebar/i });
   if (await menuButton.isVisible().catch(() => false)) {
@@ -186,9 +281,64 @@ function exportSubmitButton(page: Page) {
   return page.getByRole('dialog').getByRole('button', { name: /Export Data|Exporting/ });
 }
 
+function boardItem(page: Page, name: string) {
+  return page.locator('[role="button"]', {
+    has: page.getByText(name, { exact: true }),
+  }).filter({ hasNotText: 'Move ' });
+}
+
+async function createBoard(page: Page, name: string, description?: string): Promise<void> {
+  await page.getByRole('button', { name: 'Add board' }).click();
+  await page.getByLabel('Board Name *').fill(name);
+  if (description) {
+    await page.getByLabel('Description').fill(description);
+  }
+  await page.getByRole('button', { name: 'Create Board' }).click();
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await expect(boardItem(page, name).first()).toBeVisible();
+}
+
+async function selectBoard(page: Page, name: string): Promise<void> {
+  await boardItem(page, name).first().click();
+  await expect(page.getByRole('heading', { name })).toBeVisible();
+}
+
 async function createTask(page: Page, title: string): Promise<void> {
   await page.getByRole('button', { name: 'New Task' }).click();
   await page.getByLabel('Title *').fill(title);
   await page.getByRole('button', { name: 'Create Task' }).click();
   await expect(page.locator('.task-card', { hasText: title }).first()).toBeVisible();
+}
+
+function createImportBackup(): ExportBackup {
+  const now = '2026-01-02T03:04:05.000Z';
+
+  return {
+    version: '1.0.0',
+    exportedAt: now,
+    boards: [
+      {
+        id: 'imported-board-1',
+        name: 'Imported Roadmap',
+        description: 'Restored from an import file',
+        color: '#2563eb',
+        isDefault: false,
+        order: 10,
+        createdAt: now,
+        updatedAt: now,
+      },
+    ],
+    tasks: [
+      {
+        id: 'imported-task-1',
+        title: 'Imported QA Task',
+        status: 'todo',
+        boardId: 'imported-board-1',
+        createdAt: now,
+        updatedAt: now,
+        priority: 'high',
+        tags: ['imported', 'qa'],
+      },
+    ],
+  };
 }

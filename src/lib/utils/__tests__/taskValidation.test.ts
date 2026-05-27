@@ -5,6 +5,7 @@ import {
   isValidTask
 } from '../taskValidation';
 import { Task } from '@/lib/types';
+import { logger } from '@/lib/utils/logger';
 
 // Helper to create a valid test task
 function createValidTask(overrides: Partial<Task> = {}): Task {
@@ -23,10 +24,10 @@ function createValidTask(overrides: Partial<Task> = {}): Task {
 }
 
 describe('taskValidation utility', () => {
-  // Suppress console warnings during tests
+  // Suppress logger output during tests
   beforeEach(() => {
-    vi.spyOn(console, 'warn').mockImplementation(() => {});
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(logger, 'warn').mockImplementation(() => {});
+    vi.spyOn(logger, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -72,19 +73,19 @@ describe('taskValidation utility', () => {
       it('returns false when id is missing', () => {
         const task = createValidTask({ id: '' });
         expect(validateTaskIntegrity(task)).toBe(false);
-        expect(console.warn).toHaveBeenCalled();
+        expect(logger.warn).toHaveBeenCalled();
       });
 
       it('returns false when title is missing', () => {
         const task = createValidTask({ title: '' });
         expect(validateTaskIntegrity(task)).toBe(false);
-        expect(console.warn).toHaveBeenCalled();
+        expect(logger.warn).toHaveBeenCalled();
       });
 
       it('returns false when boardId is missing', () => {
         const task = createValidTask({ boardId: '' });
         expect(validateTaskIntegrity(task)).toBe(false);
-        expect(console.warn).toHaveBeenCalled();
+        expect(logger.warn).toHaveBeenCalled();
       });
     });
 
@@ -92,37 +93,37 @@ describe('taskValidation utility', () => {
       it('returns false when id is not a string', () => {
         const task = createValidTask({ id: 123 as unknown as string });
         expect(validateTaskIntegrity(task)).toBe(false);
-        expect(console.warn).toHaveBeenCalled();
+        expect(logger.warn).toHaveBeenCalled();
       });
 
       it('returns false when title is not a string', () => {
         const task = createValidTask({ title: null as unknown as string });
         expect(validateTaskIntegrity(task)).toBe(false);
-        expect(console.warn).toHaveBeenCalled();
+        expect(logger.warn).toHaveBeenCalled();
       });
 
       it('returns false when boardId is not a string', () => {
         const task = createValidTask({ boardId: undefined as unknown as string });
         expect(validateTaskIntegrity(task)).toBe(false);
-        expect(console.warn).toHaveBeenCalled();
+        expect(logger.warn).toHaveBeenCalled();
       });
 
       it('returns false when createdAt is not a Date', () => {
         const task = createValidTask({ createdAt: '2024-01-01' as unknown as Date });
         expect(validateTaskIntegrity(task)).toBe(false);
-        expect(console.warn).toHaveBeenCalled();
+        expect(logger.warn).toHaveBeenCalled();
       });
 
       it('returns false when updatedAt is not a Date', () => {
         const task = createValidTask({ updatedAt: new Date().toISOString() as unknown as Date });
         expect(validateTaskIntegrity(task)).toBe(false);
-        expect(console.warn).toHaveBeenCalled();
+        expect(logger.warn).toHaveBeenCalled();
       });
 
       it('returns false when tags is not an array', () => {
         const task = createValidTask({ tags: 'tag1,tag2' as unknown as string[] });
         expect(validateTaskIntegrity(task)).toBe(false);
-        expect(console.warn).toHaveBeenCalled();
+        expect(logger.warn).toHaveBeenCalled();
       });
     });
 
@@ -130,13 +131,13 @@ describe('taskValidation utility', () => {
       it('returns false for invalid status', () => {
         const task = createValidTask({ status: 'completed' as unknown as Task['status'] });
         expect(validateTaskIntegrity(task)).toBe(false);
-        expect(console.warn).toHaveBeenCalled();
+        expect(logger.warn).toHaveBeenCalled();
       });
 
       it('returns false for invalid priority', () => {
         const task = createValidTask({ priority: 'urgent' as unknown as Task['priority'] });
         expect(validateTaskIntegrity(task)).toBe(false);
-        expect(console.warn).toHaveBeenCalled();
+        expect(logger.warn).toHaveBeenCalled();
       });
 
       it('returns false for empty string status', () => {
@@ -155,7 +156,7 @@ describe('taskValidation utility', () => {
         });
 
         expect(validateTaskIntegrity(task)).toBe(false);
-        expect(console.error).toHaveBeenCalled();
+        expect(logger.error).toHaveBeenCalled();
       });
     });
   });
@@ -194,8 +195,9 @@ describe('taskValidation utility', () => {
       ];
 
       validateTaskCollection(tasks);
-      expect(console.warn).toHaveBeenCalledWith(
-        expect.stringContaining('Filtered out 1 invalid tasks')
+      expect(logger.warn).toHaveBeenCalledWith(
+        'Filtered invalid tasks from collection',
+        { filteredCount: 1 }
       );
     });
 
@@ -203,8 +205,9 @@ describe('taskValidation utility', () => {
       const tasks = [createValidTask(), createValidTask()];
 
       validateTaskCollection(tasks);
-      expect(console.warn).not.toHaveBeenCalledWith(
-        expect.stringContaining('Filtered out')
+      expect(logger.warn).not.toHaveBeenCalledWith(
+        'Filtered invalid tasks from collection',
+        expect.anything()
       );
     });
 
