@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Github } from "@/lib/icons";
+import { ArrowRight, GitBranch } from "@/lib/icons";
 import { EnterAppLink } from "./EnterAppLink";
 
 export function FooterCTA() {
@@ -35,7 +35,7 @@ export function FooterCTA() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Github className="size-4" />
+              <GitBranch className="size-4" />
               View on GitHub
             </a>
           </Button>
