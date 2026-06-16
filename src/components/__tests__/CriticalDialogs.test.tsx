@@ -342,9 +342,9 @@ describe('critical dialog flows', () => {
         version: '1.0.0',
         fileSize: '1 KB',
       },
+      data: importData,
       validation: { warnings: [] },
     });
-    mocks.readJsonFile.mockResolvedValueOnce({ success: true, data: importData });
     mocks.detectImportConflicts.mockReturnValueOnce({
       duplicateTaskIds: ['task-1'],
       duplicateBoardIds: [],

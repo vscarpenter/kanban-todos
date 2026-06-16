@@ -204,12 +204,13 @@ export async function previewImportData(file: File): Promise<{
     version: string;
     fileSize: string;
   };
+  data?: ExportData;
   validation?: ImportValidationResult;
   error?: string;
 }> {
   try {
     const result = await readJsonFile(file);
-    
+
     if (!result.success || !result.data) {
       return {
         success: false,
@@ -230,6 +231,8 @@ export async function previewImportData(file: File): Promise<{
     return {
       success: true,
       preview,
+      // Return the parsed data so callers don't read and parse the file again.
+      data: result.data,
       validation: result.validationResult,
     };
   } catch (error) {
