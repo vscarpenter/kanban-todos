@@ -27,3 +27,5 @@ The removal of a board together with every task it owns, in a single IndexedDB t
 > **Domain expert:** They go too. A board *owns* its tasks — deleting the board cascades to them.
 > **Dev:** So a task could never sit around pointing at a board that's gone?
 > **Domain expert:** Right. That'd be an *orphaned task*, and that's a bug. The cascade is one atomic step precisely so it can't happen.
+
+<!-- CI verification probe (PR to confirm claude-review runs green); not for merge -->
