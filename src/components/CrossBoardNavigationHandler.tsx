@@ -109,24 +109,6 @@ export function CrossBoardNavigationHandler({ children }: CrossBoardNavigationHa
     };
   }, [boards, handleCrossBoardNavigation]);
 
-  // Listen for board deletion events to clean up tasks
-  useEffect(() => {
-    const handleBoardDeletion = (event: CustomEvent<{ boardId: string }>) => {
-      const { handleBoardDeletion } = useTaskStore.getState();
-      handleBoardDeletion(event.detail.boardId);
-      
-      toast.info("Board deleted", {
-        description: "Tasks from that board are no longer in search results.",
-      });
-    };
-
-    window.addEventListener('board-deleted', handleBoardDeletion as EventListener);
-    
-    return () => {
-      window.removeEventListener('board-deleted', handleBoardDeletion as EventListener);
-    };
-  }, []);
-
   return <>{children}</>;
 }
 
@@ -134,14 +116,6 @@ export function CrossBoardNavigationHandler({ children }: CrossBoardNavigationHa
 export const triggerCrossBoardNavigation = (taskId: string) => {
   const event = new CustomEvent('navigate-to-task-board', {
     detail: { taskId }
-  });
-  window.dispatchEvent(event);
-};
-
-// Utility function to notify about board deletion
-export const notifyBoardDeletion = (boardId: string) => {
-  const event = new CustomEvent('board-deleted', {
-    detail: { boardId }
   });
   window.dispatchEvent(event);
 };

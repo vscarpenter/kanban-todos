@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Board } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
+import { useTaskStore } from './taskStore';
 import { ExportData } from '@/lib/utils/exportImport';
 import { sanitizeBoardData } from '@/lib/utils/security';
 import { logger } from '@/lib/utils/logger';
@@ -226,8 +227,11 @@ export const useBoardStore = create<BoardState & BoardActions>((set, get) => ({
               throw new Error('Cannot delete the default board');
             }
 
+            // The board and its tasks are gone from storage; now prune the
+            // deleted board's tasks from the task store's in-memory state.
             await taskDB.deleteBoard(boardId);
-            
+            useTaskStore.getState().removeTasksForBoard(boardId);
+
             set((state) => {
               const newBoards = state.boards.filter(b => b.id !== boardId);
               let newCurrentBoardId = state.currentBoardId;

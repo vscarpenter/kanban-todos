@@ -165,13 +165,22 @@ export class TaskDatabase {
     const db = this.db;
     if (!db) throw new Error('Database not initialized');
 
+    // A board owns its tasks: delete the board and every task on it in one
+    // transaction so tasks can never outlive their board (no orphaned tasks).
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction(['boards'], 'readwrite');
-      const store = transaction.objectStore('boards');
-      const request = store.delete(boardId);
+      const transaction = db.transaction(['tasks', 'boards'], 'readwrite');
+      transaction.onerror = () => reject(transaction.error);
+      transaction.oncomplete = () => resolve();
 
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve();
+      const tasks = transaction.objectStore('tasks');
+      const taskKeysRequest = tasks.index('boardId').getAllKeys(boardId);
+      taskKeysRequest.onsuccess = () => {
+        for (const key of taskKeysRequest.result) {
+          tasks.delete(key);
+        }
+      };
+
+      transaction.objectStore('boards').delete(boardId);
     });
   }
 

@@ -96,7 +96,7 @@ interface TaskActions {
 
   // Validation
   validateBoardAccess: (boardId: string) => Promise<boolean>;
-  handleBoardDeletion: (deletedBoardId: string) => void;
+  removeTasksForBoard: (deletedBoardId: string) => void;
   recoverFromSearchError: () => void;
   validateTaskIntegrity: (task: Task) => boolean;
 
@@ -147,7 +147,7 @@ function createValidateBoardAccess() {
   };
 }
 
-function createHandleBoardDeletion(get: () => TaskState, set: (state: Partial<TaskState>) => void) {
+function createRemoveTasksForBoard(get: () => TaskState, set: (state: Partial<TaskState>) => void) {
   return (deletedBoardId: string) => {
     const { tasks, filters, filteredTasks } = get();
 
@@ -270,7 +270,7 @@ export const useTaskStore = create<TaskState & TaskActions>()(
 
       // Validation operations
       validateBoardAccess: createValidateBoardAccess(),
-      handleBoardDeletion: createHandleBoardDeletion(get, set),
+      removeTasksForBoard: createRemoveTasksForBoard(get, set),
       recoverFromSearchError: createRecoverFromSearchError(get, set),
       validateTaskIntegrity,
       initializeStore: createInitializeStore(get, set),
