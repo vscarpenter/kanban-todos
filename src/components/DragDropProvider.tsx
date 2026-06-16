@@ -14,7 +14,7 @@ import {
   closestCenter,
   rectIntersection,
 } from "@dnd-kit/core";
-import { Task } from "@/lib/types";
+import { Task, TASK_STATUSES } from "@/lib/types";
 import { useTaskStore } from "@/lib/stores/taskStore";
 import { celebrateTaskCompletion } from "@/lib/utils/celebrateCompletion";
 import TaskCard from "./kanban/TaskCard";
@@ -77,7 +77,7 @@ export function DragDropProvider({
       const taskId = active.id as string;
       const newStatus = over.id as Task['status'];
 
-      if (newStatus && ['todo', 'in-progress', 'done'].includes(newStatus)) {
+      if (newStatus && TASK_STATUSES.includes(newStatus)) {
         // Celebrate only real transitions into 'done' (not done → done drops).
         const previousStatus = tasks.find((t: Task) => t.id === taskId)?.status;
         moveTask(taskId, newStatus);

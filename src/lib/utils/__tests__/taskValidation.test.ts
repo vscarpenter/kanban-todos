@@ -4,7 +4,8 @@ import {
   validateTaskCollection,
   isValidTask
 } from '../taskValidation';
-import { Task } from '@/lib/types';
+import { Task, TASK_STATUSES, TASK_PRIORITIES } from '@/lib/types';
+import { taskSchema } from '../validationSchemas';
 import { logger } from '@/lib/utils/logger';
 
 // Helper to create a valid test task
@@ -322,6 +323,16 @@ describe('taskValidation utility', () => {
 
       const result = validateTaskCollection(mixedTasks);
       expect(result).toHaveLength(90);
+    });
+  });
+
+  describe('single source of task enums', () => {
+    it('drives the schema status enum from the shared TASK_STATUSES constant', () => {
+      expect(taskSchema.properties?.status.enum).toEqual([...TASK_STATUSES]);
+    });
+
+    it('drives the schema priority enum from the shared TASK_PRIORITIES constant', () => {
+      expect(taskSchema.properties?.priority.enum).toEqual([...TASK_PRIORITIES]);
     });
   });
 });

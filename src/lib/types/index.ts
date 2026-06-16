@@ -1,15 +1,23 @@
+// Single source of truth for task enum values. Runtime validators, schemas,
+// and the type system all derive from these — keep new values here only.
+export const TASK_STATUSES = ['todo', 'in-progress', 'done'] as const;
+export const TASK_PRIORITIES = ['low', 'medium', 'high'] as const;
+
+export type TaskStatus = (typeof TASK_STATUSES)[number];
+export type TaskPriority = (typeof TASK_PRIORITIES)[number];
+
 export interface Task {
   id: string;
   title: string;
   description?: string;
-  status: 'todo' | 'in-progress' | 'done';
+  status: TaskStatus;
   boardId: string;
   createdAt: Date;
   updatedAt: Date;
   completedAt?: Date;
   archivedAt?: Date;
   dueDate?: Date;
-  priority: 'low' | 'medium' | 'high';
+  priority: TaskPriority;
   tags: string[];
   progress?: number; // Progress percentage (0-100), only for 'in-progress' tasks
 }
