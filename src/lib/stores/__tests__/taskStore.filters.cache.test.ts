@@ -8,9 +8,9 @@ import {
   cleanupExpiredCache,
   generateCacheKey,
   isComplexSearch,
-  validateBoardAccess,
+  filterAccessibleTasks,
   type SearchCache,
-} from '@/lib/utils/taskFiltering';
+} from '../taskStore.filters';
 
 const mocks = vi.hoisted(() => ({
   getBoards: vi.fn(),
@@ -56,7 +56,7 @@ const makeTask = (overrides: Partial<Task> = {}): Task => ({
   ...overrides,
 });
 
-describe('taskFiltering utilities', () => {
+describe('taskStore.filters cache + access helpers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(taskDB.getBoards).mockResolvedValue([
@@ -72,7 +72,7 @@ describe('taskFiltering utilities', () => {
       makeTask({ id: 'task-missing', boardId: 'missing-board' }),
     ];
 
-    const result = await validateBoardAccess(tasks);
+    const result = await filterAccessibleTasks(tasks);
 
     expect(result.map(task => task.id)).toEqual(['task-active']);
     expect(logger.info).toHaveBeenCalledWith('Filtered tasks from inaccessible boards', {
@@ -85,7 +85,7 @@ describe('taskFiltering utilities', () => {
     const error = new Error('indexeddb unavailable');
     vi.mocked(taskDB.getBoards).mockRejectedValueOnce(error);
 
-    const result = await validateBoardAccess(tasks);
+    const result = await filterAccessibleTasks(tasks);
 
     expect(result).toBe(tasks);
     expect(logger.warn).toHaveBeenCalledWith(

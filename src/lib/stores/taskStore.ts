@@ -13,7 +13,7 @@ import { Task, TaskFilters, SearchState, SearchScope } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
 import { validateTaskIntegrity } from '@/lib/utils/taskValidation';
 import { ExportData } from '@/lib/utils/exportImport';
-import { type SearchCache } from '@/lib/utils/taskFiltering';
+import { type SearchCache } from '@/lib/stores/taskStore.filters';
 import {
   createAddTask,
   createUpdateTask,

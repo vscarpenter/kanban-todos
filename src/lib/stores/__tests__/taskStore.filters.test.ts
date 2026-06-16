@@ -24,15 +24,6 @@ vi.mock('@/lib/utils/taskSearch', () => ({
   searchTasks: vi.fn(),
 }))
 
-vi.mock('@/lib/utils/taskFiltering', () => ({
-  validateBoardAccess: vi.fn(),
-  generateCacheKey: vi.fn(() => 'cache-key'),
-  checkCache: vi.fn(() => null),
-  cacheResults: vi.fn(),
-  cleanupExpiredCache: vi.fn(),
-  isComplexSearch: vi.fn(() => false),
-}))
-
 vi.mock('@/lib/utils/taskValidation', () => ({
   validateTaskCollection: vi.fn((tasks) => tasks),
 }))
