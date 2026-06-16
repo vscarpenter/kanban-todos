@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Task, Board } from "@/lib/types";
+import { Task, Board, TASK_STATUSES } from "@/lib/types";
 
 interface BoardGroup {
   board: Board;
@@ -40,7 +40,7 @@ export function CrossBoardGroups({ boardGroups, onNavigateToBoard }: CrossBoardG
               </Button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {['todo', 'in-progress', 'done'].map((status) => {
+              {TASK_STATUSES.map((status) => {
                 const statusTasks = tasks.filter(t => t.status === status);
                 return (
                   <div key={status} className="space-y-2">

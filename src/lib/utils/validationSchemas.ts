@@ -3,6 +3,8 @@
  * Consumed by validation.ts for runtime validation and sanitization.
  */
 
+import { TASK_STATUSES, TASK_PRIORITIES } from '@/lib/types';
+
 // ============================================================================
 // Types
 // ============================================================================
@@ -68,14 +70,14 @@ export const taskSchema: ValidationSchema = {
     id: { type: 'string', minLength: 1 },
     title: { type: 'string', minLength: 1, maxLength: 500 },
     description: { type: ['string', 'undefined'], maxLength: 2000 },
-    status: { type: 'string', enum: ['todo', 'in-progress', 'done'] },
+    status: { type: 'string', enum: [...TASK_STATUSES] },
     boardId: { type: 'string', minLength: 1 },
     createdAt: { type: 'string', format: 'date-time' },
     updatedAt: { type: 'string', format: 'date-time' },
     completedAt: { type: ['string', 'undefined'], format: 'date-time' },
     archivedAt: { type: ['string', 'undefined'], format: 'date-time' },
     dueDate: { type: ['string', 'undefined'], format: 'date-time' },
-    priority: { type: 'string', enum: ['low', 'medium', 'high'] },
+    priority: { type: 'string', enum: [...TASK_PRIORITIES] },
     tags: { type: 'array', items: { type: 'string', maxLength: 50 }, maxItems: 20 },
     progress: { type: ['number', 'undefined'], minimum: 0, maximum: 100 }
   },

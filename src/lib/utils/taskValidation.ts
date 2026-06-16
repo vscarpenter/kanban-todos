@@ -1,9 +1,5 @@
-import { Task } from '@/lib/types';
+import { Task, TASK_STATUSES, TASK_PRIORITIES } from '@/lib/types';
 import { logger } from '@/lib/utils/logger';
-
-// Valid enum values for task fields
-const VALID_STATUSES = ['todo', 'in-progress', 'done'] as const;
-const VALID_PRIORITIES = ['low', 'medium', 'high'] as const;
 
 /**
  * Validates that a task has all required string fields populated
@@ -56,21 +52,21 @@ function hasValidDataTypes(task: Task): boolean {
  */
 function hasValidEnumValues(task: Task): boolean {
   // Validate status
-  if (!VALID_STATUSES.includes(task.status)) {
+  if (!TASK_STATUSES.includes(task.status)) {
     logger.warn('Task has invalid status', {
       taskId: task.id,
       status: task.status,
-      validStatuses: VALID_STATUSES
+      validStatuses: TASK_STATUSES
     });
     return false;
   }
 
   // Validate priority (optional field)
-  if (task.priority && !VALID_PRIORITIES.includes(task.priority)) {
+  if (task.priority && !TASK_PRIORITIES.includes(task.priority)) {
     logger.warn('Task has invalid priority', {
       taskId: task.id,
       priority: task.priority,
-      validPriorities: VALID_PRIORITIES
+      validPriorities: TASK_PRIORITIES
     });
     return false;
   }
