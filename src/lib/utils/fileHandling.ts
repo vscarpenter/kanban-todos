@@ -1,4 +1,11 @@
-import { ExportData, ImportValidationResult, validateImportData } from './exportImport';
+import { Task, Board } from '@/lib/types';
+import {
+  ExportData,
+  ImportValidationResult,
+  ImportConflicts,
+  validateImportData,
+  detectImportConflicts,
+} from './exportImport';
 
 // File size limits (in bytes)
 export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -241,6 +248,61 @@ export async function previewImportData(file: File): Promise<{
       error: error instanceof Error ? error.message : 'Unknown error occurred',
     };
   }
+}
+
+export interface PreparedImport {
+  success: boolean;
+  preview?: {
+    taskCount: number;
+    boardCount: number;
+    hasSettings: boolean;
+    exportedAt: string;
+    version: string;
+    fileSize: string;
+  };
+  data?: ExportData;
+  validation?: ImportValidationResult;
+  conflicts?: ImportConflicts;
+  hasConflicts: boolean;
+  error?: string;
+}
+
+/**
+ * Single entry point for the import wizard: reads + validates + previews the
+ * file (one read) and detects conflicts against the existing data, returning
+ * everything the dialog needs in one result. Callers branch on this instead of
+ * sequencing previewImportData → detectImportConflicts themselves.
+ */
+export async function prepareImport(
+  file: File,
+  existingTasks: Task[],
+  existingBoards: Board[]
+): Promise<PreparedImport> {
+  const preview = await previewImportData(file);
+
+  if (!preview.success || !preview.data) {
+    return {
+      success: false,
+      error: preview.error,
+      validation: preview.validation,
+      hasConflicts: false,
+    };
+  }
+
+  const conflicts = detectImportConflicts(preview.data, existingTasks, existingBoards);
+  const hasConflicts =
+    (conflicts.duplicateTaskIds?.length ?? 0) > 0 ||
+    (conflicts.duplicateBoardIds?.length ?? 0) > 0 ||
+    (conflicts.defaultBoardConflicts?.length ?? 0) > 0;
+
+  return {
+    success: true,
+    preview: preview.preview,
+    data: preview.data,
+    validation: preview.validation,
+    conflicts,
+    hasConflicts,
+  };
 }
 
 /**
