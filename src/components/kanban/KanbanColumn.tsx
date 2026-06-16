@@ -3,11 +3,9 @@
 import { memo } from "react";
 import { useDroppable, useDndContext } from "@dnd-kit/core";
 import isEqual from "fast-deep-equal";
-import { Task } from "@/lib/types";
+import { Task, Board } from "@/lib/types";
 import TaskCard from "./TaskCard";
 import { Plus } from "@/lib/icons";
-import { useBoardStore } from "@/lib/stores/boardStore";
-import { useTaskStore } from "@/lib/stores/taskStore";
 
 const STATUS_DOT_COLOR: Record<Task["status"], string> = {
   todo: "var(--info-500)",
@@ -19,18 +17,19 @@ interface KanbanColumnProps {
   title: string;
   tasks: Task[];
   status: Task["status"];
+  // Board/search context, derived by the parent and passed in so the column
+  // is a presentation component (no store reads) — testable through props and
+  // safely memoizable.
+  boards: Board[];
+  currentBoardId: string | null;
+  highlightedTaskId?: string;
+  isCrossBoardSearch: boolean;
   onNavigateToBoard?: (boardId: string, taskId: string) => void;
   onAddTask?: (status: Task["status"]) => void;
   className?: string;
 }
 
-function KanbanColumn({ title, tasks, status, onNavigateToBoard, onAddTask, className }: KanbanColumnProps) {
-  const { boards, currentBoardId } = useBoardStore();
-  const {
-    filters: { search: searchQuery, crossBoardSearch },
-    searchState: { highlightedTaskId },
-  } = useTaskStore();
-
+function KanbanColumn({ title, tasks, status, boards, currentBoardId, highlightedTaskId, isCrossBoardSearch, onNavigateToBoard, onAddTask, className }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: status,
     data: { type: "column", status },
@@ -44,9 +43,6 @@ function KanbanColumn({ title, tasks, status, onNavigateToBoard, onAddTask, clas
   const activeTask = active?.data?.current?.task as Task | undefined;
   const showDropPlaceholder =
     isOver && activeTask !== undefined && activeTask.status !== status;
-
-  const isSearchActive = searchQuery.length > 0;
-  const isCrossBoardSearch = crossBoardSearch && isSearchActive;
 
   return (
     <div
