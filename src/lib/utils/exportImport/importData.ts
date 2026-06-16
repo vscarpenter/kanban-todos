@@ -1,5 +1,26 @@
 /**
  * Import-related functions for application data
+ *
+ * ## Sanitization boundary (two distinct layers — do not conflate them)
+ *
+ * Imported data can be cleaned at two different levels, and callers should NOT
+ * try to sequence both themselves:
+ *
+ * 1. **Schema sanitization** — `sanitizeData` (validation.ts). Structural:
+ *    truncates over-length strings, drops fields the schema forbids, fills
+ *    defaults. Applied in the *live* import path here, by `sanitizeImportData`
+ *    (invoked from `processAdvancedImport`), and only when validation actually
+ *    found issues (`needsSanitization`).
+ *
+ * 2. **Entity XSS sanitization** — `sanitizeTaskData` / `sanitizeBoardData`
+ *    (security.ts). Strips HTML/dangerous content from title/description/tags.
+ *    Applied by `processImportData` (below) and, for user-authored data, at
+ *    write time in the store's crud actions.
+ *
+ * The live import flow (ImportDialog → `processAdvancedImport`) applies layer 1
+ * only. `processImportData` is the layer-2 entry point and is currently
+ * exercised only by tests — see issue #89 for the follow-up to either route the
+ * live flow through it or retire it.
  */
 
 import { Task, Board, Settings } from '@/lib/types';
