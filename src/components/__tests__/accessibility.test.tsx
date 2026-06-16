@@ -2,7 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { SearchBar } from '../SearchBar';
 import { BoardIndicator } from '../BoardIndicator';
 import { TaskCard } from '../kanban/TaskCard';
-import { CrossBoardNavigationHandler } from '../CrossBoardNavigationHandler';
+import { BoardNavigationProvider } from '../board/BoardNavigationContext';
 import { useTaskStore } from '@/lib/stores/taskStore';
 import { useBoardStore } from '@/lib/stores/boardStore';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
@@ -244,15 +244,16 @@ describe('Accessibility Tests', () => {
       const mockNavigate = vi.fn();
       
       render(
-        <TaskCard 
-          task={mockTask} 
-          showBoardIndicator={true}
-          board={mockBoard}
-          isCurrentBoard={false}
-          onNavigateToBoard={mockNavigate}
-        />
+        <BoardNavigationProvider value={mockNavigate}>
+          <TaskCard
+            task={mockTask}
+            showBoardIndicator={true}
+            board={mockBoard}
+            isCurrentBoard={false}
+          />
+        </BoardNavigationProvider>
       );
-      
+
       const taskButton = screen.getByRole('button', { name: /navigate to task/i });
       expect(taskButton).toHaveAttribute('tabIndex', '0');
       
@@ -302,20 +303,6 @@ describe('Accessibility Tests', () => {
       
       const tags = screen.getAllByRole('listitem');
       expect(tags).toHaveLength(2);
-    });
-  });
-
-  describe('CrossBoardNavigationHandler Focus Management', () => {
-    it('should have focus management functionality', () => {
-      render(
-        <CrossBoardNavigationHandler>
-          <div>Test content</div>
-        </CrossBoardNavigationHandler>
-      );
-      
-      // Just verify the component renders without errors
-      // Focus management is tested in integration tests
-      expect(screen.getByText('Test content')).toBeInTheDocument();
     });
   });
 

@@ -10,6 +10,7 @@ import { BoardHeader } from "./board/BoardHeader";
 import { BoardStats } from "./board/BoardStats";
 import { KanbanBoard } from "./board/KanbanBoard";
 import { CrossBoardGroups } from "./board/CrossBoardGroups";
+import { BoardNavigationProvider } from "./board/BoardNavigationContext";
 import { logger } from "@/lib/utils/logger";
 
 export function BoardView() {
@@ -107,6 +108,7 @@ export function BoardView() {
   
 
   return (
+    <BoardNavigationProvider value={handleNavigateToBoard}>
     <div className="h-full flex flex-col">
       <BoardHeader
         board={currentBoard}
@@ -149,7 +151,6 @@ export function BoardView() {
         {displayTasks.length > 0 && (
           <KanbanBoard
             tasks={displayTasks}
-            onNavigateToBoard={handleNavigateToBoard}
             onAddTask={handleAddTask}
           />
         )}
@@ -174,5 +175,6 @@ export function BoardView() {
         />
       )}
     </div>
+    </BoardNavigationProvider>
   );
 }
