@@ -4,8 +4,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useTaskStore } from "@/lib/stores/taskStore";
 import { useBoardStore } from "@/lib/stores/boardStore";
 import { useSettingsStore } from "@/lib/stores/settingsStore";
-import { previewImportData } from "@/lib/utils/fileHandling";
-import { processAdvancedImport, detectImportConflicts } from "@/lib/utils/exportImport";
+import { prepareImport } from "@/lib/utils/fileHandling";
+import { processAdvancedImport } from "@/lib/utils/exportImport";
 import { useImportState, ImportPreview } from "@/hooks/useImportState";
 import { FileSelectStep } from "./import/FileSelectStep";
 import { PreviewStep } from "./import/PreviewStep";
@@ -34,12 +34,6 @@ const STEP_DESCRIPTIONS = {
   complete: 'Import finished successfully',
 };
 
-const hasDetectedConflicts = (conflicts: ReturnType<typeof detectImportConflicts>) => (
-  (conflicts.duplicateTaskIds?.length ?? 0) > 0 ||
-  (conflicts.duplicateBoardIds?.length ?? 0) > 0 ||
-  (conflicts.defaultBoardConflicts?.length ?? 0) > 0
-);
-
 export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
   const { tasks, importTasks } = useTaskStore();
   const { boards, importBoards } = useBoardStore();
@@ -56,32 +50,31 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
     state.setWarnings([]);
 
     try {
-      const result = await previewImportData(file);
+      // One entry point reads + validates + previews the file (single read) and
+      // detects conflicts against the current data, so the dialog branches on a
+      // single result instead of sequencing the steps itself.
+      const prepared = await prepareImport(file, tasks, boards);
 
-      if (!result.success || !result.preview) {
-        state.setErrors([result.error || 'Failed to read import file']);
+      if (!prepared.success || !prepared.preview || !prepared.data) {
+        state.setErrors([prepared.error || 'Failed to read import file']);
         return;
       }
 
       const importPreview: ImportPreview = {
-        taskCount: result.preview.taskCount,
-        boardCount: result.preview.boardCount,
-        hasSettings: result.preview.hasSettings,
-        exportedAt: result.preview.exportedAt,
-        version: result.preview.version,
-        fileSize: result.preview.fileSize,
+        taskCount: prepared.preview.taskCount,
+        boardCount: prepared.preview.boardCount,
+        hasSettings: prepared.preview.hasSettings,
+        exportedAt: prepared.preview.exportedAt,
+        version: prepared.preview.version,
+        fileSize: prepared.preview.fileSize,
       };
 
-      // previewImportData already parsed the file — reuse its data instead of
-      // reading and parsing the same (potentially large) file a second time.
-      if (result.data) {
-        state.setImportData(result.data);
-      }
-
+      state.setImportData(prepared.data);
       state.setImportPreview(importPreview);
+      state.setConflicts(prepared.conflicts ?? null);
 
-      if (result.validation?.warnings && result.validation.warnings.length > 0) {
-        state.setWarnings(result.validation.warnings);
+      if (prepared.validation?.warnings && prepared.validation.warnings.length > 0) {
+        state.setWarnings(prepared.validation.warnings);
       }
     } catch (error) {
       state.setErrors([
@@ -93,10 +86,8 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
   const handlePreviewNext = () => {
     if (!state.importData) return;
 
-    const conflicts = detectImportConflicts(state.importData, tasks, boards);
-    const hasConflicts = hasDetectedConflicts(conflicts);
-
-    state.setConflicts(conflicts);
+    // Conflicts were already detected by prepareImport at file-select time.
+    const hasConflicts = state.hasConflicts();
     state.setCurrentStep(hasConflicts ? 'conflicts' : 'importing');
 
     if (!hasConflicts) {

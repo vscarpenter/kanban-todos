@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => ({
   toastSuccess: vi.fn(),
   toastError: vi.fn(),
   previewImportData: vi.fn(),
+  prepareImport: vi.fn(),
   readJsonFile: vi.fn(),
   detectImportConflicts: vi.fn(),
   processAdvancedImport: vi.fn(),
@@ -44,6 +45,7 @@ vi.mock('sonner', () => ({
 
 vi.mock('@/lib/utils/fileHandling', () => ({
   previewImportData: mocks.previewImportData,
+  prepareImport: mocks.prepareImport,
   readJsonFile: mocks.readJsonFile,
 }));
 
@@ -332,7 +334,7 @@ describe('critical dialog flows', () => {
     };
     const file = new File(['{}'], 'backup.json', { type: 'application/json' });
 
-    mocks.previewImportData.mockResolvedValueOnce({
+    mocks.prepareImport.mockResolvedValueOnce({
       success: true,
       preview: {
         taskCount: 1,
@@ -344,11 +346,12 @@ describe('critical dialog flows', () => {
       },
       data: importData,
       validation: { warnings: [] },
-    });
-    mocks.detectImportConflicts.mockReturnValueOnce({
-      duplicateTaskIds: ['task-1'],
-      duplicateBoardIds: [],
-      defaultBoardConflicts: [],
+      conflicts: {
+        duplicateTaskIds: ['task-1'],
+        duplicateBoardIds: [],
+        defaultBoardConflicts: [],
+      },
+      hasConflicts: true,
     });
 
     render(<ImportDialog open onOpenChange={vi.fn()} />);
