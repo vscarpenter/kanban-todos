@@ -22,7 +22,7 @@ export {
   ExternalLink,
   Eye,
   FileText,
-  Github,
+  GitBranch,
   GripVertical,
   HelpCircle,
   Info,

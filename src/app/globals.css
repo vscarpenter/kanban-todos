@@ -453,8 +453,17 @@
     @apply border-border outline-ring/50;
   }
 
+  html {
+    background: var(--background);
+    overscroll-behavior-x: none;
+    overscroll-behavior-y: none;
+  }
+
   body {
     @apply bg-background text-foreground;
+    min-height: 100dvh;
+    overscroll-behavior-x: none;
+    overscroll-behavior-y: none;
     font-family: var(--font-sans);
     font-size: 16px;
     line-height: 1.55;
