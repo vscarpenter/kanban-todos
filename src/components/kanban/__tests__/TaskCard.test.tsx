@@ -1,7 +1,14 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import TaskCard from '../TaskCard'
+import { BoardNavigationProvider } from '@/components/board/BoardNavigationContext'
 import { Task, Board } from '@/lib/types'
+
+// Cross-board navigation now flows through context rather than a prop, so the
+// navigation tests render the card inside a provider that captures the call.
+function renderWithNavigation(ui: React.ReactElement, navigate: (boardId: string, taskId: string) => void) {
+  return render(<BoardNavigationProvider value={navigate}>{ui}</BoardNavigationProvider>)
+}
 
 const mockTask: Task = {
   id: 'task-1',
@@ -89,57 +96,57 @@ describe('TaskCard', () => {
       expect(screen.getByText('Current Board')).toBeInTheDocument()
     })
 
-    it('calls onNavigateToBoard when clicking on task from other board', () => {
+    it('navigates when clicking on task from other board', () => {
       const mockNavigate = vi.fn()
-      
-      render(
-        <TaskCard 
-          task={mockTask} 
+
+      renderWithNavigation(
+        <TaskCard
+          task={mockTask}
           showBoardIndicator={true}
           board={mockBoard}
           isCurrentBoard={false}
-          onNavigateToBoard={mockNavigate}
-        />
+        />,
+        mockNavigate
       )
-      
+
       const taskCard = screen.getByText('Test Task').closest('div')
       if (taskCard) fireEvent.click(taskCard)
-      
+
       expect(mockNavigate).toHaveBeenCalledWith('board-2', 'task-1')
     })
 
-    it('does not call onNavigateToBoard when clicking on current board task', () => {
+    it('does not navigate when clicking on current board task', () => {
       const mockNavigate = vi.fn()
-      
-      render(
-        <TaskCard 
-          task={mockTask} 
+
+      renderWithNavigation(
+        <TaskCard
+          task={mockTask}
           showBoardIndicator={true}
           board={mockCurrentBoard}
           isCurrentBoard={true}
-          onNavigateToBoard={mockNavigate}
-        />
+        />,
+        mockNavigate
       )
-      
+
       const taskCard = screen.getByText('Test Task').closest('div')
       if (taskCard) fireEvent.click(taskCard)
-      
+
       expect(mockNavigate).not.toHaveBeenCalled()
     })
 
-    it('does not call onNavigateToBoard when clicking on dropdown menu', () => {
+    it('does not navigate when clicking on dropdown menu', () => {
       const mockNavigate = vi.fn()
-      
-      render(
-        <TaskCard 
-          task={mockTask} 
+
+      renderWithNavigation(
+        <TaskCard
+          task={mockTask}
           showBoardIndicator={true}
           board={mockBoard}
           isCurrentBoard={false}
-          onNavigateToBoard={mockNavigate}
-        />
+        />,
+        mockNavigate
       )
-      
+
       // Get the dropdown menu button (the one that's not the draggable container)
       const buttons = screen.getAllByRole('button')
       const menuButton = buttons.find(button => button.getAttribute('aria-haspopup') === 'menu')

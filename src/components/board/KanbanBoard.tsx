@@ -16,11 +16,10 @@ const DragDropProvider = dynamic(() => import("../DragDropProvider").then(mod =>
 
 interface KanbanBoardProps {
   tasks: Task[];
-  onNavigateToBoard: (boardId: string, taskId: string) => void;
   onAddTask?: (status: Task['status']) => void;
 }
 
-export function KanbanBoard({ tasks, onNavigateToBoard, onAddTask }: KanbanBoardProps) {
+export function KanbanBoard({ tasks, onAddTask }: KanbanBoardProps) {
   // Board/search context lives here, in the orchestrator, and flows to the
   // columns as props — the columns themselves stay presentation-only.
   const { boards, currentBoardId } = useBoardStore();
@@ -121,7 +120,6 @@ export function KanbanBoard({ tasks, onNavigateToBoard, onAddTask }: KanbanBoard
             currentBoardId={currentBoardId}
             highlightedTaskId={highlightedTaskId}
             isCrossBoardSearch={isCrossBoardSearch}
-            onNavigateToBoard={onNavigateToBoard}
             onAddTask={onAddTask}
             className={activeColumn === 'todo' ? 'flex' : 'hidden md:flex'}
           />
@@ -134,7 +132,6 @@ export function KanbanBoard({ tasks, onNavigateToBoard, onAddTask }: KanbanBoard
             currentBoardId={currentBoardId}
             highlightedTaskId={highlightedTaskId}
             isCrossBoardSearch={isCrossBoardSearch}
-            onNavigateToBoard={onNavigateToBoard}
             onAddTask={onAddTask}
             className={activeColumn === 'in-progress' ? 'flex' : 'hidden md:flex'}
           />
@@ -147,7 +144,6 @@ export function KanbanBoard({ tasks, onNavigateToBoard, onAddTask }: KanbanBoard
             currentBoardId={currentBoardId}
             highlightedTaskId={highlightedTaskId}
             isCrossBoardSearch={isCrossBoardSearch}
-            onNavigateToBoard={onNavigateToBoard}
             onAddTask={onAddTask}
             className={activeColumn === 'done' ? 'flex' : 'hidden md:flex'}
           />

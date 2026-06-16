@@ -24,12 +24,11 @@ interface KanbanColumnProps {
   currentBoardId: string | null;
   highlightedTaskId?: string;
   isCrossBoardSearch: boolean;
-  onNavigateToBoard?: (boardId: string, taskId: string) => void;
   onAddTask?: (status: Task["status"]) => void;
   className?: string;
 }
 
-function KanbanColumn({ title, tasks, status, boards, currentBoardId, highlightedTaskId, isCrossBoardSearch, onNavigateToBoard, onAddTask, className }: KanbanColumnProps) {
+function KanbanColumn({ title, tasks, status, boards, currentBoardId, highlightedTaskId, isCrossBoardSearch, onAddTask, className }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: status,
     data: { type: "column", status },
@@ -170,7 +169,6 @@ function KanbanColumn({ title, tasks, status, boards, currentBoardId, highlighte
                       showBoardIndicator={isCrossBoardSearch}
                       board={taskBoard}
                       isCurrentBoard={isCurrentBoard}
-                      onNavigateToBoard={onNavigateToBoard}
                     />
                   </div>
                 );

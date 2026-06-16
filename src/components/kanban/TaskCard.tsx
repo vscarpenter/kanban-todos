@@ -8,13 +8,13 @@ import { Task, Board } from "@/lib/types";
 import { BoardIndicator } from "../BoardIndicator";
 import { TaskCardActions } from "./TaskCardActions";
 import { TaskCardMetadata } from "./TaskCardMetadata";
+import { useBoardNavigation } from "../board/BoardNavigationContext";
 
 interface TaskCardProps {
   task: Task;
   showBoardIndicator?: boolean;
   board?: Board;
   isCurrentBoard?: boolean;
-  onNavigateToBoard?: (boardId: string, taskId: string) => void;
 }
 
 export function TaskCard({
@@ -22,8 +22,8 @@ export function TaskCard({
   showBoardIndicator = false,
   board,
   isCurrentBoard = true,
-  onNavigateToBoard,
 }: TaskCardProps) {
+  const navigateToBoard = useBoardNavigation();
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: task.id,
     data: { type: "task", task },
@@ -33,25 +33,25 @@ export function TaskCard({
 
   const handleCardClick = useCallback(
     (e: React.MouseEvent) => {
-      if (showBoardIndicator && board && !isCurrentBoard && onNavigateToBoard) {
+      if (showBoardIndicator && board && !isCurrentBoard) {
         const target = e.target as HTMLElement;
         if (target.closest("button") || target.closest('[role="menuitem"]')) return;
-        onNavigateToBoard(board.id, task.id);
+        navigateToBoard(board.id, task.id);
       }
     },
-    [showBoardIndicator, board, isCurrentBoard, onNavigateToBoard, task.id]
+    [showBoardIndicator, board, isCurrentBoard, navigateToBoard, task.id]
   );
 
   const handleCardKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (showBoardIndicator && board && !isCurrentBoard && onNavigateToBoard) {
+      if (showBoardIndicator && board && !isCurrentBoard) {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          onNavigateToBoard(board.id, task.id);
+          navigateToBoard(board.id, task.id);
         }
       }
     },
-    [showBoardIndicator, board, isCurrentBoard, onNavigateToBoard, task.id]
+    [showBoardIndicator, board, isCurrentBoard, navigateToBoard, task.id]
   );
 
   if (isDragging) {
