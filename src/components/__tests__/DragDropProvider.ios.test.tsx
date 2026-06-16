@@ -2,20 +2,13 @@ import { render, screen, fireEvent, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { DragDropProvider } from '../DragDropProvider'
 import { Task } from '@/lib/types'
-import { useTaskStore } from '@/lib/stores/taskStore'
 import TaskCard from '../kanban/TaskCard'
 
-// Mock the task store
-vi.mock('@/lib/stores/taskStore', () => ({
-  useTaskStore: vi.fn(),
-}))
-
-// Mock navigator.vibrate
-const mockVibrate = vi.fn()
-Object.defineProperty(navigator, 'vibrate', {
-  value: mockVibrate,
-  writable: true,
-})
+// DragDropProvider is now presentation-only: it wires @dnd-kit sensors and
+// renders the overlay. The drag *logic* (haptics, persistence, celebration)
+// lives in useDragLifecycle and is covered by useDragLifecycle.test.ts. These
+// tests verify the iOS-tuned TouchSensor activation by observing the onDragStart
+// the provider forwards from @dnd-kit.
 
 const mockTask: Task = {
   id: 'task-1',
@@ -29,22 +22,24 @@ const mockTask: Task = {
   updatedAt: new Date('2024-01-01'),
 }
 
-const mockTasks = [mockTask]
-const mockMoveTask = vi.fn()
+function renderProvider(
+  props: Partial<React.ComponentProps<typeof DragDropProvider>> = {}
+) {
+  return render(
+    <DragDropProvider
+      activeTask={null}
+      onDragStart={vi.fn()}
+      onDragEnd={vi.fn()}
+      {...props}
+    >
+      <TaskCard task={mockTask} />
+    </DragDropProvider>
+  )
+}
 
 describe('DragDropProvider iOS TouchSensor Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    
-    // Mock useTaskStore implementation
-    ;(useTaskStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-      tasks: mockTasks,
-      moveTask: mockMoveTask,
-    })
-  })
-
-  afterEach(() => {
-    vi.resetAllMocks()
   })
 
   describe('iOS Safari User Agent Detection', () => {
@@ -63,13 +58,8 @@ describe('DragDropProvider iOS TouchSensor Tests', () => {
         configurable: true,
       })
 
-      render(
-        <DragDropProvider>
-          <TaskCard task={mockTask} />
-        </DragDropProvider>
-      )
+      renderProvider()
 
-      // Verify component renders correctly on iOS
       expect(screen.getByText('Test Task')).toBeInTheDocument()
     })
 
@@ -79,92 +69,73 @@ describe('DragDropProvider iOS TouchSensor Tests', () => {
         configurable: true,
       })
 
-      render(
-        <DragDropProvider>
-          <TaskCard task={mockTask} />
-        </DragDropProvider>
-      )
+      renderProvider()
 
       expect(screen.getByText('Test Task')).toBeInTheDocument()
     })
   })
 
   describe('TouchSensor Configuration', () => {
-    it('should configure TouchSensor with iOS-optimized settings', () => {
-      const { container } = render(
-        <DragDropProvider>
-          <TaskCard task={mockTask} />
-        </DragDropProvider>
-      )
+    it('should render draggable children', () => {
+      const { container } = renderProvider()
 
       const dragElement = container.querySelector('[data-task-id="task-1"]')
       expect(dragElement).toBeInTheDocument()
     })
 
-    it('should handle touch events with proper activation constraints', async () => {
-      const { container } = render(
-        <DragDropProvider>
-          <TaskCard task={mockTask} />
-        </DragDropProvider>
-      )
+    it('should activate drag after the delay and forward onDragStart', async () => {
+      const onDragStart = vi.fn()
+      const { container } = renderProvider({ onDragStart })
 
       const dragElement = container.querySelector('[data-task-id="task-1"]') as Element
-      
-      // Simulate touch start
+
       fireEvent.touchStart(dragElement, {
         touches: [{ clientX: 100, clientY: 100, identifier: 1 }],
         targetTouches: [{ clientX: 100, clientY: 100, identifier: 1 }],
         changedTouches: [{ clientX: 100, clientY: 100, identifier: 1 }],
       })
 
-      // Wait for activation delay (200ms)
+      // Wait past the touch activation delay.
       await act(async () => {
         await new Promise(resolve => setTimeout(resolve, 250))
       })
 
-      // Verify haptic feedback was triggered
-      expect(mockVibrate).toHaveBeenCalledWith(50)
+      expect(onDragStart).toHaveBeenCalled()
     })
 
-    it('should activate drag after delay regardless of small movements', async () => {
-      const { container } = render(
-        <DragDropProvider>
-          <TaskCard task={mockTask} />
-        </DragDropProvider>
-      )
+    it('should activate drag despite small movements within tolerance', async () => {
+      const onDragStart = vi.fn()
+      const { container } = renderProvider({ onDragStart })
 
       const dragElement = container.querySelector('[data-task-id="task-1"]') as Element
-      
-      // Start touch
+
       fireEvent.touchStart(dragElement, {
         touches: [{ clientX: 100, clientY: 100, identifier: 1 }],
         targetTouches: [{ clientX: 100, clientY: 100, identifier: 1 }],
         changedTouches: [{ clientX: 100, clientY: 100, identifier: 1 }],
       })
 
-      // Move within tolerance (< 8px) - this should still activate after delay
+      // Move within tolerance (< 8px) — should still activate after the delay.
       fireEvent.touchMove(dragElement, {
         touches: [{ clientX: 105, clientY: 105, identifier: 1 }],
         targetTouches: [{ clientX: 105, clientY: 105, identifier: 1 }],
         changedTouches: [{ clientX: 105, clientY: 105, identifier: 1 }],
       })
 
-      // Wait past activation delay
       await act(async () => {
         await new Promise(resolve => setTimeout(resolve, 250))
       })
 
-      // Should trigger haptic feedback after delay even with small movements
-      expect(mockVibrate).toHaveBeenCalledWith(50)
+      expect(onDragStart).toHaveBeenCalled()
     })
   })
 
   describe('Touch Event Handling', () => {
-    it('should handle touchend events properly', async () => {
-      const mockOnDragEnd = vi.fn()
-      
+    it('should forward onDragEnd on touchend', async () => {
+      const onDragEnd = vi.fn()
+
       const { container } = render(
-        <DragDropProvider onDragEnd={mockOnDragEnd}>
+        <DragDropProvider activeTask={null} onDragStart={vi.fn()} onDragEnd={onDragEnd}>
           <TaskCard task={mockTask} />
           <div data-testid="drop-zone" data-droppable-id="in-progress">
             Drop Zone
@@ -174,92 +145,57 @@ describe('DragDropProvider iOS TouchSensor Tests', () => {
 
       const dragElement = container.querySelector('[data-task-id="task-1"]') as Element
 
-      // Start drag
       fireEvent.touchStart(dragElement, {
         touches: [{ clientX: 100, clientY: 100, identifier: 1 }],
       })
 
-      // Wait for activation
       await act(async () => {
         await new Promise(resolve => setTimeout(resolve, 250))
       })
 
-      // Move to drop zone
       fireEvent.touchMove(dragElement, {
         touches: [{ clientX: 200, clientY: 200, identifier: 1 }],
       })
 
-      // End touch over drop zone
       fireEvent.touchEnd(dragElement, {
         changedTouches: [{ clientX: 200, clientY: 200, identifier: 1 }],
       })
 
-      expect(mockOnDragEnd).toHaveBeenCalled()
+      expect(onDragEnd).toHaveBeenCalled()
     })
 
     it('should handle touchcancel events gracefully', async () => {
-      const { container } = render(
-        <DragDropProvider>
-          <TaskCard task={mockTask} />
-        </DragDropProvider>
-      )
+      const { container } = renderProvider()
 
       const dragElement = container.querySelector('[data-task-id="task-1"]') as Element
 
-      // Start drag
       fireEvent.touchStart(dragElement, {
         touches: [{ clientX: 100, clientY: 100, identifier: 1 }],
       })
 
-      // Wait for activation
       await act(async () => {
         await new Promise(resolve => setTimeout(resolve, 250))
       })
 
-      // Cancel touch - should not throw errors
       expect(() => {
         fireEvent.touchCancel(dragElement, {
           changedTouches: [{ clientX: 100, clientY: 100, identifier: 1 }],
         })
       }).not.toThrow()
-
-      // Verify haptic feedback was triggered during activation
-      expect(mockVibrate).toHaveBeenCalledWith(50)
-    })
-  })
-
-  describe('iOS-specific CSS Properties', () => {
-    it('should apply touch-action: none for proper touch handling', () => {
-      const { container } = render(
-        <DragDropProvider>
-          <TaskCard task={mockTask} />
-        </DragDropProvider>
-      )
-
-      const dragElement = container.querySelector('[data-task-id="task-1"]') as Element
-      
-      // Check if drag element is properly set up for touch
-      expect(dragElement).toBeInTheDocument()
-      expect(dragElement).toHaveAttribute('data-task-id', 'task-1')
     })
   })
 
   describe('Cross-device Compatibility', () => {
-    it('should work with both mouse and touch simultaneously', async () => {
-      const { container } = render(
-        <DragDropProvider>
-          <TaskCard task={mockTask} />
-        </DragDropProvider>
-      )
+    it('should work with both mouse and touch events', async () => {
+      const onDragStart = vi.fn()
+      const { container } = renderProvider({ onDragStart })
 
       const dragElement = container.querySelector('[data-task-id="task-1"]') as Element
 
-      // Test mouse events still work
       fireEvent.mouseDown(dragElement, { clientX: 100, clientY: 100 })
       fireEvent.mouseMove(dragElement, { clientX: 110, clientY: 110 })
       fireEvent.mouseUp(dragElement)
 
-      // Test touch events work
       fireEvent.touchStart(dragElement, {
         touches: [{ clientX: 100, clientY: 100, identifier: 1 }],
       })
@@ -268,42 +204,15 @@ describe('DragDropProvider iOS TouchSensor Tests', () => {
         await new Promise(resolve => setTimeout(resolve, 250))
       })
 
-      expect(mockVibrate).toHaveBeenCalledWith(50)
+      expect(onDragStart).toHaveBeenCalled()
     })
   })
 
   describe('Performance Considerations', () => {
-    it('should not create excessive event listeners', () => {
-      const { rerender } = render(
-        <DragDropProvider>
-          <TaskCard task={mockTask} />
-        </DragDropProvider>
-      )
-
-      // Re-render multiple times
-      for (let i = 0; i < 5; i++) {
-        rerender(
-          <DragDropProvider>
-            <TaskCard task={mockTask} />
-          </DragDropProvider>
-        )
-      }
-
-      // Component should still function correctly
-      expect(screen.getByText('Test Task')).toBeInTheDocument()
-    })
-
     it('should cleanup properly on unmount', () => {
-      const { unmount } = render(
-        <DragDropProvider>
-          <TaskCard task={mockTask} />
-        </DragDropProvider>
-      )
+      const { unmount } = renderProvider()
 
-      unmount()
-
-      // No errors should occur during cleanup
-      expect(true).toBe(true)
+      expect(() => unmount()).not.toThrow()
     })
   })
 })

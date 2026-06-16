@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -14,9 +14,7 @@ import {
   closestCenter,
   rectIntersection,
 } from "@dnd-kit/core";
-import { Task, TASK_STATUSES } from "@/lib/types";
-import { useTaskStore } from "@/lib/stores/taskStore";
-import { celebrateTaskCompletion } from "@/lib/utils/celebrateCompletion";
+import { Task } from "@/lib/types";
 import TaskCard from "./kanban/TaskCard";
 
 // Cache touch detection once at module level with SSR guard
@@ -24,26 +22,28 @@ const isTouchDevice = typeof window !== 'undefined' && 'ontouchstart' in window;
 
 interface DragDropProviderProps {
   children: React.ReactNode;
-  onDragStart?: (event: DragStartEvent) => void;
-  onDragEnd?: (event: DragEndEvent) => void;
+  // The drag interaction itself is owned by useDragLifecycle (see KanbanBoard).
+  // This component is now presentation-only: it wires the sensors/collision
+  // detection and renders the overlay for whatever task is being dragged.
+  activeTask: Task | null;
+  onDragStart: (event: DragStartEvent) => void;
+  onDragEnd: (event: DragEndEvent) => void;
   onDragOver?: (event: DragOverEvent) => void;
 }
 
 export function DragDropProvider({
   children,
+  activeTask,
   onDragStart,
   onDragEnd,
   onDragOver
 }: DragDropProviderProps) {
-  const [activeTask, setActiveTask] = useState<Task | null>(null);
-  const { tasks, moveTask } = useTaskStore();
-
   // Simple touch sensor configuration using cached detection
   const touchSensorConfig = useMemo(() => isTouchDevice
     ? { activationConstraint: { delay: 150, tolerance: 8 } }
     : { activationConstraint: { delay: 100, tolerance: 5 } },
   []);
-  
+
   // Configure drag sensors for both mouse and touch
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -53,50 +53,6 @@ export function DragDropProvider({
     }),
     useSensor(TouchSensor, touchSensorConfig)
   );
-
-  const handleDragStart = (event: DragStartEvent) => {
-    const { active } = event;
-    const task = tasks.find((t: Task) => t.id === active.id);
-    if (task) {
-      setActiveTask(task);
-
-      // Simple haptic feedback
-      if ('vibrate' in navigator) {
-        navigator.vibrate(50);
-      }
-    }
-
-    // Call parent's drag start handler first
-    onDragStart?.(event);
-  };
-
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    // Clear the drag overlay and let the parent restore its layout immediately
-    // — the persistence below runs after, so the UI stays responsive.
-    setActiveTask(null);
-    onDragEnd?.(event);
-
-    if (over && active.data.current?.type === 'task') {
-      const taskId = active.id as string;
-      const newStatus = over.id as Task['status'];
-
-      if (newStatus && TASK_STATUSES.includes(newStatus)) {
-        // Capture pre-move state before the store changes it.
-        const task = tasks.find((t: Task) => t.id === taskId);
-        const previousStatus = task?.status;
-        const completedTitle = task?.title ?? '';
-
-        // Celebrate only a real, *persisted* transition into 'done'. Previously
-        // the celebration fired immediately, even if the move never committed.
-        const moved = await moveTask(taskId, newStatus);
-        if (moved && newStatus === 'done' && previousStatus && previousStatus !== 'done') {
-          celebrateTaskCompletion(completedTitle);
-        }
-      }
-    }
-  };
 
   // Custom collision detection for better mobile accuracy
   const customCollisionDetection = (args: Parameters<typeof rectIntersection>[0]) => {
@@ -108,8 +64,8 @@ export function DragDropProvider({
     <DndContext
       sensors={sensors}
       collisionDetection={customCollisionDetection}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
       onDragOver={onDragOver}
     >
       {children}

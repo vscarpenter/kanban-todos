@@ -7,6 +7,7 @@ import KanbanColumn from "../kanban/KanbanColumn";
 import { ColumnTabs } from "./ColumnTabs";
 import { useBoardStore } from "@/lib/stores/boardStore";
 import { useTaskStore } from "@/lib/stores/taskStore";
+import { useDragLifecycle } from "@/hooks/useDragLifecycle";
 
 // Lazy load drag-and-drop functionality
 const DragDropProvider = dynamic(() => import("../DragDropProvider").then(mod => ({ default: mod.DragDropProvider })), {
@@ -26,16 +27,17 @@ export function KanbanBoard({ tasks, onAddTask }: KanbanBoardProps) {
   const {
     filters: { search, crossBoardSearch },
     searchState: { highlightedTaskId },
+    moveTask,
   } = useTaskStore();
   const isCrossBoardSearch = crossBoardSearch && search.length > 0;
 
   // Mobile: which column is currently visible. Desktop ignores this — the grid
   // always shows all three columns side-by-side.
   const [activeColumn, setActiveColumn] = useState<Task['status']>('todo');
-  // Drag state toggles a temporary "show all 3 columns scaled down" layout on
-  // mobile so a card can be dragged across columns even when only one is
-  // visible. Desktop is unaffected.
-  const [isDragging, setIsDragging] = useState(false);
+  // One seam owns the whole drag interaction: the overlay task, the mobile
+  // scaled-down layout flag (drag.isDragging), persistence, and the completion
+  // celebration. The columns just render; DragDropProvider just wires sensors.
+  const drag = useDragLifecycle(tasks, moveTask);
 
   // Memoize filtered tasks to avoid unnecessary recalculations
   const todoTasks = useMemo(() => tasks.filter(task => task.status === 'todo'), [tasks]);
@@ -69,16 +71,12 @@ export function KanbanBoard({ tasks, onAddTask }: KanbanBoardProps) {
     }
   }, [columns, announceColumnChange]);
 
-  const handleDragStart = useCallback(() => {
-    setIsDragging(true);
-  }, []);
-
-  const handleDragEnd = useCallback(() => {
-    setIsDragging(false);
-  }, []);
-
   return (
-    <DragDropProvider onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+    <DragDropProvider
+      activeTask={drag.activeTask}
+      onDragStart={drag.handleDragStart}
+      onDragEnd={drag.handleDragEnd}
+    >
       <div className="flex flex-col gap-4 h-full">
         {/* Screen reader announcer for column navigation */}
         <div
@@ -107,7 +105,7 @@ export function KanbanBoard({ tasks, onAddTask }: KanbanBoardProps) {
             Desktop: 3-col grid always. */}
         <div
           className={`flex md:grid md:grid-cols-3 gap-6 min-h-full board-animate-in ${
-            isDragging ? 'md:grid-cols-3 !grid grid-cols-3 !gap-2 scale-[0.85]' : ''
+            drag.isDragging ? 'md:grid-cols-3 !grid grid-cols-3 !gap-2 scale-[0.85]' : ''
           }`}
           role="region"
           aria-label="Kanban board columns"
