@@ -5,9 +5,6 @@
 
 import type { ExportData } from './exportImport';
 import {
-  taskSchema,
-  boardSchema,
-  settingsSchema,
   exportDataSchema,
   type ValidationSchema,
   type ValidationError,
@@ -301,18 +298,11 @@ export function getDefaultValue(schema: ValidationSchema): unknown {
 // Entity Validators
 // ============================================================================
 
-export function validateTask(task: unknown): DetailedValidationResult {
-  return validateSchema(task, taskSchema, 'task');
-}
-
-export function validateBoard(board: unknown): DetailedValidationResult {
-  return validateSchema(board, boardSchema, 'board');
-}
-
-export function validateSettings(settings: unknown): DetailedValidationResult {
-  return validateSchema(settings, settingsSchema, 'settings');
-}
-
+// validateExportData is the one entity validator with real callers (export +
+// import paths). The per-entity wrappers (validateTask/validateBoard/
+// validateSettings) were one-line pass-throughs over validateSchema with zero
+// callers, so they were removed — call validateSchema(data, <schema>, path)
+// directly with the schema from validationSchemas if you need one.
 export function validateExportData(data: unknown): DetailedValidationResult {
   return validateSchema(data, exportDataSchema, 'exportData');
 }
