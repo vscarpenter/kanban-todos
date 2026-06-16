@@ -547,7 +547,7 @@ describe('taskStore', () => {
         },
       });
 
-      useTaskStore.getState().handleBoardDeletion('board-deleted');
+      useTaskStore.getState().removeTasksForBoard('board-deleted');
 
       const { tasks, filteredTasks, filters, error } = useTaskStore.getState();
       expect(tasks.map(task => task.id)).toEqual(['kept-task']);

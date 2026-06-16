@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertTriangle, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { useBoardStore } from "@/lib/stores/boardStore";
 import { useTaskStore } from "@/lib/stores/taskStore";
 import { Board } from "@/lib/types";
@@ -37,6 +38,7 @@ export function BoardDeleteDialog({ open, onOpenChange, board }: BoardDeleteDial
     
     try {
       await deleteBoard(board.id);
+      toast.success('Board deleted');
       onOpenChange(false);
       setConfirmationText("");
     } catch (error) {

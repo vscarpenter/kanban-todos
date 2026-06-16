@@ -158,6 +158,22 @@ describe('TaskDatabase', () => {
       expect(boards).toHaveLength(1);
       expect(boards[0].id).toBe('board-2');
     });
+
+    it('cascades to the board tasks, leaving other boards untouched', async () => {
+      await db.addBoard(createTestBoard({ id: 'board-1' }));
+      await db.addBoard(createTestBoard({ id: 'board-2' }));
+      await db.addTask(createTestTask({ id: 'task-1', boardId: 'board-1' }));
+      await db.addTask(createTestTask({ id: 'task-2', boardId: 'board-1', archivedAt: new Date() }));
+      await db.addTask(createTestTask({ id: 'task-3', boardId: 'board-2' }));
+
+      await db.deleteBoard('board-1');
+
+      const boards = await db.getBoards();
+      const tasks = await db.getTasks();
+      expect(boards.map(b => b.id)).toEqual(['board-2']);
+      // both the active and the archived task on board-1 are gone; no orphans
+      expect(tasks.map(t => t.id)).toEqual(['task-3']);
+    });
   });
 
   describe('settings operations', () => {

@@ -229,6 +229,25 @@ describe('critical dialog flows', () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
+  it('confirms a successful board deletion with a toast', async () => {
+    render(
+      <BoardDeleteDialog
+        open
+        onOpenChange={vi.fn()}
+        board={makeBoard({ id: 'board-3', name: 'Client Work' })}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText(/type .* to confirm deletion/i), {
+      target: { value: 'Client Work' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /^delete board$/i }));
+
+    await waitFor(() => {
+      expect(mocks.toastSuccess).toHaveBeenCalledWith('Board deleted');
+    });
+  });
+
   it('uses an explicit confirmation step before moving a task to the default board', async () => {
     const onOpenChange = vi.fn();
 

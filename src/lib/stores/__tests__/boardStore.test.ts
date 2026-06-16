@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import type { Task } from '@/lib/types';
 import { useBoardStore } from '../boardStore';
 
 // Mock the database
@@ -374,6 +375,27 @@ describe('boardStore', () => {
       await deleteBoard('board-2');
 
       expect(taskDB.deleteBoard).toHaveBeenCalledWith('board-2');
+    });
+
+    it('prunes the deleted board\'s tasks from the task store', async () => {
+      const { useTaskStore } = await import('../taskStore');
+      useTaskStore.setState({
+        tasks: [
+          { id: 'task-on-deleted', boardId: 'board-2' },
+          { id: 'task-kept', boardId: 'board-1' },
+        ] as unknown as Task[],
+        filteredTasks: [
+          { id: 'task-on-deleted', boardId: 'board-2' },
+          { id: 'task-kept', boardId: 'board-1' },
+        ] as unknown as Task[],
+      });
+
+      const { deleteBoard } = useBoardStore.getState();
+      await deleteBoard('board-2');
+
+      const { tasks, filteredTasks } = useTaskStore.getState();
+      expect(tasks.map(t => t.id)).toEqual(['task-kept']);
+      expect(filteredTasks.map(t => t.id)).toEqual(['task-kept']);
     });
 
     it('prevents deleting the default board', async () => {
