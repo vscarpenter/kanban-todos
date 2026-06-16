@@ -5,6 +5,7 @@
 
 import { Task, TaskFilters, SearchScope } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
 import { sanitizeSearchQuery, searchRateLimiter } from '@/lib/utils/security';
 import { searchTasks } from '@/lib/utils/taskSearch';
 import {
@@ -374,12 +375,12 @@ export function createLoadSearchPreferences(get: () => TaskStoreState, set: Stor
 export function createSaveSearchScope() {
   return async (scope: SearchScope) => {
     try {
-      const settings = await taskDB.getSettings();
-      if (settings?.searchPreferences?.rememberScope) {
-        await taskDB.updateSettings({
-          ...settings,
-          searchPreferences: { ...settings.searchPreferences, defaultScope: scope },
-        });
+      // settingsStore is the single owner of Settings: persist the scope
+      // through it (only when the user has opted to remember their scope)
+      // instead of writing to the database directly behind its back.
+      const { settings, setDefaultSearchScope } = useSettingsStore.getState();
+      if (settings.searchPreferences.rememberScope) {
+        await setDefaultSearchScope(scope);
       }
     } catch (error: unknown) {
       logger.warn('Failed to save search scope preference:', error);

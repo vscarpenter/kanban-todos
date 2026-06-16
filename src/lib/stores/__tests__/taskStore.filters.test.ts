@@ -1,10 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { 
+import {
   applyFiltersToTasks,
+  createSaveSearchScope,
 } from '../taskStore.filters'
 import { Task, TaskFilters } from '@/lib/types'
+import { useSettingsStore } from '@/lib/stores/settingsStore'
 import { sanitizeSearchQuery } from '@/lib/utils/security'
 import { searchTasks } from '@/lib/utils/taskSearch'
+
+vi.mock('@/lib/stores/settingsStore', () => ({
+  useSettingsStore: { getState: vi.fn() },
+}))
 
 // Mock dependencies
 vi.mock('@/lib/utils/security', () => ({
@@ -219,5 +225,31 @@ describe('taskStore.filters', () => {
     })
   })
 
-  
+  describe('createSaveSearchScope', () => {
+    const mockGetState = vi.mocked(useSettingsStore.getState)
+
+    function stubSettings(rememberScope: boolean, setDefaultSearchScope = vi.fn()) {
+      mockGetState.mockReturnValue({
+        settings: { searchPreferences: { rememberScope, defaultScope: 'current-board' } },
+        setDefaultSearchScope,
+      } as unknown as ReturnType<typeof useSettingsStore.getState>)
+      return setDefaultSearchScope
+    }
+
+    it('persists the scope through settingsStore when rememberScope is on', async () => {
+      const setDefaultSearchScope = stubSettings(true)
+
+      await createSaveSearchScope()('all-boards')
+
+      expect(setDefaultSearchScope).toHaveBeenCalledWith('all-boards')
+    })
+
+    it('does not persist when rememberScope is off', async () => {
+      const setDefaultSearchScope = stubSettings(false)
+
+      await createSaveSearchScope()('all-boards')
+
+      expect(setDefaultSearchScope).not.toHaveBeenCalled()
+    })
+  })
 })
