@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useTaskStore } from "@/lib/stores/taskStore";
 import { useBoardStore } from "@/lib/stores/boardStore";
 import { useSettingsStore } from "@/lib/stores/settingsStore";
-import { readJsonFile, previewImportData } from "@/lib/utils/fileHandling";
+import { previewImportData } from "@/lib/utils/fileHandling";
 import { processAdvancedImport, detectImportConflicts } from "@/lib/utils/exportImport";
 import { useImportState, ImportPreview } from "@/hooks/useImportState";
 import { FileSelectStep } from "./import/FileSelectStep";
@@ -72,9 +72,10 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
         fileSize: result.preview.fileSize,
       };
 
-      const fileReadResult = await readJsonFile(file);
-      if (fileReadResult.success && fileReadResult.data) {
-        state.setImportData(fileReadResult.data);
+      // previewImportData already parsed the file — reuse its data instead of
+      // reading and parsing the same (potentially large) file a second time.
+      if (result.data) {
+        state.setImportData(result.data);
       }
 
       state.setImportPreview(importPreview);
