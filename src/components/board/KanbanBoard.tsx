@@ -5,6 +5,8 @@ import dynamic from "next/dynamic";
 import { Task } from "@/lib/types";
 import KanbanColumn from "../kanban/KanbanColumn";
 import { ColumnTabs } from "./ColumnTabs";
+import { useBoardStore } from "@/lib/stores/boardStore";
+import { useTaskStore } from "@/lib/stores/taskStore";
 
 // Lazy load drag-and-drop functionality
 const DragDropProvider = dynamic(() => import("../DragDropProvider").then(mod => ({ default: mod.DragDropProvider })), {
@@ -19,6 +21,15 @@ interface KanbanBoardProps {
 }
 
 export function KanbanBoard({ tasks, onNavigateToBoard, onAddTask }: KanbanBoardProps) {
+  // Board/search context lives here, in the orchestrator, and flows to the
+  // columns as props — the columns themselves stay presentation-only.
+  const { boards, currentBoardId } = useBoardStore();
+  const {
+    filters: { search, crossBoardSearch },
+    searchState: { highlightedTaskId },
+  } = useTaskStore();
+  const isCrossBoardSearch = crossBoardSearch && search.length > 0;
+
   // Mobile: which column is currently visible. Desktop ignores this — the grid
   // always shows all three columns side-by-side.
   const [activeColumn, setActiveColumn] = useState<Task['status']>('todo');
@@ -106,6 +117,10 @@ export function KanbanBoard({ tasks, onNavigateToBoard, onAddTask }: KanbanBoard
             title="To Do"
             tasks={todoTasks}
             status="todo"
+            boards={boards}
+            currentBoardId={currentBoardId}
+            highlightedTaskId={highlightedTaskId}
+            isCrossBoardSearch={isCrossBoardSearch}
             onNavigateToBoard={onNavigateToBoard}
             onAddTask={onAddTask}
             className={activeColumn === 'todo' ? 'flex' : 'hidden md:flex'}
@@ -115,6 +130,10 @@ export function KanbanBoard({ tasks, onNavigateToBoard, onAddTask }: KanbanBoard
             title="In Progress"
             tasks={inProgressTasks}
             status="in-progress"
+            boards={boards}
+            currentBoardId={currentBoardId}
+            highlightedTaskId={highlightedTaskId}
+            isCrossBoardSearch={isCrossBoardSearch}
             onNavigateToBoard={onNavigateToBoard}
             onAddTask={onAddTask}
             className={activeColumn === 'in-progress' ? 'flex' : 'hidden md:flex'}
@@ -124,6 +143,10 @@ export function KanbanBoard({ tasks, onNavigateToBoard, onAddTask }: KanbanBoard
             title="Done"
             tasks={doneTasks}
             status="done"
+            boards={boards}
+            currentBoardId={currentBoardId}
+            highlightedTaskId={highlightedTaskId}
+            isCrossBoardSearch={isCrossBoardSearch}
             onNavigateToBoard={onNavigateToBoard}
             onAddTask={onAddTask}
             className={activeColumn === 'done' ? 'flex' : 'hidden md:flex'}

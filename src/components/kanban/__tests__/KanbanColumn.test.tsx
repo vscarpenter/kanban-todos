@@ -2,8 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import KanbanColumn from '../KanbanColumn';
 import { Task } from '@/lib/types';
-import { useBoardStore } from '@/lib/stores/boardStore';
-import { useTaskStore } from '@/lib/stores/taskStore';
 
 // Mock dnd-kit so we can drive `isOver` and the active-drag context from tests.
 const mockUseDroppable = vi.fn();
@@ -24,19 +22,13 @@ vi.mock('../TaskCard', () => ({
   default: () => null,
 }));
 
-vi.mock('@/lib/stores/boardStore');
-vi.mock('@/lib/stores/taskStore');
-
-function setStores() {
-  (useBoardStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-    boards: [],
-    currentBoardId: 'board-1',
-  });
-  (useTaskStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-    filters: { search: '', crossBoardSearch: false },
-    searchState: { highlightedTaskId: undefined },
-  });
-}
+// KanbanColumn is now a presentation component — board/search context comes
+// in as props, so these tests no longer need to mock the stores.
+const columnContext = {
+  boards: [],
+  currentBoardId: 'board-1',
+  isCrossBoardSearch: false,
+};
 
 function setNoActiveDrag() {
   mockUseDroppable.mockReturnValue({ setNodeRef: vi.fn(), isOver: false });
@@ -63,13 +55,12 @@ function setActiveDragFromOtherColumn() {
 describe('KanbanColumn — empty state vs drop placeholder', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    setStores();
   });
 
   it('shows the empty-state copy when no drag is in progress', () => {
     setNoActiveDrag();
 
-    render(<KanbanColumn title="Done" tasks={[]} status="done" />);
+    render(<KanbanColumn title="Done" tasks={[]} status="done" {...columnContext} />);
 
     expect(screen.getByText(/no tasks yet/i)).toBeInTheDocument();
     expect(screen.queryByText(/drop to move task here/i)).not.toBeInTheDocument();
@@ -78,7 +69,7 @@ describe('KanbanColumn — empty state vs drop placeholder', () => {
   it('shows ONLY the drop placeholder (not the empty state) when a card from another column is hovering', () => {
     setActiveDragFromOtherColumn();
 
-    render(<KanbanColumn title="Done" tasks={[]} status="done" />);
+    render(<KanbanColumn title="Done" tasks={[]} status="done" {...columnContext} />);
 
     // Regression: previously both the empty state AND the drop placeholder
     // rendered simultaneously, creating two competing affordances for the
