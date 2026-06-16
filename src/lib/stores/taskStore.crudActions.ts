@@ -125,9 +125,12 @@ export function createDeleteTask(_get: GetState, set: StoreSetter) {
 const TASK_COMPLETE_PROGRESS = 100; // progress value indicating task completion
 
 export function createMoveTask(get: GetState, set: StoreSetter) {
-  return async (taskId: string, newStatus: Task['status']) => {
+  // Returns whether the move actually persisted, so callers (e.g. the drag
+  // handler) can gate side effects like the completion celebration on a real,
+  // committed transition rather than firing them optimistically.
+  return async (taskId: string, newStatus: Task['status']): Promise<boolean> => {
     const task = get().tasks.find(t => t.id === taskId);
-    if (!task) return;
+    if (!task) return false;
 
     const updates: Partial<Task> = { status: newStatus, updatedAt: new Date() };
 
@@ -146,7 +149,12 @@ export function createMoveTask(get: GetState, set: StoreSetter) {
       await get().updateTask(taskId, updates);
     } catch (error: unknown) {
       set({ error: error instanceof Error ? error.message : 'Failed to move task' });
+      return false;
     }
+
+    // updateTask swallows persistence errors internally (it only sets error
+    // state), so confirm the status actually changed before reporting success.
+    return get().tasks.find(t => t.id === taskId)?.status === newStatus;
   };
 }
 

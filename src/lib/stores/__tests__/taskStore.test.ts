@@ -313,6 +313,36 @@ describe('taskStore', () => {
       expect(tasks[0].completedAt).toBeUndefined();
       expect(tasks[0].progress).toBeUndefined();
     });
+
+    it('reports success so callers can act only on a persisted move', async () => {
+      useTaskStore.setState({
+        tasks: [{
+          id: 'task-1', title: 'Test', status: 'todo', boardId: 'board-1',
+          priority: 'low', tags: [], createdAt: new Date(), updatedAt: new Date(),
+        }],
+        filteredTasks: [],
+      });
+
+      const moved = await useTaskStore.getState().moveTask('task-1', 'in-progress');
+
+      expect(moved).toBe(true);
+    });
+
+    it('reports failure (and leaves the status unchanged) when the move cannot persist', async () => {
+      useTaskStore.setState({
+        tasks: [{
+          id: 'task-1', title: 'Test', status: 'todo', boardId: 'board-1',
+          priority: 'low', tags: [], createdAt: new Date(), updatedAt: new Date(),
+        }],
+        filteredTasks: [],
+      });
+      vi.mocked(taskDB.updateTask).mockRejectedValueOnce(new Error('db down'));
+
+      const moved = await useTaskStore.getState().moveTask('task-1', 'done');
+
+      expect(moved).toBe(false);
+      expect(useTaskStore.getState().tasks[0].status).toBe('todo');
+    });
   });
 
   describe('archiveTask', () => {

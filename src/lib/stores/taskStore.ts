@@ -78,7 +78,7 @@ interface TaskActions {
   addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
   updateTask: (taskId: string, updates: Partial<Task>) => Promise<void>;
   deleteTask: (taskId: string) => Promise<void>;
-  moveTask: (taskId: string, newStatus: Task['status']) => Promise<void>;
+  moveTask: (taskId: string, newStatus: Task['status']) => Promise<boolean>;
   moveTaskToBoard: (taskId: string, targetBoardId: string) => Promise<void>;
   archiveTask: (taskId: string) => Promise<void>;
   unarchiveTask: (taskId: string) => Promise<void>;

@@ -70,28 +70,32 @@ export function DragDropProvider({
     onDragStart?.(event);
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
+
+    // Clear the drag overlay and let the parent restore its layout immediately
+    // — the persistence below runs after, so the UI stays responsive.
+    setActiveTask(null);
+    onDragEnd?.(event);
 
     if (over && active.data.current?.type === 'task') {
       const taskId = active.id as string;
       const newStatus = over.id as Task['status'];
 
       if (newStatus && TASK_STATUSES.includes(newStatus)) {
-        // Celebrate only real transitions into 'done' (not done → done drops).
-        const previousStatus = tasks.find((t: Task) => t.id === taskId)?.status;
-        moveTask(taskId, newStatus);
-        if (newStatus === 'done' && previousStatus && previousStatus !== 'done') {
-          const completedTitle = tasks.find((t: Task) => t.id === taskId)?.title ?? '';
+        // Capture pre-move state before the store changes it.
+        const task = tasks.find((t: Task) => t.id === taskId);
+        const previousStatus = task?.status;
+        const completedTitle = task?.title ?? '';
+
+        // Celebrate only a real, *persisted* transition into 'done'. Previously
+        // the celebration fired immediately, even if the move never committed.
+        const moved = await moveTask(taskId, newStatus);
+        if (moved && newStatus === 'done' && previousStatus && previousStatus !== 'done') {
           celebrateTaskCompletion(completedTitle);
         }
       }
     }
-
-    setActiveTask(null);
-
-    // Call parent's drag end handler after task is moved
-    onDragEnd?.(event);
   };
 
   // Custom collision detection for better mobile accuracy
