@@ -13,13 +13,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `bun run test` - Run tests with vitest
 
 ### Deployment
-- `bun run deploy` - Single environment deployment (todos.vinny.dev) via `./scripts/deploy.sh`
+- `bun run deploy` - Single environment deployment (cascade.vinny.dev) via `./scripts/deploy.sh`
 - `bun run deploy:multi` - Interactive multi-environment deployment script
-- `bun run deploy:todos` - Deploy specifically to todos.vinny.dev environment
 - `bun run deploy:cascade` - Deploy specifically to cascade.vinny.dev environment
 - `bun run deploy:all` - Deploy to all configured environments
-- `bun run deploy:check` - Verify todos.vinny.dev deployment status
-- `bun run deploy:check:cascade` - Verify cascade.vinny.dev deployment status
+- `bun run deploy:check` - Verify cascade.vinny.dev deployment status
 - `./scripts/deploy-multi.sh` - Multi-environment deployment with JSON configuration
 
 ### Package Management
@@ -108,8 +106,7 @@ Implementation history documentation is archived in `archive/` directory:
 Reference `archive/README.md` for complete index.
 
 ### Production Deployment
-- **Primary**: `todos.vinny.dev` (S3 + CloudFront)
-- **Secondary**: `cascade.vinny.dev` (S3 + CloudFront)  
+- **Primary**: `cascade.vinny.dev` (S3 + CloudFront)
 - **Security**: CSP, HSTS, security headers policy
 - **Cache**: 1-year static assets, no HTML cache, 5-min dynamic
 - **Deploy**: `bun run deploy` or `./scripts/deploy-multi.sh`
