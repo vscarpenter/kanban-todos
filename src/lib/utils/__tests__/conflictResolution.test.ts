@@ -43,8 +43,6 @@ const makeSettings = (overrides: Partial<Settings> = {}): Settings => ({
   autoArchiveDays: 30,
   enableNotifications: false,
   enableKeyboardShortcuts: true,
-  enableDebugMode: false,
-  enableDeveloperMode: false,
   searchPreferences: {
     defaultScope: 'current-board',
     rememberScope: true,
