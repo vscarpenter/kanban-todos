@@ -1,14 +1,7 @@
-import { test, expect, type Page, type Locator } from '@playwright/test';
+import type { Page, Locator } from '@playwright/test';
+import { test, expect, createTask, taskCard } from './fixtures';
 
 test.describe('Search Filters', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('cascade_has_visited', 'true');
-    });
-    await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
-  });
-
   test('opens the filters popover', async ({ page }) => {
     await openFilters(page);
 
@@ -149,10 +142,6 @@ test.describe('Search Filters', () => {
 
 // Helper functions
 
-function taskCard(page: Page, title: string): Locator {
-  return page.locator('.task-card', { hasText: title });
-}
-
 function taskInColumn(
   page: Page,
   status: 'todo' | 'in-progress' | 'done',
@@ -165,13 +154,6 @@ function taskInColumn(
 async function openFilters(page: Page): Promise<void> {
   await page.getByRole('button', { name: /Open filters menu/i }).click();
   await expect(page.getByLabel('Filter by task status')).toBeVisible();
-}
-
-async function createTask(page: Page, title: string): Promise<void> {
-  await page.getByRole('button', { name: 'New Task' }).click();
-  await page.getByLabel('Title *').fill(title);
-  await page.getByRole('button', { name: 'Create Task' }).click();
-  await expect(taskCard(page, title).first()).toBeVisible();
 }
 
 async function createTaskWithPriority(

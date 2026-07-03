@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 const FORMAT_VERSION = '1.0.0';
 
@@ -25,14 +26,6 @@ function payloadToBuffer(payload: unknown): Buffer {
 }
 
 test.describe('Import Flow', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('cascade_has_visited', 'true');
-    });
-    await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
-  });
-
   test('imports a valid JSON file with new tasks', async ({ page }) => {
     await openImport(page);
 

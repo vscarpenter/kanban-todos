@@ -1,10 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
+import { resetAppStorage } from './fixtures';
 
+// This spec uses its own regex-based board/task selectors (rather than the
+// shared fixtures helpers) and a different ready-check ("Add board" visible,
+// not the "Work Tasks" heading), so it doesn't use the full auto-navigating
+// `test` from './fixtures' - just the storage reset for isolation.
 test.describe('Cross-board search', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('cascade_has_visited', 'true');
-    });
+    await resetAppStorage(page);
     await page.goto('/');
     await expect(page.getByRole('button', { name: 'Add board' })).toBeVisible();
   });

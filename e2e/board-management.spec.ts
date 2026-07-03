@@ -1,14 +1,7 @@
-import { test, expect, type Page, type Locator } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { test, expect, createBoard, selectBoard, boardItem, createTask } from './fixtures';
 
 test.describe('Board Management', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('cascade_has_visited', 'true');
-    });
-    await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
-  });
-
   test('creates new board with valid name', async ({ page }) => {
     const boardName = 'Test Board';
 
@@ -186,31 +179,6 @@ test.describe('Board Management', () => {
 
 // Helper functions
 
-// BoardItem is a <div role="button"> that wraps nested reorder buttons and a
-// menu trigger. Plain role-based selectors match multiple elements; this helper
-// scopes to the outer item by anchoring on the exact board-name text node.
-function boardItem(page: Page, name: string): Locator {
-  return page.locator('[role="button"]', {
-    has: page.getByText(name, { exact: true }),
-  }).filter({ hasNotText: 'Move ' });
-}
-
-async function createBoard(page: Page, name: string, description?: string): Promise<void> {
-  await page.getByRole('button', { name: 'Add board' }).click();
-  await page.getByLabel('Board Name *').fill(name);
-  if (description) {
-    await page.getByLabel('Description').fill(description);
-  }
-  await page.getByRole('button', { name: 'Create Board' }).click();
-  await expect(page.getByRole('dialog')).toBeHidden();
-  await expect(boardItem(page, name).first()).toBeVisible();
-}
-
-async function selectBoard(page: Page, name: string): Promise<void> {
-  await boardItem(page, name).first().click();
-  await expect(page.getByRole('heading', { name })).toBeVisible();
-}
-
 async function openBoardMenu(page: Page, boardName: string): Promise<void> {
   const item = boardItem(page, boardName).first();
   await item.hover();
@@ -229,11 +197,4 @@ async function deleteBoard(page: Page, boardName: string): Promise<void> {
   await page.getByLabel(/Type.*to confirm deletion/i).fill(boardName);
   await page.getByRole('button', { name: 'Delete Board' }).click();
   await expect(page.getByRole('dialog')).toBeHidden();
-}
-
-async function createTask(page: Page, title: string): Promise<void> {
-  await page.getByRole('button', { name: 'New Task' }).click();
-  await page.getByLabel('Title *').fill(title);
-  await page.getByRole('button', { name: 'Create Task' }).click();
-  await expect(page.locator('.task-card', { hasText: title }).first()).toBeVisible();
 }

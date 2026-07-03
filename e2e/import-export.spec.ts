@@ -1,15 +1,8 @@
 import { readFile, writeFile } from 'node:fs/promises';
-import { test, expect, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { test, expect, createTask, createBoard, selectBoard, boardItem } from './fixtures';
 
 test.describe('Import/Export', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('cascade_has_visited', 'true');
-    });
-    await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
-  });
-
   test('opens export dialog', async ({ page }) => {
     await openExport(page);
 
@@ -279,35 +272,6 @@ async function openImport(page: Page): Promise<void> {
 // to disambiguate from the dialog title that also reads "Export Data".
 function exportSubmitButton(page: Page) {
   return page.getByRole('dialog').getByRole('button', { name: /Export Data|Exporting/ });
-}
-
-function boardItem(page: Page, name: string) {
-  return page.locator('[role="button"]', {
-    has: page.getByText(name, { exact: true }),
-  }).filter({ hasNotText: 'Move ' });
-}
-
-async function createBoard(page: Page, name: string, description?: string): Promise<void> {
-  await page.getByRole('button', { name: 'Add board' }).click();
-  await page.getByLabel('Board Name *').fill(name);
-  if (description) {
-    await page.getByLabel('Description').fill(description);
-  }
-  await page.getByRole('button', { name: 'Create Board' }).click();
-  await expect(page.getByRole('dialog')).toBeHidden();
-  await expect(boardItem(page, name).first()).toBeVisible();
-}
-
-async function selectBoard(page: Page, name: string): Promise<void> {
-  await boardItem(page, name).first().click();
-  await expect(page.getByRole('heading', { name })).toBeVisible();
-}
-
-async function createTask(page: Page, title: string): Promise<void> {
-  await page.getByRole('button', { name: 'New Task' }).click();
-  await page.getByLabel('Title *').fill(title);
-  await page.getByRole('button', { name: 'Create Task' }).click();
-  await expect(page.locator('.task-card', { hasText: title }).first()).toBeVisible();
 }
 
 function createImportBackup(): ExportBackup {

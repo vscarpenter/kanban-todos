@@ -1,14 +1,7 @@
-import { test, expect, type Page, type Locator } from '@playwright/test';
+import type { Page, Locator } from '@playwright/test';
+import { test, expect, createTask, taskCard, createTaskWithDetails } from './fixtures';
 
 test.describe('Archive System', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('cascade_has_visited', 'true');
-    });
-    await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
-  });
-
   test('manually archives completed task', async ({ page }) => {
     const taskTitle = 'Task to Archive';
     await createTask(page, taskTitle);
@@ -197,10 +190,6 @@ test.describe('Archive System', () => {
 
 // Helper functions
 
-function taskCard(page: Page, title: string): Locator {
-  return page.locator('.task-card', { hasText: title });
-}
-
 // Archive list rows render with shadcn <Card>, which emits `data-slot="card"`.
 // Anchor on the slot attribute and filter by the h3 task-title heading.
 function archiveRow(page: Page, title: string): Locator {
@@ -208,31 +197,6 @@ function archiveRow(page: Page, title: string): Locator {
     .getByRole('dialog')
     .locator('[data-slot="card"]')
     .filter({ has: page.getByRole('heading', { name: title, level: 3 }) });
-}
-
-async function createTask(page: Page, title: string): Promise<void> {
-  await page.getByRole('button', { name: 'New Task' }).click();
-  await page.getByLabel('Title *').fill(title);
-  await page.getByRole('button', { name: 'Create Task' }).click();
-  await expect(taskCard(page, title).first()).toBeVisible();
-}
-
-async function createTaskWithDetails(
-  page: Page,
-  title: string,
-  options: { description?: string; tags?: string } = {}
-): Promise<void> {
-  await page.getByRole('button', { name: 'New Task' }).click();
-  await page.getByLabel('Title *').fill(title);
-
-  if (options.description || options.tags) {
-    await page.getByRole('button', { name: 'Show Details' }).click();
-    if (options.description) await page.getByLabel('Description').fill(options.description);
-    if (options.tags) await page.getByLabel('Tags').fill(options.tags);
-  }
-
-  await page.getByRole('button', { name: 'Create Task' }).click();
-  await expect(taskCard(page, title).first()).toBeVisible();
 }
 
 async function openTaskMenu(page: Page, taskTitle: string): Promise<void> {

@@ -1,14 +1,16 @@
 import { test, expect, type Page } from '@playwright/test';
+import { resetAppStorage } from './fixtures';
 
 const MOBILE = { width: 375, height: 667 };
 const TABLET = { width: 768, height: 1024 };
 const DESKTOP = { width: 1280, height: 720 };
 
+// Each test picks its own viewport before navigating, so this can't use the
+// auto-navigating `test` from './fixtures' - just the storage reset for
+// isolation.
 async function boot(page: Page, viewport = MOBILE): Promise<void> {
   await page.setViewportSize(viewport);
-  await page.addInitScript(() => {
-    localStorage.setItem('cascade_has_visited', 'true');
-  });
+  await resetAppStorage(page);
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
 }

@@ -1,14 +1,7 @@
-import { test, expect, type Page, type Locator } from '@playwright/test';
+import type { Page, Locator } from '@playwright/test';
+import { test, expect, createTask, createBoard, taskCard, boardItem } from './fixtures';
 
 test.describe('Drag and Drop', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('cascade_has_visited', 'true');
-    });
-    await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
-  });
-
   test('drags task from To Do to In Progress column', async ({ page }) => {
     const taskTitle = 'Draggable Task';
     await createTask(page, taskTitle);
@@ -141,10 +134,6 @@ test.describe('Drag and Drop', () => {
 
 // Helper functions
 
-function taskCard(page: Page, title: string): Locator {
-  return page.locator('.task-card', { hasText: title });
-}
-
 // Locator scoped to a specific column. Looks up the column by its droppable
 // status id (todo / in-progress / done). The column root is the element that
 // `useDroppable` registers; we walk down to the task list inside.
@@ -154,27 +143,6 @@ function taskInColumn(page: Page, status: 'todo' | 'in-progress' | 'done', title
   // wrappers render in a fixed order: To Do (0), In Progress (1), Done (2).
   const columnIndex = status === 'todo' ? 0 : status === 'in-progress' ? 1 : 2;
   return page.locator('.kanban-column').nth(columnIndex).locator('.task-card', { hasText: title });
-}
-
-function boardItem(page: Page, name: string): Locator {
-  return page.locator('[role="button"]', {
-    has: page.getByText(name, { exact: true }),
-  }).filter({ hasNotText: 'Move ' });
-}
-
-async function createTask(page: Page, title: string): Promise<void> {
-  await page.getByRole('button', { name: 'New Task' }).click();
-  await page.getByLabel('Title *').fill(title);
-  await page.getByRole('button', { name: 'Create Task' }).click();
-  await expect(taskCard(page, title).first()).toBeVisible();
-}
-
-async function createBoard(page: Page, name: string): Promise<void> {
-  await page.getByRole('button', { name: 'Add board' }).click();
-  await page.getByLabel('Board Name *').fill(name);
-  await page.getByRole('button', { name: 'Create Board' }).click();
-  await expect(page.getByRole('dialog')).toBeHidden();
-  await expect(boardItem(page, name).first()).toBeVisible();
 }
 
 async function openTaskMenu(page: Page, taskTitle: string): Promise<void> {
