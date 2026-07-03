@@ -1,5 +1,11 @@
 import type { Page, Locator } from '@playwright/test';
-import { test, expect, createTask, createBoard, taskCard, selectBoard } from './fixtures';
+import { test, expect, createTask, createBoard, taskCard, selectBoard, column } from './fixtures';
+
+const STATUS_TITLE: Record<'todo' | 'in-progress' | 'done', string> = {
+  todo: 'To Do',
+  'in-progress': 'In Progress',
+  done: 'Done',
+};
 
 test.describe('Toast Notifications', () => {
   test('shows "Task completed" toast when dragging a task to Done', async ({ page }) => {
@@ -9,7 +15,7 @@ test.describe('Toast Notifications', () => {
     await dragTaskToColumn(page, taskTitle, 'done');
 
     // Wait for the column move + celebrate toast
-    await expect(page.locator('.kanban-column').nth(2).locator('.task-card', { hasText: taskTitle }))
+    await expect(column(page, STATUS_TITLE.done).locator('.task-card', { hasText: taskTitle }))
       .toBeVisible({ timeout: 5000 });
     await expect(toastWithText(page, /Task completed/i)).toBeVisible({ timeout: 5000 });
   });
@@ -158,8 +164,7 @@ async function dragTaskToColumn(
   const cardBox = await card.boundingBox();
   if (!cardBox) throw new Error(`Card "${taskTitle}" missing box`);
 
-  const idx = targetStatus === 'todo' ? 0 : targetStatus === 'in-progress' ? 1 : 2;
-  const col = page.locator('.kanban-column').nth(idx);
+  const col = column(page, STATUS_TITLE[targetStatus]);
   await col.scrollIntoViewIfNeeded();
   const colBox = await col.boundingBox();
   if (!colBox) throw new Error(`Column ${targetStatus} missing box`);

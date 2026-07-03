@@ -1,5 +1,11 @@
 import type { Page, Locator } from '@playwright/test';
-import { test, expect, createTask, taskCard } from './fixtures';
+import { test, expect, createTask, taskCard, column } from './fixtures';
+
+const STATUS_TITLE: Record<'todo' | 'in-progress' | 'done', string> = {
+  todo: 'To Do',
+  'in-progress': 'In Progress',
+  done: 'Done',
+};
 
 test.describe('Search Filters', () => {
   test('opens the filters popover', async ({ page }) => {
@@ -147,8 +153,7 @@ function taskInColumn(
   status: 'todo' | 'in-progress' | 'done',
   title: string
 ): Locator {
-  const idx = status === 'todo' ? 0 : status === 'in-progress' ? 1 : 2;
-  return page.locator('.kanban-column').nth(idx).locator('.task-card', { hasText: title });
+  return column(page, STATUS_TITLE[status]).locator('.task-card', { hasText: title });
 }
 
 async function openFilters(page: Page): Promise<void> {
