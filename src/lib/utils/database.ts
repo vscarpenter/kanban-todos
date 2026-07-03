@@ -16,6 +16,14 @@ export class TaskDatabase {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
 
       request.onerror = () => reject(request.error);
+      // Fires when another tab holds an older-version connection open,
+      // preventing this upgrade from proceeding. Without this handler the
+      // open request neither resolves nor rejects — the app hangs
+      // indefinitely with no error surfaced. Reject with a clear message
+      // instead, since a working DB connection is required to proceed.
+      request.onblocked = () => {
+        reject(new Error('Database upgrade blocked — please close other tabs with this app open and retry.'));
+      };
       request.onsuccess = () => {
         this.db = request.result;
 
@@ -35,26 +43,27 @@ export class TaskDatabase {
 
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
+        const oldVersion = event.oldVersion;
 
-        // Create object stores
-        if (!db.objectStoreNames.contains('tasks')) {
+        // Migration ladder, guarded by oldVersion so an upgrade from any
+        // prior version applies every step in between. IndexedDB can't
+        // alter an existing store's keyPath or index set outside
+        // onupgradeneeded, so this scaffold needs to exist before a real
+        // migration is needed — add `if (oldVersion < 2) { ... }` etc. here
+        // the next time DB_VERSION changes.
+        if (oldVersion < 1) {
           const taskStore = db.createObjectStore('tasks', { keyPath: 'id' });
           taskStore.createIndex('boardId', 'boardId', { unique: false });
           taskStore.createIndex('status', 'status', { unique: false });
           taskStore.createIndex('archivedAt', 'archivedAt', { unique: false });
           taskStore.createIndex('dueDate', 'dueDate', { unique: false });
-        }
 
-        if (!db.objectStoreNames.contains('boards')) {
           const boardStore = db.createObjectStore('boards', { keyPath: 'id' });
           boardStore.createIndex('isDefault', 'isDefault', { unique: false });
           boardStore.createIndex('order', 'order', { unique: false });
-        }
 
-        if (!db.objectStoreNames.contains('settings')) {
           db.createObjectStore('settings', { keyPath: 'id' });
         }
-
       };
     });
   }

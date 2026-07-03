@@ -57,6 +57,25 @@ describe('TaskDatabase', () => {
       const freshDB = new TaskDatabase();
       await expect(freshDB.init()).resolves.toBeUndefined();
     });
+
+    it('rejects with a clear message instead of hanging forever when the open request is blocked', async () => {
+      const freshDB = new TaskDatabase();
+
+      // Simulates another tab holding an older-version connection open,
+      // which makes IndexedDB report the open request as blocked instead of
+      // resolving or erroring.
+      const openSpy = vi.spyOn(indexedDB, 'open').mockImplementation(() => {
+        const request = {} as IDBOpenDBRequest;
+        queueMicrotask(() => {
+          request.onblocked?.(new Event('blocked') as IDBVersionChangeEvent);
+        });
+        return request;
+      });
+
+      await expect(freshDB.init()).rejects.toThrow(/blocked/i);
+
+      openSpy.mockRestore();
+    });
   });
 
   describe('task CRUD operations', () => {
