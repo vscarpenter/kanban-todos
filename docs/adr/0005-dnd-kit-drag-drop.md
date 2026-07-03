@@ -1,7 +1,7 @@
 # ADR-0005: @dnd-kit for Drag-and-Drop
 
 **Status:** Accepted  
-**Date:** 2024-01-15
+**Documented:** 2026-04-14 (decision predates formal ADR documentation)
 
 ## Context
 

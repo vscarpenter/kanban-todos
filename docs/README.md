@@ -12,7 +12,7 @@ Welcome to the comprehensive documentation for the Kanban Todos application. Thi
 ### Developer Documentation
 - [Developer Guide](./developer-guide.md) - Development setup and architecture
 - [API Reference](./api-reference.md) - Technical API documentation
-- [Refactoring Guide v3.0](./REFACTORING-V3.md) - Version 3.0 architecture improvements ⭐ NEW
+- [Refactoring Guide v3.0](./REFACTORING-V3.md) - Version 3.0 architecture improvements
 
 ## 🚀 Quick Start
 
@@ -21,7 +21,7 @@ Welcome to the comprehensive documentation for the Kanban Todos application. Thi
 3. **Build**: Run `bun run build` to create a production build
 4. **Test**: Run `bun run test` to execute the test suite
 
-> **Version 3.0.1** includes major internal refactoring for improved code quality. See [Refactoring Guide](./REFACTORING-V3.md) for details.
+> **The v3.0.1 release** included major internal refactoring for improved code quality. See [Refactoring Guide](./REFACTORING-V3.md) for details.
 
 ## 🎯 Key Features
 
@@ -77,4 +77,4 @@ If you need help or have questions:
 
 ---
 
-*Last updated: January 2025 (v3.0.1)*
+*Last updated: July 2026 (v5.2.1)*

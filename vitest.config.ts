@@ -25,7 +25,9 @@ export default defineConfig({
         'src/**/*.d.ts',
         'src/app/layout.tsx',  // boilerplate Next.js layout
       ],
-      // Ratchet baseline for the next sprint; keep raising in small increments.
+      // Below the ~80% floor in coding-standards.md (Part 3) — this is a known,
+      // intentional gap, not an oversight. Raise these thresholds incrementally
+      // over time as coverage improves.
       thresholds: {
         lines: 55,
         functions: 55,

@@ -30,7 +30,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Framework**: Next.js 16.x with App Router, static export
 - **Language**: TypeScript (strict), shadcn/ui, Tailwind CSS v4
 - **State**: Zustand stores + IndexedDB (custom TaskDatabase class)
-- **Performance**: @dnd-kit lazy loaded, React.memo, dynamic imports
+- **Performance**: React.memo, dynamic imports; `DragDropProvider` is wrapped in `next/dynamic`, but `TaskCard`/`KanbanColumn` import `@dnd-kit/core` directly and are part of the always-mounted board tree, so `@dnd-kit` is not fully lazy-loaded in practice
 
 ### Project Structure
 ```
@@ -96,15 +96,6 @@ Three main Zustand stores with IndexedDB persistence:
 - **Version Management**: Service worker updates and cache busting
 - **Native Dialog Replacement**: Styled confirmation dialogs
 
-## Archive
-
-Implementation history documentation is archived in `archive/` directory:
-- Accessibility improvements and WCAG compliance implementation
-- Code quality reviews and build error resolution
-- Bug fixes and technical solutions
-
-Reference `archive/README.md` for complete index.
-
 ### Production Deployment
 - **Primary**: `cascade.vinny.dev` (S3 + CloudFront)
 - **Security**: CSP, HSTS, security headers policy
@@ -113,7 +104,6 @@ Reference `archive/README.md` for complete index.
 
 ### Performance
 - Bundle: ~388kB with lazy loading, tree shaking, React.memo
-- Memory optimization: `src/lib/utils/memoryOptimization.ts` utilities (debounce, throttle, cleanup)
 - Analysis: `bun run build:analyze`
 
 ### Keyboard Shortcuts

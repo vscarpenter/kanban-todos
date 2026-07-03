@@ -1,13 +1,13 @@
 # Cascade - Task Management System
 
-[![Version](https://img.shields.io/badge/version-5.2.0-blue.svg)](https://github.com/vscarpenter/kanban-todos)
+[![Version](https://img.shields.io/badge/version-5.2.1-blue.svg)](https://github.com/vscarpenter/kanban-todos)
 [![Build](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
 
 A modern, privacy-first kanban board task management system built with Next.js, TypeScript, and Tailwind CSS. Features a clean, accessible interface with advanced typography and responsive design.
 
-> **Version 5.2.0** reflects the current app structure, quality cleanup, and the latest Next.js / Vitest stack used in this repo.
+> **Version 5.2.1** reflects the current app structure, quality cleanup, and the latest Next.js / Vitest stack used in this repo.
 
 ## ✨ Features
 

@@ -1,7 +1,7 @@
 # ADR-0002: Zustand for State Management
 
 **Status:** Accepted  
-**Date:** 2024-01-15
+**Documented:** 2026-04-14 (decision predates formal ADR documentation)
 
 ## Context
 

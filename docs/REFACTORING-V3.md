@@ -268,18 +268,15 @@ describe('createAddTask', () => {
 - Bundle size: Slightly smaller (removed dead code)
 - Runtime: Same performance (modular imports tree-shaken)
 
-## Future Improvements
+## Future Improvements (Status: Completed)
 
-The new architecture enables easier future refactoring:
+The proposals below were the "future work" identified at the time of the v3.0.1 refactor. All three have since been completed in later refactors:
 
-1. **Split conflictResolution.ts** (678 lines)
-   - Now easier to extract helpers following same pattern
+1. **Split conflictResolution.ts** — done. `conflictResolution.ts` is now 313 lines, with merge logic extracted to `conflictMerge.ts` (180 lines).
 
-2. **Split validation.ts** (598 lines)
-   - Can separate into domain-specific validators
+2. **Split validation.ts** — done. `validation.ts` is now 362 lines, with schema and task-specific validation extracted to `validationSchemas.ts` (151 lines) and `taskValidation.ts` (151 lines).
 
-3. **Extract dialog content**
-   - UserGuideDialog content to separate data file
+3. **Extract dialog content** — done. `UserGuideDialog` content now lives in `src/components/userGuide/` as separate data files.
 
 ## Resources
 
