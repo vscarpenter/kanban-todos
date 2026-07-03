@@ -34,7 +34,13 @@ export function TaskCardActions({ task }: TaskCardActionsProps) {
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showMoveDialog, setShowMoveDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const { deleteTask, archiveTask, moveTask } = useTaskStore();
+  // Selected individually (not `const { ... } = useTaskStore()`) so this
+  // menu — mounted once per visible card — only re-renders when one of
+  // these specific, stable action references changes, not on every
+  // unrelated store update (search state, other tasks, filters, ...).
+  const deleteTask = useTaskStore((state) => state.deleteTask);
+  const archiveTask = useTaskStore((state) => state.archiveTask);
+  const moveTask = useTaskStore((state) => state.moveTask);
 
   const handleDelete = useCallback(() => {
     setShowDeleteDialog(true);
