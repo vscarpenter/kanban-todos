@@ -6,8 +6,7 @@ This guide will help you get up and running with the Kanban Todos application qu
 
 ### Prerequisites
 
-- Node.js 18+ 
-- npm or yarn package manager
+- [Bun](https://bun.sh) 1.3+ (this project is bun-only; `package.json` pins `packageManager: bun@1.3.5`)
 - Modern web browser (Chrome, Firefox, Safari, Edge)
 
 ### Quick Setup
@@ -20,12 +19,12 @@ This guide will help you get up and running with the Kanban Todos application qu
 
 2. **Install dependencies**
    ```bash
-   npm install
+   bun install
    ```
 
 3. **Start development server**
    ```bash
-   npm run dev
+   bun run dev
    ```
 
 4. **Open your browser**
@@ -119,10 +118,11 @@ Access settings by clicking the gear icon in the sidebar:
 
 ### Keyboard Shortcuts
 
-- `Ctrl/Cmd + N`: Create new task
-- `Ctrl/Cmd + B`: Create new board
-- `Ctrl/Cmd + F`: Focus search bar
-- `Ctrl/Cmd + S`: Save current board
+- `N` or `Ctrl/Cmd + K`: Create new task
+- `Ctrl/Cmd + 1` – `9`: Switch to board 1–9
+- `F1`: Show help
+- `H`: Show keyboard shortcuts
+- `Ctrl/Cmd + ,`: Open settings
 - `Escape`: Close dialogs
 
 ## 📱 Mobile Usage

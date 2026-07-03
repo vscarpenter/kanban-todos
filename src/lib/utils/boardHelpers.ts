@@ -102,7 +102,7 @@ export function reorderBoards(
  * Updates all boards in database
  */
 export async function persistBoardOrders(boards: Board[]): Promise<void> {
-  await Promise.all(boards.map(board => taskDB.updateBoard(board)));
+  await taskDB.upsertBoards(boards);
 }
 
 /**

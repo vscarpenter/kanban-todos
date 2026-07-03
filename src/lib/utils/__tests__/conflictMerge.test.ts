@@ -36,8 +36,6 @@ const baseSettings = (overrides: Partial<Settings> = {}): Settings => ({
   autoArchiveDays: 30,
   enableNotifications: false,
   enableKeyboardShortcuts: true,
-  enableDebugMode: false,
-  enableDeveloperMode: false,
   searchPreferences: { defaultScope: 'current-board', rememberScope: true },
   accessibility: { highContrast: false, reduceMotion: false, fontSize: 'medium' },
   ...overrides,

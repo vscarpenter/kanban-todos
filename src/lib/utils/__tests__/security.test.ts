@@ -4,8 +4,6 @@ import {
   sanitizeTaskData,
   sanitizeBoardData,
   sanitizeSearchQuery,
-  validateImportFile,
-  validateImportJson,
   isValidUUID,
   sanitizeBoardId,
   sanitizeTaskId,
@@ -224,88 +222,6 @@ describe('security utilities', () => {
 
     it('returns empty string for empty input', () => {
       expect(sanitizeSearchQuery('')).toBe('');
-    });
-  });
-
-  describe('validateImportFile', () => {
-    function createMockFile(
-      name: string,
-      size: number,
-      type: string
-    ): File {
-      const content = new ArrayBuffer(size);
-      return new File([content], name, { type });
-    }
-
-    it('accepts valid JSON file', () => {
-      const file = createMockFile('data.json', 1024, 'application/json');
-      const result = validateImportFile(file);
-      expect(result.isValid).toBe(true);
-      expect(result.error).toBeUndefined();
-    });
-
-    it('rejects non-JSON file type', () => {
-      const file = createMockFile('data.txt', 1024, 'text/plain');
-      const result = validateImportFile(file);
-      expect(result.isValid).toBe(false);
-      expect(result.error).toContain('Invalid file type');
-    });
-
-    it('rejects oversized file', () => {
-      const file = createMockFile('data.json', 11 * 1024 * 1024, 'application/json');
-      const result = validateImportFile(file);
-      expect(result.isValid).toBe(false);
-      expect(result.error).toContain('File too large');
-    });
-
-    it('rejects suspicious file extensions', () => {
-      const file = createMockFile('malware.exe', 1024, 'application/json');
-      const result = validateImportFile(file);
-      expect(result.isValid).toBe(false);
-    });
-  });
-
-  describe('validateImportJson', () => {
-    it('accepts valid export JSON', () => {
-      const validJson = JSON.stringify({
-        version: '1.0.0',
-        exportedAt: new Date().toISOString(),
-        tasks: [],
-        boards: [],
-      });
-      const result = validateImportJson(validJson);
-      expect(result.isValid).toBe(true);
-      expect(result.data).toBeDefined();
-    });
-
-    it('rejects invalid JSON', () => {
-      const result = validateImportJson('not valid json{');
-      expect(result.isValid).toBe(false);
-      expect(result.error).toContain('Invalid JSON');
-    });
-
-    it('rejects non-object JSON', () => {
-      const result = validateImportJson('"just a string"');
-      expect(result.isValid).toBe(false);
-      expect(result.error).toContain('Invalid JSON structure');
-    });
-
-    it('rejects null JSON', () => {
-      const result = validateImportJson('null');
-      expect(result.isValid).toBe(false);
-      expect(result.error).toContain('Invalid JSON structure');
-    });
-
-    it('rejects JSON missing version field', () => {
-      const result = validateImportJson(JSON.stringify({ exportedAt: '2024-01-01' }));
-      expect(result.isValid).toBe(false);
-      expect(result.error).toContain('Missing required fields');
-    });
-
-    it('rejects JSON missing exportedAt field', () => {
-      const result = validateImportJson(JSON.stringify({ version: '1.0.0' }));
-      expect(result.isValid).toBe(false);
-      expect(result.error).toContain('Missing required fields');
     });
   });
 

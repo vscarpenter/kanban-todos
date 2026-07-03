@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { test, expect, createTask } from './fixtures';
 
 interface ExportData {
   version: string;
@@ -9,14 +10,6 @@ interface ExportData {
 }
 
 test.describe('Export Flow', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('cascade_has_visited', 'true');
-    });
-    await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
-  });
-
   test('downloads a full export with tasks, boards, and settings', async ({ page }) => {
     await createTask(page, 'Exportable Task A');
     await createTask(page, 'Exportable Task B');
@@ -184,13 +177,6 @@ async function openExport(page: Page): Promise<void> {
   }
   await page.getByRole('button', { name: 'Export Data', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Export Data' })).toBeVisible();
-}
-
-async function createTask(page: Page, title: string): Promise<void> {
-  await page.getByRole('button', { name: 'New Task' }).click();
-  await page.getByLabel('Title *').fill(title);
-  await page.getByRole('button', { name: 'Create Task' }).click();
-  await expect(page.locator('.task-card', { hasText: title }).first()).toBeVisible();
 }
 
 async function archiveTask(page: Page, title: string): Promise<void> {

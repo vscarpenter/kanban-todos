@@ -16,7 +16,7 @@ import {
   AppearanceSection,
   TaskManagementSection,
   AccessibilitySection,
-  DeveloperSection,
+  ShortcutsSection,
 } from "./SettingsSections";
 
 // Deep compare settings objects
@@ -26,8 +26,6 @@ function settingsEqual(a: Settings, b: Settings): boolean {
     a.autoArchiveDays === b.autoArchiveDays &&
     a.enableNotifications === b.enableNotifications &&
     a.enableKeyboardShortcuts === b.enableKeyboardShortcuts &&
-    a.enableDebugMode === b.enableDebugMode &&
-    a.enableDeveloperMode === b.enableDeveloperMode &&
     a.accessibility.highContrast === b.accessibility.highContrast &&
     a.accessibility.reduceMotion === b.accessibility.reduceMotion &&
     a.accessibility.fontSize === b.accessibility.fontSize
@@ -55,17 +53,22 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   // Store initial settings when dialog opens
   const initialSettingsRef = useRef<Settings | null>(null);
 
-  // Sync settings when dialog opens or settings change
+  // Seed localSettings from the store only on the closed->open transition.
+  // Previously this ran on every `settings`/`theme` change while open too,
+  // so any concurrent, unrelated settings write (e.g. boardStore persisting
+  // a board selection through settingsStore.updateSettings — see ARCH-1)
+  // silently overwrote whatever the user had just changed in this dialog,
+  // before they even got to click Save. The "unsaved changes" warning this
+  // dialog already shows on close only makes sense if in-progress edits
+  // can't be wiped out from behind the user's back like that.
   useEffect(() => {
-    const currentSettings = {
-      ...settings,
-      theme: (theme as Settings['theme']) || 'system'
-    };
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLocalSettings(currentSettings);
-
-    // Only capture initial settings when dialog opens
     if (open && !initialSettingsRef.current) {
+      const currentSettings = {
+        ...settings,
+        theme: (theme as Settings['theme']) || 'system'
+      };
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLocalSettings(currentSettings);
       initialSettingsRef.current = currentSettings;
     }
     // Reset initial ref when dialog closes
@@ -215,7 +218,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             <>
               <Separator />
               
-              <DeveloperSection
+              <ShortcutsSection
                 localSettings={localSettings}
                 updateLocalSetting={updateLocalSetting}
               />

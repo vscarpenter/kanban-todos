@@ -1,14 +1,13 @@
-import { test, expect, type Page, type Locator } from '@playwright/test';
+import type { Page, Locator } from '@playwright/test';
+import { test, expect, createTask, createBoard, taskCard, selectBoard, column } from './fixtures';
+
+const STATUS_TITLE: Record<'todo' | 'in-progress' | 'done', string> = {
+  todo: 'To Do',
+  'in-progress': 'In Progress',
+  done: 'Done',
+};
 
 test.describe('Toast Notifications', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('cascade_has_visited', 'true');
-    });
-    await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
-  });
-
   test('shows "Task completed" toast when dragging a task to Done', async ({ page }) => {
     const taskTitle = 'Drag Complete Task';
     await createTask(page, taskTitle);
@@ -16,7 +15,7 @@ test.describe('Toast Notifications', () => {
     await dragTaskToColumn(page, taskTitle, 'done');
 
     // Wait for the column move + celebrate toast
-    await expect(page.locator('.kanban-column').nth(2).locator('.task-card', { hasText: taskTitle }))
+    await expect(column(page, STATUS_TITLE.done).locator('.task-card', { hasText: taskTitle }))
       .toBeVisible({ timeout: 5000 });
     await expect(toastWithText(page, /Task completed/i)).toBeVisible({ timeout: 5000 });
   });
@@ -146,38 +145,8 @@ test.describe('Toast Notifications', () => {
 
 // Helper functions
 
-function taskCard(page: Page, title: string): Locator {
-  return page.locator('.task-card', { hasText: title });
-}
-
-function boardItem(page: Page, name: string): Locator {
-  return page.locator('[role="button"]', {
-    has: page.getByText(name, { exact: true }),
-  }).filter({ hasNotText: 'Move ' });
-}
-
 function toastWithText(page: Page, text: RegExp | string): Locator {
   return page.locator('[data-sonner-toast]').filter({ hasText: text });
-}
-
-async function createTask(page: Page, title: string): Promise<void> {
-  await page.getByRole('button', { name: 'New Task' }).click();
-  await page.getByLabel('Title *').fill(title);
-  await page.getByRole('button', { name: 'Create Task' }).click();
-  await expect(taskCard(page, title).first()).toBeVisible();
-}
-
-async function createBoard(page: Page, name: string): Promise<void> {
-  await page.getByRole('button', { name: 'Add board' }).click();
-  await page.getByLabel('Board Name *').fill(name);
-  await page.getByRole('button', { name: 'Create Board' }).click();
-  await expect(page.getByRole('dialog')).toBeHidden();
-  await expect(boardItem(page, name).first()).toBeVisible();
-}
-
-async function selectBoard(page: Page, name: string): Promise<void> {
-  await boardItem(page, name).first().click();
-  await expect(page.getByRole('heading', { name })).toBeVisible();
 }
 
 async function openTaskMenu(page: Page, taskTitle: string): Promise<void> {
@@ -195,8 +164,7 @@ async function dragTaskToColumn(
   const cardBox = await card.boundingBox();
   if (!cardBox) throw new Error(`Card "${taskTitle}" missing box`);
 
-  const idx = targetStatus === 'todo' ? 0 : targetStatus === 'in-progress' ? 1 : 2;
-  const col = page.locator('.kanban-column').nth(idx);
+  const col = column(page, STATUS_TITLE[targetStatus]);
   await col.scrollIntoViewIfNeeded();
   const colBox = await col.boundingBox();
   if (!colBox) throw new Error(`Column ${targetStatus} missing box`);

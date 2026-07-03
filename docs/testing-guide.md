@@ -1,6 +1,6 @@
 # Testing Guide
 
-Comprehensive guide for testing the Kanban Todos application.
+Comprehensive guide for testing the Cascade (kanban-todos) application.
 
 ## 📋 Table of Contents
 
@@ -20,42 +20,37 @@ Comprehensive guide for testing the Kanban Todos application.
 ```
     /\
    /  \
-  / E2E \     Few, high-level tests
+  / E2E \     Few, high-level tests (Playwright, e2e/*.spec.ts)
  /______\
 /        \
-/Integration\  Some, focused tests
+/Integration\  Some, focused tests (component + store integration)
 /____________\
 /              \
-/    Unit Tests   \  Many, fast tests
+/    Unit Tests   \  Many, fast tests (Vitest)
 /__________________\
 ```
 
 ### Test Types
 
-1. **Unit Tests** (70%)
+1. **Unit Tests** (Vitest, `src/**/__tests__/*.test.{ts,tsx}`)
    - Component behavior
    - Utility functions
    - Store actions
-   - Business logic
 
-2. **Integration Tests** (20%)
-   - Component interactions
-   - API integrations
-   - Store integrations
+2. **Integration Tests** (also Vitest, colocated with unit tests — e.g. `*.integration.test.tsx`)
+   - Component + store interactions
    - Cross-module functionality
 
-3. **End-to-End Tests** (10%)
-   - User workflows
-   - Critical paths
-   - Cross-browser compatibility
-   - Performance scenarios
+3. **End-to-End Tests** (Playwright, `e2e/*.spec.ts`)
+   - Full user workflows against a running dev server
+   - Chromium only (see [Playwright Setup](#playwright-setup))
 
 ## 🔬 Unit Testing
 
 ### Testing Framework
 
-- **Vitest**: Fast unit test runner
-- **Testing Library**: Component testing utilities
+- **Vitest**: Fast unit test runner (`vitest.config.ts`)
+- **@testing-library/react**: Component testing utilities
 - **jsdom**: DOM environment for tests
 
 ### Component Testing
@@ -63,57 +58,48 @@ Comprehensive guide for testing the Kanban Todos application.
 **Basic Component Test:**
 ```typescript
 import { render, screen, fireEvent } from '@testing-library/react';
-import { Button } from './Button';
+import { Button } from '../ui/button';
 
 describe('Button', () => {
   it('renders with correct text', () => {
     render(<Button>Click me</Button>);
     expect(screen.getByText('Click me')).toBeInTheDocument();
   });
-  
+
   it('calls onClick when clicked', () => {
     const handleClick = vi.fn();
     render(<Button onClick={handleClick}>Click me</Button>);
-    
+
     fireEvent.click(screen.getByText('Click me'));
     expect(handleClick).toHaveBeenCalledTimes(1);
-  });
-  
-  it('applies correct variant styles', () => {
-    render(<Button variant="primary">Primary</Button>);
-    const button = screen.getByRole('button');
-    expect(button).toHaveClass('bg-blue-500');
   });
 });
 ```
 
-**Component with State:**
+**Component with State** — real pattern from `src/components/__tests__/SearchBar.integration.test.tsx`, which mocks the stores it depends on directly in the test file:
 ```typescript
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { TaskForm } from './TaskForm';
+import { SearchBar } from '../SearchBar';
+import { useTaskStore } from '@/lib/stores/taskStore';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
 
-describe('TaskForm', () => {
-  it('submits form with correct data', async () => {
-    const onSubmit = vi.fn();
-    render(<TaskForm onSubmit={onSubmit} />);
-    
-    // Fill form
-    fireEvent.change(screen.getByLabelText('Title'), {
-      target: { value: 'Test Task' }
-    });
-    fireEvent.change(screen.getByLabelText('Description'), {
-      target: { value: 'Test Description' }
-    });
-    
-    // Submit form
-    fireEvent.click(screen.getByRole('button', { name: 'Create Task' }));
-    
+vi.mock('@/lib/stores/taskStore');
+vi.mock('@/lib/stores/settingsStore');
+
+describe('SearchBar', () => {
+  it('updates the search query as the user types', async () => {
+    const setSearchQuery = vi.fn();
+    vi.mocked(useTaskStore).mockReturnValue({
+      filters: { search: '', tags: [], crossBoardSearch: false },
+      setSearchQuery,
+    } as unknown as ReturnType<typeof useTaskStore>);
+
+    render(<SearchBar />);
+
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'proposal' } });
+
     await waitFor(() => {
-      expect(onSubmit).toHaveBeenCalledWith({
-        title: 'Test Task',
-        description: 'Test Description',
-        priority: 'medium'
-      });
+      expect(setSearchQuery).toHaveBeenCalledWith('proposal');
     });
   });
 });
@@ -121,96 +107,54 @@ describe('TaskForm', () => {
 
 ### Store Testing
 
-**Zustand Store Test:**
+**Zustand Store Test** — real pattern from `src/lib/stores/__tests__/boardStore.test.ts`: mock `@/lib/utils/database`, reset store state in `beforeEach` via `useStore.setState(...)`, and call actions through `useStore.getState()`:
 ```typescript
-import { renderHook, act } from '@testing-library/react';
-import { useTaskStore } from './taskStore';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { useBoardStore } from '../boardStore';
 
-describe('TaskStore', () => {
+vi.mock('@/lib/utils/database', () => ({
+  taskDB: {
+    init: vi.fn().mockResolvedValue(undefined),
+    addBoard: vi.fn().mockResolvedValue(undefined),
+    getBoards: vi.fn().mockResolvedValue([]),
+    updateBoard: vi.fn().mockResolvedValue(undefined),
+    deleteBoard: vi.fn().mockResolvedValue(undefined),
+    getSettings: vi.fn().mockResolvedValue(null),
+    updateSettings: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
+describe('boardStore', () => {
   beforeEach(() => {
-    // Reset store state
-    useTaskStore.getState().clearTasks();
+    useBoardStore.setState({ boards: [], currentBoardId: null, isLoading: false, error: null });
+    vi.clearAllMocks();
   });
-  
-  it('adds task correctly', () => {
-    const { result } = renderHook(() => useTaskStore());
-    
-    act(() => {
-      result.current.addTask({
-        title: 'Test Task',
-        description: 'Test Description',
-        status: 'todo',
-        priority: 'medium'
-      });
-    });
-    
-    expect(result.current.tasks).toHaveLength(1);
-    expect(result.current.tasks[0].title).toBe('Test Task');
-  });
-  
-  it('updates task correctly', () => {
-    const { result } = renderHook(() => useTaskStore());
-    
-    // Add task first
-    act(() => {
-      result.current.addTask({
-        title: 'Test Task',
-        status: 'todo',
-        priority: 'medium'
-      });
-    });
-    
-    const taskId = result.current.tasks[0].id;
-    
-    // Update task
-    act(() => {
-      result.current.updateTask(taskId, { status: 'in-progress' });
-    });
-    
-    expect(result.current.tasks[0].status).toBe('in-progress');
+
+  it('sets current board ID', async () => {
+    const { setCurrentBoard } = useBoardStore.getState();
+
+    await setCurrentBoard('board-123');
+
+    expect(useBoardStore.getState().currentBoardId).toBe('board-123');
   });
 });
 ```
 
 ### Utility Function Testing
 
-**Pure Function Test:**
+**Pure Function Test** — real functions from `src/lib/utils/security.ts` (there is no `sanitizeInput`; the real name is `sanitizeTaskData`/`sanitizeTextInput`):
 ```typescript
-import { sanitizeInput, validateTaskData } from './utils';
+import { sanitizeTaskData } from '../security';
 
-describe('sanitizeInput', () => {
-  it('removes HTML tags', () => {
-    const input = '<script>alert("xss")</script>Hello';
-    const result = sanitizeInput(input);
-    expect(result).toBe('Hello');
+describe('sanitizeTaskData', () => {
+  it('strips angle brackets from the title', () => {
+    const result = sanitizeTaskData({ title: '<script>alert(1)</script>Hello', tags: [] });
+    expect(result.title).toBe('Hello');
   });
-  
-  it('preserves allowed tags', () => {
-    const input = '<b>Bold</b> and <i>italic</i>';
-    const result = sanitizeInput(input);
-    expect(result).toBe('<b>Bold</b> and <i>italic</i>');
-  });
-});
 
-describe('validateTaskData', () => {
-  it('validates correct task data', () => {
-    const validData = {
-      title: 'Test Task',
-      status: 'todo',
-      priority: 'medium'
-    };
-    
-    expect(() => validateTaskData(validData)).not.toThrow();
-  });
-  
-  it('throws error for invalid data', () => {
-    const invalidData = {
-      title: '', // Empty title
-      status: 'invalid-status',
-      priority: 'invalid-priority'
-    };
-    
-    expect(() => validateTaskData(invalidData)).toThrow();
+  it('truncates titles beyond the configured limit', () => {
+    const result = sanitizeTaskData({ title: 'a'.repeat(300), tags: [] });
+    expect(result.title.length).toBe(200); // INPUT_LIMITS.TASK_TITLE
   });
 });
 ```
@@ -219,104 +163,59 @@ describe('validateTaskData', () => {
 
 ### Component Integration
 
-**Component with Store:**
+**Component with Store** — mock the store hook per test file (there is no shared test-only store mock module):
 ```typescript
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { TaskList } from './TaskList';
-import { useTaskStore } from './taskStore';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { useTaskStore } from '@/lib/stores/taskStore';
+import { TaskDialog } from '../TaskDialog';
 
-// Mock the store
-vi.mock('./taskStore', () => ({
-  useTaskStore: vi.fn()
-}));
+vi.mock('@/lib/stores/taskStore');
 
-describe('TaskList Integration', () => {
-  const mockTasks = [
-    { id: '1', title: 'Task 1', status: 'todo', priority: 'medium' },
-    { id: '2', title: 'Task 2', status: 'in-progress', priority: 'high' }
-  ];
-  
-  beforeEach(() => {
-    (useTaskStore as any).mockReturnValue({
-      tasks: mockTasks,
-      updateTask: vi.fn(),
-      deleteTask: vi.fn()
-    });
-  });
-  
-  it('renders tasks from store', () => {
-    render(<TaskList />);
-    
-    expect(screen.getByText('Task 1')).toBeInTheDocument();
-    expect(screen.getByText('Task 2')).toBeInTheDocument();
-  });
-  
-  it('calls store actions when task is updated', async () => {
-    const mockUpdateTask = vi.fn();
-    (useTaskStore as any).mockReturnValue({
-      tasks: mockTasks,
-      updateTask: mockUpdateTask,
-      deleteTask: vi.fn()
-    });
-    
-    render(<TaskList />);
-    
-    // Click on task to edit
-    fireEvent.click(screen.getByText('Task 1'));
-    
-    // Update task
-    fireEvent.change(screen.getByDisplayValue('Task 1'), {
-      target: { value: 'Updated Task 1' }
-    });
-    
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    
-    await waitFor(() => {
-      expect(mockUpdateTask).toHaveBeenCalledWith('1', {
-        title: 'Updated Task 1'
-      });
-    });
+describe('TaskDialog', () => {
+  it('calls addTask when the form is submitted', async () => {
+    const addTask = vi.fn().mockResolvedValue(undefined);
+    vi.mocked(useTaskStore).mockReturnValue({ addTask } as unknown as ReturnType<typeof useTaskStore>);
+
+    render(<TaskDialog mode="create" open onOpenChange={() => {}} boardId="board-1" />);
+
+    fireEvent.change(screen.getByLabelText('Title *'), { target: { value: 'Test Task' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Create Task' }));
+
+    expect(addTask).toHaveBeenCalled();
   });
 });
 ```
 
-### API Integration
+### Database Integration
 
-**API Mocking:**
+**IndexedDB via fake-indexeddb** — real pattern from `src/lib/utils/__tests__/database.test.ts`. The global `src/test/setup.ts` mocks `@/lib/utils/database` by default, so database-layer tests must explicitly unmock it and install `fake-indexeddb`:
 ```typescript
-import { vi } from 'vitest';
-import { api } from './api';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import 'fake-indexeddb/auto';
 
-// Mock API
-vi.mock('./api', () => ({
-  api: {
-    getTasks: vi.fn(),
-    createTask: vi.fn(),
-    updateTask: vi.fn(),
-    deleteTask: vi.fn()
-  }
-}));
+// Unmock the database module since the global setup.ts mocks it
+vi.unmock('@/lib/utils/database');
 
-describe('API Integration', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+import { TaskDatabase } from '../database';
+
+describe('TaskDatabase', () => {
+  let db: TaskDatabase;
+
+  beforeEach(async () => {
+    db = new TaskDatabase();
+    await db.init();
   });
-  
-  it('fetches tasks on component mount', async () => {
-    const mockTasks = [
-      { id: '1', title: 'Task 1', status: 'todo' }
-    ];
-    
-    (api.getTasks as any).mockResolvedValue(mockTasks);
-    
-    const { result } = renderHook(() => useTaskStore());
-    
-    await act(async () => {
-      await result.current.fetchTasks();
-    });
-    
-    expect(api.getTasks).toHaveBeenCalledTimes(1);
-    expect(result.current.tasks).toEqual(mockTasks);
+
+  afterEach(async () => {
+    await db.resetDatabase();
+  });
+
+  it('adds and retrieves a task', async () => {
+    const task = createTestTask({ id: 'task-1' });
+    await db.addTask(task);
+
+    const tasks = await db.getTasks();
+    expect(tasks).toHaveLength(1);
   });
 });
 ```
@@ -325,10 +224,9 @@ describe('API Integration', () => {
 
 ### Playwright Setup
 
-**Configuration:**
+**Configuration** (`playwright.config.ts` — this app runs a single Chromium project, not the full cross-browser matrix):
 ```typescript
-// playwright.config.ts
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: './e2e',
@@ -346,278 +244,205 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
   ],
   webServer: {
-    command: 'npm run dev',
+    command: 'bun run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
   },
-});
+})
 ```
+
+Specs live directly under `e2e/*.spec.ts` (`app.spec.ts`, `task-crud.spec.ts`, `board-management.spec.ts`, `drag-drop.spec.ts`, `search-filters.spec.ts`, `keyboard-shortcuts.spec.ts`, etc.) — there is no Page Object Model layer or `fixtures/` directory. Shared helpers live in `e2e/helpers/` (currently just `keyboard.ts`, a small `pressShortcutUntilVisible` retry helper).
 
 ### E2E Test Examples
 
-**Basic User Flow:**
+Real tests use accessible queries (`getByRole`, `getByLabel`) rather than `data-testid` attributes — the app doesn't use `data-testid` selectors. Adapted from `e2e/task-crud.spec.ts`:
+
 ```typescript
 import { test, expect } from '@playwright/test';
 
 test.describe('Task Management', () => {
-  test('creates and manages tasks', async ({ page }) => {
+  test.beforeEach(async ({ page }) => {
+    // Skip the first-visit onboarding flow
+    await page.addInitScript(() => {
+      localStorage.setItem('cascade_has_visited', 'true');
+    });
     await page.goto('/');
-    
-    // Create a new task
-    await page.click('[data-testid="add-task"]');
-    await page.fill('[data-testid="task-title"]', 'Test Task');
-    await page.fill('[data-testid="task-description"]', 'Test Description');
-    await page.selectOption('[data-testid="task-priority"]', 'high');
-    await page.click('[data-testid="save-task"]');
-    
-    // Verify task was created
-    await expect(page.locator('[data-testid="task-card"]')).toContainText('Test Task');
-    
-    // Edit task
-    await page.click('[data-testid="task-card"]');
-    await page.fill('[data-testid="task-title"]', 'Updated Task');
-    await page.click('[data-testid="save-task"]');
-    
-    // Verify task was updated
-    await expect(page.locator('[data-testid="task-card"]')).toContainText('Updated Task');
-    
-    // Move task
-    await page.dragAndDrop(
-      '[data-testid="task-card"]',
-      '[data-testid="in-progress-column"]'
-    );
-    
-    // Verify task was moved
-    await expect(page.locator('[data-testid="in-progress-column"] [data-testid="task-card"]'))
-      .toContainText('Updated Task');
-    
-    // Delete task
-    await page.click('[data-testid="task-menu"]');
-    await page.click('[data-testid="delete-task"]');
-    await page.click('[data-testid="confirm-delete"]');
-    
-    // Verify task was deleted
-    await expect(page.locator('[data-testid="task-card"]')).not.toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
+  });
+
+  test('creates and edits a task', async ({ page }) => {
+    // Create a task
+    await page.getByRole('button', { name: 'New Task' }).click();
+    await page.getByLabel('Title *').fill('Test Task');
+    await page.getByRole('button', { name: 'Create Task' }).click();
+
+    await expect(page.getByText('Test Task')).toBeVisible();
+
+    // Edit the task
+    await page.getByText('Test Task').click();
+    await page.getByLabel('Title *').fill('Updated Task');
+    await page.getByRole('button', { name: 'Save' }).click();
+
+    await expect(page.getByText('Updated Task')).toBeVisible();
   });
 });
 ```
 
-**Search and Filter:**
+**Search and Filter** (adapted from `e2e/search-filters.spec.ts`):
 ```typescript
-test('searches and filters tasks', async ({ page }) => {
-  await page.goto('/');
-  
-  // Create multiple tasks
-  await createTask(page, 'High Priority Task', 'high');
-  await createTask(page, 'Low Priority Task', 'low');
-  await createTask(page, 'Medium Priority Task', 'medium');
-  
-  // Search for specific task
-  await page.fill('[data-testid="search-input"]', 'High Priority');
-  await expect(page.locator('[data-testid="task-card"]')).toHaveCount(1);
-  await expect(page.locator('[data-testid="task-card"]')).toContainText('High Priority Task');
-  
-  // Clear search
-  await page.fill('[data-testid="search-input"]', '');
-  
-  // Filter by priority
-  await page.click('[data-testid="filter-button"]');
-  await page.check('[data-testid="filter-high"]');
-  await page.click('[data-testid="apply-filter"]');
-  
-  await expect(page.locator('[data-testid="task-card"]')).toHaveCount(1);
-  await expect(page.locator('[data-testid="task-card"]')).toContainText('High Priority Task');
+test('searches tasks by title', async ({ page }) => {
+  await page.getByRole('button', { name: 'New Task' }).click();
+  await page.getByLabel('Title *').fill('High Priority Task');
+  await page.getByRole('button', { name: 'Create Task' }).click();
+
+  await page.getByRole('searchbox').fill('High Priority');
+  await expect(page.getByText('High Priority Task')).toBeVisible();
 });
 ```
 
-**Accessibility Testing:**
+**Keyboard Shortcuts** (adapted from `e2e/keyboard-shortcuts.spec.ts`, using the `pressShortcutUntilVisible` helper from `e2e/helpers/keyboard.ts` to retry against timing flakiness):
 ```typescript
-test('is accessible', async ({ page }) => {
-  await page.goto('/');
-  
-  // Check for accessibility issues
-  const accessibilityScanResults = await new AxeBuilder({ page }).analyze();
-  expect(accessibilityScanResults.violations).toEqual([]);
-  
-  // Test keyboard navigation
-  await page.keyboard.press('Tab');
-  await expect(page.locator(':focus')).toBeVisible();
-  
-  // Test screen reader announcements
-  await page.click('[data-testid="add-task"]');
-  await expect(page.locator('[role="dialog"]')).toBeVisible();
+import { pressShortcutUntilVisible } from './helpers/keyboard';
+
+test('opens quick-add with n', async ({ page }) => {
+  await pressShortcutUntilVisible(page, 'n', page.getByRole('dialog'));
+  await expect(page.getByRole('dialog')).toBeVisible();
 });
 ```
+
+This app has no automated accessibility scanning dependency (no `axe-core`/`@axe-core/playwright` in `package.json`) — accessibility is covered by keyboard-navigation and ARIA-role assertions in the specs above, plus manual review (see `e2e/SPEC.md`).
 
 ## ⚙️ Test Setup
 
 ### Test Configuration
 
-**Vitest Config:**
+**Vitest Config** (`vitest.config.ts` — real coverage thresholds and excludes):
 ```typescript
-// vitest.config.ts
-import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
-import path from 'path';
+import { defineConfig } from 'vitest/config'
+import react from '@vitejs/plugin-react'
+import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
   test: {
-    globals: true,
     environment: 'jsdom',
+    environmentOptions: {
+      jsdom: { url: 'http://localhost' },
+    },
     setupFiles: ['./src/test/setup.ts'],
-    css: true,
-  },
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
+    globals: true,
+    exclude: ['**/node_modules/**', '**/e2e/**'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/**/__tests__/**',
+        'src/**/*.test.{ts,tsx}',
+        'src/test/**',
+        'src/**/*.d.ts',
+        'src/app/layout.tsx',
+      ],
+      thresholds: {
+        lines: 55,
+        functions: 55,
+        branches: 50,
+        statements: 55,
+      },
     },
   },
-});
+  resolve: {
+    alias: { '@': path.resolve(__dirname, './src') },
+  },
+})
 ```
 
-**Test Setup File:**
+**Test Setup File** (`src/test/setup.ts` — real content, trimmed to the essentials):
 ```typescript
-// src/test/setup.ts
-import { vi } from 'vitest';
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom'
+import { vi } from 'vitest'
 
-// Mock IntersectionObserver
-global.IntersectionObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
+// Node 22+ ships a broken built-in localStorage; replace it with a proper
+// Storage-inheriting in-memory implementation so vi.spyOn(Storage.prototype, ...)
+// still works in tests.
+// (full implementation swaps window.localStorage — see src/test/setup.ts)
 
-// Mock ResizeObserver
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
+// jsdom has no PointerEvent/pointer-capture support, which Radix UI's
+// DropdownMenu/Select triggers rely on — polyfilled here so those components
+// open under fireEvent.click in tests.
 
-// Mock matchMedia
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: vi.fn().mockImplementation(query => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
-});
+// Mock crypto.randomUUID so store tests get deterministic IDs
+Object.defineProperty(global, 'crypto', {
+  value: { randomUUID: vi.fn(() => 'test-uuid-123') },
+})
 
-// Mock IndexedDB
-const mockIndexedDB = {
-  open: vi.fn(),
-  deleteDatabase: vi.fn(),
-};
+// Mock next-themes (ThemeProvider/useTheme)
+vi.mock('next-themes', () => ({
+  useTheme: () => ({ theme: 'light', setTheme: vi.fn(), themes: ['light', 'dark', 'system'] }),
+  ThemeProvider: ({ children }: { children: React.ReactNode }) => children,
+}))
 
-Object.defineProperty(window, 'indexedDB', {
-  writable: true,
-  value: mockIndexedDB,
-});
+// Mock @/lib/utils/database globally — tests that need real IndexedDB
+// behavior (e.g. database.test.ts) call vi.unmock('@/lib/utils/database')
+// and import 'fake-indexeddb/auto' instead.
+vi.mock('@/lib/utils/database', () => ({
+  taskDB: {
+    init: vi.fn().mockResolvedValue(undefined),
+    addTask: vi.fn().mockResolvedValue(undefined),
+    updateTask: vi.fn().mockResolvedValue(undefined),
+    deleteTask: vi.fn().mockResolvedValue(undefined),
+    getTasks: vi.fn().mockResolvedValue([]),
+    addBoard: vi.fn().mockResolvedValue(undefined),
+    getBoards: vi.fn().mockResolvedValue([]),
+  },
+}))
 ```
 
 ## 🛠️ Testing Utilities
 
-### Custom Render Function
+This app doesn't have a shared `src/test/utils.tsx` custom-render wrapper, `factories.ts`, or `mocks.ts` module — there's no client-side router or global context provider that every test needs wrapped around it (Next.js App Router routes are plain files under `src/app/`, not a `<BrowserRouter>`-style provider). Instead, each test file:
 
+- Renders directly with `@testing-library/react`'s own `render` — no custom wrapper needed
+- Mocks the specific store(s) or `@/lib/utils/database` it depends on inline, with `vi.mock(...)`
+- Builds its own local `createTestTask`/`createTestBoard` helper functions when it needs realistic fixtures (see `src/lib/utils/__tests__/database.test.ts` for the pattern), rather than importing from a shared factory module
+
+**Example local test-data helper** (inline in the test file that needs it):
 ```typescript
-// src/test/utils.tsx
-import { render, RenderOptions } from '@testing-library/react';
-import { ReactElement } from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import type { Task, Board } from '@/lib/types';
 
-const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <BrowserRouter>
-      {children}
-    </BrowserRouter>
-  );
-};
+function createTestTask(overrides: Partial<Task> = {}): Task {
+  return {
+    id: `task-${Math.random().toString(36).slice(2, 9)}`,
+    title: 'Test Task',
+    description: 'A test task',
+    status: 'todo',
+    boardId: 'board-1',
+    priority: 'medium',
+    tags: ['test'],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
 
-const customRender = (
-  ui: ReactElement,
-  options?: Omit<RenderOptions, 'wrapper'>
-) => render(ui, { wrapper: AllTheProviders, ...options });
-
-export * from '@testing-library/react';
-export { customRender as render };
+function createTestBoard(overrides: Partial<Board> = {}): Board {
+  return {
+    id: `board-${Math.random().toString(36).slice(2, 9)}`,
+    name: 'Test Board',
+    description: 'A test board',
+    color: '#3b82f6',
+    isDefault: false,
+    order: 0,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
 ```
 
-### Test Data Factories
-
-```typescript
-// src/test/factories.ts
-import { Task, Board } from '@/lib/types';
-
-export const createTask = (overrides: Partial<Task> = {}): Task => ({
-  id: '1',
-  title: 'Test Task',
-  description: 'Test Description',
-  status: 'todo',
-  priority: 'medium',
-  dueDate: undefined,
-  assignee: undefined,
-  tags: [],
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  boardId: 'board-1',
-  ...overrides,
-});
-
-export const createBoard = (overrides: Partial<Board> = {}): Board => ({
-  id: 'board-1',
-  name: 'Test Board',
-  description: 'Test Description',
-  columns: [
-    { id: 'col-1', name: 'To Do', order: 0 },
-    { id: 'col-2', name: 'In Progress', order: 1 },
-    { id: 'col-3', name: 'Done', order: 2 },
-  ],
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  ...overrides,
-});
-```
-
-### Mock Functions
-
-```typescript
-// src/test/mocks.ts
-import { vi } from 'vitest';
-
-export const mockTaskStore = {
-  tasks: [],
-  addTask: vi.fn(),
-  updateTask: vi.fn(),
-  deleteTask: vi.fn(),
-  setSearchQuery: vi.fn(),
-  clearError: vi.fn(),
-};
-
-export const mockApi = {
-  getTasks: vi.fn(),
-  createTask: vi.fn(),
-  updateTask: vi.fn(),
-  deleteTask: vi.fn(),
-};
-```
+Note there's no `assignee` field and no `columns` array on `Board` — see [API Reference: Type Definitions](./api-reference.md#type-definitions).
 
 ## 📋 Best Practices
 
@@ -627,23 +452,21 @@ export const mockApi = {
 2. **Use descriptive test names** that explain what is being tested
 3. **Follow AAA pattern**: Arrange, Act, Assert
 4. **Keep tests independent** - each test should be able to run alone
-5. **Clean up after tests** using `beforeEach` and `afterEach`
+5. **Reset store/mock state** in `beforeEach` (`useStore.setState(...)`, `vi.clearAllMocks()`)
 
 ### Test Naming
 
 ```typescript
 // Good test names
-describe('TaskForm', () => {
-  it('should create task when form is submitted with valid data', () => {});
-  it('should show error message when title is empty', () => {});
-  it('should disable submit button when form is invalid', () => {});
+describe('TaskDialog', () => {
+  it('calls addTask when the form is submitted with a valid title', () => {});
+  it('disables the submit button when the title is empty', () => {});
 });
 
 // Bad test names
-describe('TaskForm', () => {
+describe('TaskDialog', () => {
   it('works', () => {});
   it('test 1', () => {});
-  it('should do stuff', () => {});
 });
 ```
 
@@ -651,32 +474,24 @@ describe('TaskForm', () => {
 
 ```typescript
 // Good assertions
-expect(screen.getByText('Task created')).toBeInTheDocument();
-expect(mockFunction).toHaveBeenCalledWith(expectedArgs);
-expect(component).toHaveClass('active');
+expect(screen.getByText('Test Task')).toBeInTheDocument();
+expect(addTask).toHaveBeenCalledWith(expect.objectContaining({ title: 'Test Task' }));
 
-// Bad assertions
-expect(screen.getByText('Task created')).toBeTruthy();
-expect(mockFunction).toHaveBeenCalled();
-expect(component.className).toContain('active');
+// Weaker assertions to avoid
+expect(screen.getByText('Test Task')).toBeTruthy();
+expect(addTask).toHaveBeenCalled();
 ```
 
 ### Async Testing
 
 ```typescript
 // Good async testing
-it('loads data on mount', async () => {
-  render(<DataComponent />);
-  
-  await waitFor(() => {
-    expect(screen.getByText('Data loaded')).toBeInTheDocument();
-  });
-});
+it('shows the task after it loads', async () => {
+  render(<TaskList boardId="board-1" />);
 
-// Bad async testing
-it('loads data on mount', () => {
-  render(<DataComponent />);
-  expect(screen.getByText('Data loaded')).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.getByText('Test Task')).toBeInTheDocument();
+  });
 });
 ```
 
@@ -686,31 +501,31 @@ it('loads data on mount', () => {
 
 **Vitest Debug Mode:**
 ```bash
-npm run test -- --reporter=verbose
+bun run test -- --reporter=verbose
 ```
 
 **Playwright Debug Mode:**
 ```bash
-npx playwright test --debug
+bunx playwright test --debug
 ```
 
 **Component Testing Debug:**
 ```typescript
-import { screen, debug } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 
 test('debug component', () => {
   render(<MyComponent />);
-  debug(); // Prints the component HTML
-  debug(screen.getByRole('button')); // Prints specific element
+  screen.debug(); // Prints the component HTML
+  screen.debug(screen.getByRole('button')); // Prints specific element
 });
 ```
 
 ### Common Issues
 
-1. **Timing Issues**: Use `waitFor` for async operations
-2. **Mock Issues**: Ensure mocks are properly reset between tests
-3. **State Issues**: Reset store state in `beforeEach`
-4. **DOM Issues**: Use proper queries and wait for elements
+1. **Timing Issues**: Use `waitFor` for async operations (especially search — `setSearchQuery` debounces 300ms)
+2. **Mock Issues**: Ensure mocks are reset between tests (`vi.clearAllMocks()` in `beforeEach`)
+3. **State Issues**: Reset store state in `beforeEach` via `useStore.setState(...)`
+4. **Radix UI dropdown/select not opening in jsdom**: covered by the `PointerEvent` polyfill in `src/test/setup.ts` — if a new Radix primitive doesn't open under `fireEvent.click`, check whether it needs a similar polyfill
 
 ---
 

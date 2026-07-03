@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Settings } from "@/lib/types";
-import { Palette, Monitor, Archive, Accessibility } from "lucide-react";
+import { Palette, Keyboard, Archive, Accessibility } from "lucide-react";
 
 interface SettingSectionProps {
   localSettings: Settings;
@@ -18,7 +18,7 @@ interface AccessibilitySectionProps extends SettingSectionProps {
   ) => void;
 }
 
-type DeveloperSectionProps = SettingSectionProps;
+type ShortcutsSectionProps = SettingSectionProps;
 
 export function AppearanceSection({ localSettings, updateLocalSetting }: SettingSectionProps) {
   return (
@@ -165,46 +165,18 @@ export function AccessibilitySection({
   );
 }
 
-export function DeveloperSection({
+export function ShortcutsSection({
   localSettings,
   updateLocalSetting,
-}: DeveloperSectionProps) {
+}: ShortcutsSectionProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <Monitor className="h-5 w-5" />
-        <h3 className="text-base font-semibold tracking-tight">Developer</h3>
+        <Keyboard className="h-5 w-5" />
+        <h3 className="text-base font-semibold tracking-tight">Shortcuts</h3>
       </div>
 
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label htmlFor="debugMode">Debug mode</Label>
-            <p className="text-xs text-muted-foreground">
-              Enable additional logging and debugging features
-            </p>
-          </div>
-          <Switch
-            id="debugMode"
-            checked={localSettings.enableDebugMode}
-            onCheckedChange={(checked) => updateLocalSetting('enableDebugMode', checked)}
-          />
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label htmlFor="developerMode">Developer mode</Label>
-            <p className="text-xs text-muted-foreground">
-              Show developer tools like monitoring and production readiness dashboards
-            </p>
-          </div>
-          <Switch
-            id="developerMode"
-            checked={localSettings.enableDeveloperMode}
-            onCheckedChange={(checked) => updateLocalSetting('enableDeveloperMode', checked)}
-          />
-        </div>
-
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
             <Label htmlFor="keyboardShortcuts">Keyboard shortcuts</Label>

@@ -49,19 +49,42 @@ interface MergeEntityOptions {
   extraMergeFields?: (merged: Record<string, unknown>, existing: Record<string, unknown>, imported: Record<string, unknown>, mergedFields: string[]) => void;
 }
 
-function mergeEntities(
-  existing: Record<string, unknown>,
-  imported: Record<string, unknown>,
+/**
+ * Generic field-by-field merge algorithm shared by every entity type
+ * (Board/Task/Settings — see mergeBoards/mergeTasks/mergeSettings below).
+ * It's driven entirely by the field *names* in `options.fields`, so it needs
+ * to read/write entity properties by a runtime string key.
+ *
+ * TypeScript has no way to express "index an arbitrary object type T by a
+ * runtime string key" while preserving T's static shape, so the dynamic-key
+ * work below is done through a `Record<string, unknown>` view of `existing`/
+ * `imported`/`merged`. That view requires an `as unknown as` erasure at the
+ * boundary — this is the one place in the module that needs it, instead of
+ * once per entity, which is why `mergeBoards`/`mergeTasks`/`mergeSettings`
+ * below stay cast-free.
+ *
+ * It's safe: `merged` starts as a full copy of `existing` (already a valid
+ * T), and this loop only ever overwrites the field names listed in
+ * `options.fields` — names the caller hand-writes to match T's own keys —
+ * with values read from `imported` (itself a valid T). No keys are added,
+ * renamed, or dropped, so `merged` is still a valid T; the cast back to T
+ * at the end just restores that guarantee for the type checker.
+ */
+function mergeEntities<T extends object>(
+  existing: T,
+  imported: T,
   strategy: MergeStrategy,
   options: MergeEntityOptions,
-): { merged: Record<string, unknown>; conflicts: FieldConflict[]; mergedFields: string[] } {
+): { merged: T; conflicts: FieldConflict[]; mergedFields: string[] } {
+  const existingFields = existing as unknown as Record<string, unknown>;
+  const importedFields = imported as unknown as Record<string, unknown>;
   const conflicts: FieldConflict[] = [];
   const mergedFields: string[] = [];
-  const merged = { ...existing };
+  const merged: Record<string, unknown> = { ...existingFields };
 
   for (const { field, deepCompare, customMerge } of options.fields) {
-    const existingVal = existing[field];
-    const importedVal = imported[field];
+    const existingVal = existingFields[field];
+    const importedVal = importedFields[field];
     const isDifferent = deepCompare
       ? JSON.stringify(existingVal) !== JSON.stringify(importedVal)
       : existingVal !== importedVal;
@@ -82,13 +105,13 @@ function mergeEntities(
     } else if (
       strategy === 'keep_newer' &&
       options.trackUpdatedAt &&
-      imported.updatedAt && existing.updatedAt &&
-      (imported.updatedAt as Date) > (existing.updatedAt as Date)
+      importedFields.updatedAt && existingFields.updatedAt &&
+      (importedFields.updatedAt as Date) > (existingFields.updatedAt as Date)
     ) {
       merged[field] = importedVal;
       mergedFields.push(field);
     } else if (strategy === 'merge_fields' && customMerge) {
-      const result = customMerge(existing, imported);
+      const result = customMerge(existingFields, importedFields);
       if (result !== undefined) {
         merged[field] = result;
         mergedFields.push(field);
@@ -96,18 +119,18 @@ function mergeEntities(
     }
   }
 
-  if (options.trackUpdatedAt && imported.updatedAt && existing.updatedAt) {
-    if ((imported.updatedAt as Date) > (existing.updatedAt as Date)) {
-      merged.updatedAt = imported.updatedAt;
+  if (options.trackUpdatedAt && importedFields.updatedAt && existingFields.updatedAt) {
+    if ((importedFields.updatedAt as Date) > (existingFields.updatedAt as Date)) {
+      merged.updatedAt = importedFields.updatedAt;
       mergedFields.push('updatedAt');
     }
   }
 
   if (strategy === 'merge_fields' && options.extraMergeFields) {
-    options.extraMergeFields(merged, existing, imported, mergedFields);
+    options.extraMergeFields(merged, existingFields, importedFields, mergedFields);
   }
 
-  return { merged, conflicts, mergedFields };
+  return { merged: merged as unknown as T, conflicts, mergedFields };
 }
 
 /** Fill empty field from imported value */
@@ -120,7 +143,7 @@ const fillEmpty = (field: string) =>
 // ============================================================================
 
 export function mergeBoards(existing: Board, imported: Board, strategy: MergeStrategy): MergeResult<Board> {
-  const result = mergeEntities(existing as unknown as Record<string, unknown>, imported as unknown as Record<string, unknown>, strategy, {
+  return mergeEntities(existing, imported, strategy, {
     trackUpdatedAt: true,
     fields: [
       { field: 'name' },
@@ -129,11 +152,10 @@ export function mergeBoards(existing: Board, imported: Board, strategy: MergeStr
       { field: 'isDefault' },
     ],
   });
-  return { ...result, merged: result.merged as unknown as Board };
 }
 
 export function mergeTasks(existing: Task, imported: Task, strategy: MergeStrategy): MergeResult<Task> {
-  const result = mergeEntities(existing as unknown as Record<string, unknown>, imported as unknown as Record<string, unknown>, strategy, {
+  return mergeEntities(existing, imported, strategy, {
     trackUpdatedAt: true,
     fields: [
       { field: 'title' },
@@ -148,18 +170,15 @@ export function mergeTasks(existing: Task, imported: Task, strategy: MergeStrate
       { field: 'progress', deepCompare: true },
     ],
   });
-  return { ...result, merged: result.merged as unknown as Task };
 }
 
 export function mergeSettings(existing: Settings, imported: Settings, strategy: MergeStrategy): MergeResult<Settings> {
-  const result = mergeEntities(existing as unknown as Record<string, unknown>, imported as unknown as Record<string, unknown>, strategy, {
+  return mergeEntities(existing, imported, strategy, {
     fields: [
       { field: 'theme' },
       { field: 'autoArchiveDays' },
       { field: 'enableNotifications' },
       { field: 'enableKeyboardShortcuts' },
-      { field: 'enableDebugMode' },
-      { field: 'enableDeveloperMode' },
     ],
     extraMergeFields: (merged, existing, imported, mergedFields) => {
       if (JSON.stringify(existing.accessibility) !== JSON.stringify(imported.accessibility)) {
@@ -168,7 +187,6 @@ export function mergeSettings(existing: Settings, imported: Settings, strategy: 
       }
     },
   });
-  return { ...result, merged: result.merged as unknown as Settings };
 }
 
 export function generateUniqueBoardName(baseName: string, existingBoards: Board[]): string {

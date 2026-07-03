@@ -1,7 +1,7 @@
 # ADR-0003: Next.js with Static Export Deployed to S3/CloudFront
 
 **Status:** Accepted  
-**Date:** 2024-01-15
+**Documented:** 2026-04-14 (decision predates formal ADR documentation)
 
 ## Context
 

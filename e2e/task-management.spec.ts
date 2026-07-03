@@ -1,15 +1,6 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test.describe('Task Management', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('cascade_has_visited', 'true');
-    });
-    await page.goto('/');
-    // Wait for the board to load by checking for the board heading
-    await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
-  });
-
   test('loads the kanban board with columns', async ({ page }) => {
     // Check that the main columns are visible
     await expect(page.getByText('To Do')).toBeVisible();
@@ -39,14 +30,6 @@ test.describe('Task Management', () => {
 });
 
 test.describe('Board Navigation', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('cascade_has_visited', 'true');
-    });
-    await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
-  });
-
   test('can navigate to different boards', async ({ page }) => {
     // The default board should be visible
     await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
@@ -57,14 +40,6 @@ test.describe('Board Navigation', () => {
 });
 
 test.describe('Search Functionality', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('cascade_has_visited', 'true');
-    });
-    await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
-  });
-
   test('search input is available', async ({ page }) => {
     // Check that search input exists
     const searchInput = page.getByRole('searchbox');
@@ -84,14 +59,6 @@ test.describe('Search Functionality', () => {
 });
 
 test.describe('Accessibility', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('cascade_has_visited', 'true');
-    });
-    await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
-  });
-
   test('main elements have proper roles', async ({ page }) => {
     // Check for main heading
     await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
@@ -112,11 +79,3 @@ test.describe('Accessibility', () => {
     await expect(page.getByRole('dialog')).not.toBeVisible();
   });
 });
-
-// Helper functions for common operations
-async function createTask(page: Page, title: string): Promise<void> {
-  await page.getByRole('button', { name: 'New Task' }).click();
-  await page.getByLabel('Title *').fill(title);
-  await page.getByRole('button', { name: 'Create Task' }).click();
-  await expect(page.getByRole('dialog')).not.toBeVisible();
-}

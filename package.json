@@ -14,17 +14,13 @@
     "test:e2e": "playwright test",
     "deploy": "./scripts/deploy.sh",
     "deploy:multi": "./scripts/deploy-multi.sh",
-    "deploy:todos": "./scripts/deploy-multi.sh todos",
     "deploy:cascade": "./scripts/deploy-multi.sh cascade",
     "deploy:all": "./scripts/deploy-multi.sh all",
-    "deploy:s3": "aws s3 sync ./out s3://todos.vinny.dev --delete --cache-control 'max-age=31536000,public' --exclude '*.html' && aws s3 sync ./out s3://todos.vinny.dev --delete --cache-control 'max-age=0,no-cache,no-store,must-revalidate' --include '*.html'",
-    "deploy:invalidate": "aws cloudfront create-invalidation --distribution-id E2UEF9C8JAMJH5 --paths '/*'",
-    "deploy:invalidate:cascade": "aws cloudfront create-invalidation --distribution-id E1351EA4HZ20NY --paths '/*'",
+    "deploy:s3": "aws s3 sync ./out s3://cascade.vinny.dev --delete --cache-control 'max-age=31536000,public' --exclude '*.html' && aws s3 sync ./out s3://cascade.vinny.dev --delete --cache-control 'max-age=0,no-cache,no-store,must-revalidate' --include '*.html'",
+    "deploy:invalidate": "aws cloudfront create-invalidation --distribution-id E1351EA4HZ20NY --paths '/*'",
     "invalidate": "./scripts/invalidate.sh",
     "invalidate:cascade": "./scripts/invalidate.sh cascade",
-    "invalidate:todos": "./scripts/invalidate.sh todos",
-    "deploy:check": "curl -I https://todos.vinny.dev",
-    "deploy:check:cascade": "curl -I https://cascade.vinny.dev",
+    "deploy:check": "curl -I https://cascade.vinny.dev",
     "security:headers:check": "./scripts/test-security-headers.sh",
     "security:headers:update": "./scripts/update-security-headers.sh"
   },
@@ -94,7 +90,10 @@
     "flatted": "^3.4.2",
     "picomatch": "^4.0.4",
     "postcss": "^8.4.49",
-    "vite": "^8.0.16"
+    "vite": "^8.0.16",
+    "undici": "^7.28.0",
+    "js-yaml": "^4.1.2",
+    "ws": "^7.5.11"
   },
   "packageManager": "bun@1.3.5"
 }

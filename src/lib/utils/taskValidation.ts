@@ -6,10 +6,16 @@ import { logger } from '@/lib/utils/logger';
  */
 function hasRequiredFields(task: Task): boolean {
   if (!task.id || !task.title || !task.boardId) {
+    // Log only which fields are missing, never their values — title/
+    // description/tags may contain sensitive user content (see
+    // coding-standards.md Part 4: "Log with context, no secrets").
     logger.warn('Task missing required fields', {
-      id: task.id,
-      title: task.title,
-      boardId: task.boardId
+      taskId: task.id || '(missing)',
+      missingFields: [
+        !task.id && 'id',
+        !task.title && 'title',
+        !task.boardId && 'boardId',
+      ].filter(Boolean),
     });
     return false;
   }
@@ -21,25 +27,30 @@ function hasRequiredFields(task: Task): boolean {
  * Prevents runtime errors from corrupted or malformed data
  */
 function hasValidDataTypes(task: Task): boolean {
+  // Every branch below logs only task.id, never the task's title/
+  // description/tags — those may contain sensitive user content (see
+  // coding-standards.md Part 4: "Log with context, no secrets").
+  const taskId = typeof task.id === 'string' ? task.id : '(unknown)';
+
   // Check string fields
   if (
     typeof task.id !== 'string' ||
     typeof task.title !== 'string' ||
     typeof task.boardId !== 'string'
   ) {
-    logger.warn('Task has invalid field types', task);
+    logger.warn('Task has invalid field types', { taskId });
     return false;
   }
 
   // Check date fields - must be Date objects, not strings
   if (!(task.createdAt instanceof Date) || !(task.updatedAt instanceof Date)) {
-    logger.warn('Task has invalid date fields', task);
+    logger.warn('Task has invalid date fields', { taskId });
     return false;
   }
 
   // Check tags is array
   if (!Array.isArray(task.tags)) {
-    logger.warn('Task tags is not an array', task);
+    logger.warn('Task tags is not an array', { taskId });
     return false;
   }
 

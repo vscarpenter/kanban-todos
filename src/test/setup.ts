@@ -37,6 +37,21 @@ if (typeof window !== 'undefined' && typeof Storage !== 'undefined') {
   });
 }
 
+// jsdom has no PointerEvent/pointer-capture support, but Radix UI's
+// DropdownMenu/Select triggers rely on both to open. Without this, those
+// components silently fail to open under fireEvent.click in tests.
+if (typeof window !== 'undefined' && typeof window.PointerEvent === 'undefined') {
+  class PointerEventPolyfill extends MouseEvent {
+    pointerType = 'mouse'
+  }
+  // @ts-expect-error -- jsdom's MouseEvent isn't a full PointerEvent, but it's enough for Radix's open/close handlers
+  window.PointerEvent = PointerEventPolyfill
+  Element.prototype.hasPointerCapture ??= () => false
+  Element.prototype.setPointerCapture ??= () => {}
+  Element.prototype.releasePointerCapture ??= () => {}
+  Element.prototype.scrollIntoView ??= () => {}
+}
+
 // Mock crypto.randomUUID
 Object.defineProperty(global, 'crypto', {
   value: {

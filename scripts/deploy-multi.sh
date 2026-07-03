@@ -348,10 +348,9 @@ usage() {
     echo "  --help                Show this help message"
     echo ""
     echo "Examples:"
-    echo "  $0 todos                    # Deploy to todos environment"
     echo "  $0 cascade                 # Deploy to cascade environment"
     echo "  $0 all                     # Deploy to all environments"
-    echo "  $0 todos --wait-invalidation  # Deploy and wait for invalidation"
+    echo "  $0 cascade --wait-invalidation  # Deploy and wait for invalidation"
 }
 
 # Main deployment process

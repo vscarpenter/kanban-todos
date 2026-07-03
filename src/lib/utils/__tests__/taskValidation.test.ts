@@ -147,6 +147,62 @@ describe('taskValidation utility', () => {
       });
     });
 
+    describe('PII safety in logging', () => {
+      it('never logs raw title/description/tags when a task fails type validation', () => {
+        const task = createValidTask({
+          id: 'task-with-secrets',
+          title: 'Confidential: layoff plan for Q3',
+          description: 'Do not share — contains SSNs and salary data',
+          tags: ['top-secret', 'do-not-leak'],
+          createdAt: '2024-01-01' as unknown as Date, // trips hasValidDataTypes
+        });
+
+        validateTaskIntegrity(task);
+
+        expect(logger.warn).toHaveBeenCalled();
+        for (const call of vi.mocked(logger.warn).mock.calls) {
+          const serialized = JSON.stringify(call);
+          expect(serialized).not.toContain('Confidential');
+          expect(serialized).not.toContain('layoff');
+          expect(serialized).not.toContain('SSNs');
+          expect(serialized).not.toContain('top-secret');
+        }
+      });
+
+      it('logs only the task id (not the full task) when required fields are missing', () => {
+        const task = createValidTask({
+          id: 'task-456',
+          title: '',
+          description: 'Sensitive project codename: Firebird',
+        });
+
+        validateTaskIntegrity(task);
+
+        expect(logger.warn).toHaveBeenCalled();
+        for (const call of vi.mocked(logger.warn).mock.calls) {
+          const serialized = JSON.stringify(call);
+          expect(serialized).not.toContain('Firebird');
+        }
+      });
+
+      it('does not log the title even when the title itself is the missing/sensitive field', () => {
+        const task = createValidTask({
+          id: 'task-789',
+          title: 'Confidential: acquisition target list',
+          boardId: '', // trips hasRequiredFields via boardId, title still present on the task
+        });
+
+        validateTaskIntegrity(task);
+
+        expect(logger.warn).toHaveBeenCalled();
+        for (const call of vi.mocked(logger.warn).mock.calls) {
+          const serialized = JSON.stringify(call);
+          expect(serialized).not.toContain('Confidential');
+          expect(serialized).not.toContain('acquisition');
+        }
+      });
+    });
+
     describe('error handling', () => {
       it('returns false and logs error when validation throws', () => {
         // Create a task that will throw when accessed

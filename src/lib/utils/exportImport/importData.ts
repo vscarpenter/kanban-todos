@@ -33,6 +33,7 @@ import {
   type SerializedTask,
   deserializeTask,
   deserializeBoard,
+  DATA_FORMAT_VERSION,
 } from './serialize';
 import {
   validateExportData,
@@ -62,6 +63,28 @@ import {
 import { sanitizeTaskData, sanitizeBoardData } from '../security';
 
 /**
+ * Compares only the major version segment: a higher major in the imported
+ * file means it may contain a structure this app version doesn't understand,
+ * so it's rejected outright rather than passing shape validation and failing
+ * confusingly later. A lower or equal major (regardless of minor/patch) is
+ * treated as compatible — minor/patch bumps are additive by convention.
+ * Malformed version strings are left to schema validation to catch.
+ */
+function checkFormatVersionCompatibility(version: unknown): string | null {
+  if (typeof version !== 'string') return null;
+
+  const importedMajor = parseInt(version.split('.')[0], 10);
+  const currentMajor = parseInt(DATA_FORMAT_VERSION.split('.')[0], 10);
+  if (Number.isNaN(importedMajor) || Number.isNaN(currentMajor)) return null;
+
+  if (importedMajor > currentMajor) {
+    return `This backup was exported from a newer version of the app (format v${version}) than this version supports (v${DATA_FORMAT_VERSION}). Update the app before importing this file.`;
+  }
+
+  return null;
+}
+
+/**
  * Validates imported JSON data with enhanced validation
  */
 export function validateImportData(jsonData: unknown): ImportValidationResult {
@@ -71,6 +94,12 @@ export function validateImportData(jsonData: unknown): ImportValidationResult {
   // Check if data is an object
   if (!jsonData || typeof jsonData !== 'object') {
     errors.push('Invalid JSON format: Expected an object');
+    return { isValid: false, errors, warnings };
+  }
+
+  const versionError = checkFormatVersionCompatibility((jsonData as { version?: unknown }).version);
+  if (versionError) {
+    errors.push(versionError);
     return { isValid: false, errors, warnings };
   }
 

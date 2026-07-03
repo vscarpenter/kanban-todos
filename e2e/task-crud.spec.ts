@@ -1,14 +1,16 @@
-import { test, expect, type Page, type Locator } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import {
+  test,
+  expect,
+  createTask,
+  createBoard,
+  selectBoard,
+  taskCard,
+  column,
+  createTaskWithDetails,
+} from './fixtures';
 
 test.describe('Task CRUD and Drag-Drop', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('cascade_has_visited', 'true');
-    });
-    await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
-  });
-
   test('creates task with title only', async ({ page }) => {
     const taskTitle = 'Test Task';
 
@@ -264,80 +266,6 @@ test.describe('Task CRUD and Drag-Drop', () => {
 });
 
 // Helper functions
-
-function taskCard(page: Page, title: string) {
-  return page.locator('.task-card', { hasText: title });
-}
-
-function column(page: Page, title: string): Locator {
-  return page
-    .locator('.kanban-column')
-    .filter({ has: page.locator('.kanban-column__header').filter({ hasText: title }) })
-    .first();
-}
-
-function boardItem(page: Page, name: string): Locator {
-  return page.locator('[role="button"]', {
-    has: page.getByText(name, { exact: true }),
-  }).filter({ hasNotText: 'Move ' });
-}
-
-async function createBoard(page: Page, name: string): Promise<void> {
-  await page.getByRole('button', { name: 'Add board' }).click();
-  await page.getByLabel('Board Name *').fill(name);
-  await page.getByRole('button', { name: 'Create Board' }).click();
-  await expect(page.getByRole('dialog')).toBeHidden();
-  await expect(boardItem(page, name).first()).toBeVisible();
-}
-
-async function selectBoard(page: Page, name: string): Promise<void> {
-  await boardItem(page, name).first().click();
-  await expect(page.getByRole('heading', { name })).toBeVisible();
-}
-
-async function createTask(page: Page, title: string): Promise<void> {
-  await page.getByRole('button', { name: 'New Task' }).click();
-  await page.getByLabel('Title *').fill(title);
-  await page.getByRole('button', { name: 'Create Task' }).click();
-  await expect(taskCard(page, title).first()).toBeVisible();
-}
-
-async function createTaskWithDetails(
-  page: Page,
-  title: string,
-  options: {
-    description?: string;
-    priority?: 'Low' | 'Medium' | 'High';
-    tags?: string;
-    dueDatePreset?: 'Today' | 'Tomorrow' | 'Next Week' | 'No Date';
-  } = {}
-): Promise<void> {
-  await page.getByRole('button', { name: 'New Task' }).click();
-  await page.getByLabel('Title *').fill(title);
-
-  if (options.dueDatePreset) {
-    await page.getByRole('button', { name: options.dueDatePreset, exact: true }).click();
-  }
-
-  if (options.description || options.priority || options.tags) {
-    await page.getByRole('button', { name: 'Show Details' }).click();
-
-    if (options.description) {
-      await page.getByLabel('Description').fill(options.description);
-    }
-
-    if (options.priority) {
-      await selectByLabel(page, 'Priority', options.priority);
-    }
-
-    if (options.tags) {
-      await page.getByLabel('Tags').fill(options.tags);
-    }
-  }
-
-  await page.getByRole('button', { name: 'Create Task' }).click();
-  await expect(taskCard(page, title).first()).toBeVisible();
-}
 
 async function editTask(
   page: Page,

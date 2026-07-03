@@ -1,14 +1,11 @@
-import { test, expect, type Page, type Locator } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { test, expect, createTask, taskCard } from './fixtures';
 
 test.describe('Share Task Dialog', () => {
-  test.beforeEach(async ({ page, context }) => {
-    // Grant clipboard permissions for the copy-to-clipboard tests
+  // The fixtures `test` already resets storage and navigates to the board;
+  // this just adds the clipboard permissions these tests additionally need.
+  test.beforeEach(async ({ context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-    await page.addInitScript(() => {
-      localStorage.setItem('cascade_has_visited', 'true');
-    });
-    await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
   });
 
   test('opens share dialog from task menu', async ({ page }) => {
@@ -131,17 +128,6 @@ test.describe('Share Task Dialog', () => {
 });
 
 // Helper functions
-
-function taskCard(page: Page, title: string): Locator {
-  return page.locator('.task-card', { hasText: title });
-}
-
-async function createTask(page: Page, title: string): Promise<void> {
-  await page.getByRole('button', { name: 'New Task' }).click();
-  await page.getByLabel('Title *').fill(title);
-  await page.getByRole('button', { name: 'Create Task' }).click();
-  await expect(taskCard(page, title).first()).toBeVisible();
-}
 
 async function createTaskWithDescription(
   page: Page,

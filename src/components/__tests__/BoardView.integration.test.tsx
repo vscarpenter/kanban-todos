@@ -22,6 +22,11 @@ vi.mock('../DragDropProvider', () => ({
   DragDropProvider: ({ children }: { children: React.ReactNode }) => children
 }))
 
+const mocks = vi.hoisted(() => ({ toastError: vi.fn() }))
+vi.mock('sonner', () => ({
+  toast: { error: mocks.toastError, success: vi.fn() },
+}))
+
 const mockBoards: Board[] = [
   {
     id: 'board-1',
@@ -482,6 +487,21 @@ describe('BoardView - Cross-board Navigation', () => {
       expect(screen.getByText(/Showing results from/)).toBeInTheDocument()
       expect(screen.getByText('task')).toBeInTheDocument()
       expect(screen.queryByText('Tasks by Board')).not.toBeInTheDocument()
+    })
+
+    it('surfaces a task-store error as a toast instead of replacing the whole board', () => {
+      const erroredTaskStore: MockTaskStore = {
+        ...mockTaskStore,
+        error: 'Failed to add task: IndexedDB write failed',
+      }
+      ;(useTaskStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue(erroredTaskStore)
+
+      render(<BoardView />)
+
+      // The board still renders — a routine mutation failure shouldn't hide
+      // the user's existing tasks behind a full-page error screen.
+      expect(screen.getByText('Current Board Task')).toBeInTheDocument()
+      expect(mocks.toastError).toHaveBeenCalledWith('Failed to add task: IndexedDB write failed')
     })
   })
 })

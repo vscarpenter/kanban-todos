@@ -1,13 +1,13 @@
 # Cascade - Task Management System
 
-[![Version](https://img.shields.io/badge/version-5.2.0-blue.svg)](https://github.com/vscarpenter/kanban-todos)
+[![Version](https://img.shields.io/badge/version-5.2.1-blue.svg)](https://github.com/vscarpenter/kanban-todos)
 [![Build](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
 
 A modern, privacy-first kanban board task management system built with Next.js, TypeScript, and Tailwind CSS. Features a clean, accessible interface with advanced typography and responsive design.
 
-> **Version 5.2.0** reflects the current app structure, quality cleanup, and the latest Next.js / Vitest stack used in this repo.
+> **Version 5.2.1** reflects the current app structure, quality cleanup, and the latest Next.js / Vitest stack used in this repo.
 
 ## ✨ Features
 
@@ -35,11 +35,11 @@ A modern, privacy-first kanban board task management system built with Next.js, 
 
 ## 🚀 Getting Started
 
-- Prerequisites: Node.js 20+ and npm 10+.
-- Install dependencies: `npm install`
-- Start dev server: `npm run dev` then open `http://localhost:3000`
-- Build for production: `npm run build`
-- Run production build: `npm start`
+- Prerequisites: [Bun](https://bun.sh) 1.3+ (this project is bun-only; `package.json` pins `packageManager: bun@1.3.5`).
+- Install dependencies: `bun install`
+- Start dev server: `bun run dev` then open `http://localhost:3000`
+- Build for production: `bun run build`
+- Run production build: `bun run start`
 
 ## 🛠️ Tech Stack
 
@@ -55,6 +55,10 @@ A modern, privacy-first kanban board task management system built with Next.js, 
 
 ### Docker Deployment
 
+The `Dockerfile` is a multi-stage build: it builds the static export with Bun, then serves the
+prebuilt files with nginx (running as the non-root `nginx` user on port `8080`) — there is no
+Next.js server running in the container.
+
 #### Build and Run Locally
 
 1. Build the Docker image:
@@ -64,7 +68,7 @@ docker build -t kanban-todos:latest .
 
 2. Run the container:
 ```bash
-docker run -p 3000:3000 --name kanban-todos kanban-todos:latest
+docker run -p 3000:8080 --name kanban-todos kanban-todos:latest
 ```
 
 3. Access the app at [http://localhost:3000](http://localhost:3000)
@@ -105,7 +109,7 @@ spec:
             - name: kanban-todos
                 image: <your-repo>/kanban-todos:latest
                 ports:
-                - containerPort: 3000
+                - containerPort: 8080
 ---
 apiVersion: v1
 kind: Service
@@ -114,8 +118,8 @@ metadata:
 spec:
     type: NodePort
     ports:
-    - port: 3000
-        targetPort: 3000
+    - port: 80
+        targetPort: 8080
         nodePort: 32000
     selector:
         app: kanban-todos
@@ -222,7 +226,7 @@ The codebase follows strict quality guidelines:
 - CloudFront response headers policy is the production source of truth for security headers and CSP.
 - Header/CSP drift checks are versioned in `docs/security-headers-baseline.json`.
 - Validate live environments with:
-  - `npm run security:headers:check`
+  - `bun run security:headers:check`
 - Automated validation runs via GitHub Actions:
   - `.github/workflows/security-headers-check.yml`
 - Note: Next.js `headers()` is intentionally not used for production enforcement because this app is deployed with static export (`output: 'export'`).

@@ -43,6 +43,11 @@ function KanbanColumn({ title, tasks, status, boards, currentBoardId, highlighte
   const showDropPlaceholder =
     isOver && activeTask !== undefined && activeTask.status !== status;
 
+  // Built once per render (this component is already memoized above, so
+  // that's once per genuine prop change) rather than re-scanning `boards`
+  // with .find() for every task below.
+  const boardById = isCrossBoardSearch ? new Map(boards.map((b) => [b.id, b])) : null;
+
   return (
     <div
       ref={setNodeRef}
@@ -149,7 +154,10 @@ function KanbanColumn({ title, tasks, status, boards, currentBoardId, highlighte
           ) : (
             <>
               {tasks.map((task, index) => {
-                const taskBoard = boards.find((b) => b.id === task.boardId);
+                // boardById is null (and this lookup skipped) when TaskCard
+                // would never read the result — it only shows the board
+                // indicator during cross-board search.
+                const taskBoard = boardById?.get(task.boardId);
                 const isCurrentBoard = task.boardId === currentBoardId;
                 const isHighlighted = highlightedTaskId === task.id;
 

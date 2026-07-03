@@ -6,9 +6,9 @@
 set -euo pipefail
 
 # Configuration — override via environment variables
-S3_BUCKET="${DEPLOY_S3_BUCKET:-s3://todos.vinny.dev}"
-CLOUDFRONT_DISTRIBUTION_ID="${DEPLOY_CLOUDFRONT_ID:-E2UEF9C8JAMJH5}"
-DOMAIN="${DEPLOY_DOMAIN:-https://todos.vinny.dev}"
+S3_BUCKET="${DEPLOY_S3_BUCKET:-s3://cascade.vinny.dev}"
+CLOUDFRONT_DISTRIBUTION_ID="${DEPLOY_CLOUDFRONT_ID:-E1351EA4HZ20NY}"
+DOMAIN="${DEPLOY_DOMAIN:-https://cascade.vinny.dev}"
 
 # Colors for output
 RED='\033[0;31m'

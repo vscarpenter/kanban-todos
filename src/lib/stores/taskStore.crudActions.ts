@@ -50,6 +50,7 @@ export function createAddTask(_get: GetState, set: StoreSetter) {
         error: error instanceof Error ? error.message : 'Failed to add task',
         isLoading: false
       });
+      throw error;
     }
   };
 }
@@ -93,6 +94,7 @@ export function createUpdateTask(get: GetState, set: StoreSetter) {
         error: error instanceof Error ? error.message : 'Failed to update task',
         isLoading: false
       });
+      throw error;
     }
   };
 }
@@ -118,6 +120,7 @@ export function createDeleteTask(_get: GetState, set: StoreSetter) {
         error: error instanceof Error ? error.message : 'Failed to delete task',
         isLoading: false
       });
+      throw error;
     }
   };
 }
@@ -147,14 +150,11 @@ export function createMoveTask(get: GetState, set: StoreSetter) {
 
     try {
       await get().updateTask(taskId, updates);
+      return true;
     } catch (error: unknown) {
       set({ error: error instanceof Error ? error.message : 'Failed to move task' });
       return false;
     }
-
-    // updateTask swallows persistence errors internally (it only sets error
-    // state), so confirm the status actually changed before reporting success.
-    return get().tasks.find(t => t.id === taskId)?.status === newStatus;
   };
 }
 
@@ -184,6 +184,7 @@ export function createArchiveTask(get: GetState, set: StoreSetter) {
       await get().updateTask(taskId, { archivedAt: new Date(), updatedAt: new Date() });
     } catch (error: unknown) {
       set({ error: error instanceof Error ? error.message : 'Failed to archive task' });
+      throw error;
     }
   };
 }
@@ -194,6 +195,7 @@ export function createUnarchiveTask(get: GetState, set: StoreSetter) {
       await get().updateTask(taskId, { archivedAt: undefined, updatedAt: new Date() });
     } catch (error: unknown) {
       set({ error: error instanceof Error ? error.message : 'Failed to unarchive task' });
+      throw error;
     }
   };
 }

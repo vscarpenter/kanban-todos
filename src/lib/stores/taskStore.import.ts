@@ -43,13 +43,7 @@ export function createImportTasks(get: () => ImportExportState, set: StoreSetter
     try {
       set({ isLoading: true, error: null });
 
-      const existingIds = new Set(get().tasks.map(t => t.id));
-
-      await Promise.all(
-        tasks.map(task =>
-          existingIds.has(task.id) ? taskDB.updateTask(task) : taskDB.addTask(task)
-        )
-      );
+      await taskDB.upsertTasks(tasks);
 
       set((state: { tasks: Task[] }) => {
         const taskMap = new Map(state.tasks.map(t => [t.id, t]));

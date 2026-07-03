@@ -1,15 +1,7 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, createBoard, selectBoard } from './fixtures';
 import { pressShortcutUntilVisible } from './helpers/keyboard';
 
 test.describe('Keyboard Shortcuts', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('cascade_has_visited', 'true');
-    });
-    await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
-  });
-
   test('press N opens new task dialog', async ({ page }) => {
     await pressShortcutUntilVisible(page, 'n', page.getByRole('heading', { name: 'Create New Task' }));
 
@@ -132,21 +124,3 @@ test.describe('Keyboard Shortcuts', () => {
     await page.keyboard.press('Escape');
   });
 });
-
-// Helper functions
-
-async function createBoard(page: Page, name: string): Promise<void> {
-  await page.getByRole('button', { name: 'Add board' }).click();
-  await page.getByLabel('Board Name *').fill(name);
-  await page.getByRole('button', { name: 'Create Board' }).click();
-  await expect(page.getByRole('dialog')).toBeHidden();
-}
-
-async function selectBoard(page: Page, name: string): Promise<void> {
-  await page
-    .locator('[role="button"]', { has: page.getByText(name, { exact: true }) })
-    .filter({ hasNotText: 'Move ' })
-    .first()
-    .click();
-  await expect(page.getByRole('heading', { name })).toBeVisible();
-}

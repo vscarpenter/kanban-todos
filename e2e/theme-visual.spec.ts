@@ -1,10 +1,12 @@
 import { test, expect, type Page, type Locator } from '@playwright/test';
+import { resetAppStorage } from './fixtures';
 
+// Several tests here need page.emulateMedia() to run before the first
+// page.goto(), so they can't use the auto-navigating `test` from
+// './fixtures' - just the storage reset for isolation.
 test.describe('Theme Visual Verification', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('cascade_has_visited', 'true');
-    });
+    await resetAppStorage(page);
   });
 
   test('default theme respects the system color scheme (light)', async ({ page }) => {

@@ -1,14 +1,6 @@
-import { test, expect, type Page, type Locator } from '@playwright/test';
+import { test, expect, createBoard, boardItem } from './fixtures';
 
 test.describe('Board Appearance', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('cascade_has_visited', 'true');
-    });
-    await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
-  });
-
   test('appearance picker is visible in Create Board dialog', async ({ page }) => {
     await page.getByRole('button', { name: 'Add board' }).click();
 
@@ -161,19 +153,3 @@ test.describe('Board Appearance', () => {
     await page.keyboard.press('Escape');
   });
 });
-
-// Helper functions
-
-function boardItem(page: Page, name: string): Locator {
-  return page.locator('[role="button"]', {
-    has: page.getByText(name, { exact: true }),
-  }).filter({ hasNotText: 'Move ' });
-}
-
-async function createBoard(page: Page, name: string): Promise<void> {
-  await page.getByRole('button', { name: 'Add board' }).click();
-  await page.getByLabel('Board Name *').fill(name);
-  await page.getByRole('button', { name: 'Create Board' }).click();
-  await expect(page.getByRole('dialog')).toBeHidden();
-  await expect(boardItem(page, name).first()).toBeVisible();
-}

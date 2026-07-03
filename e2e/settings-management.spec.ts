@@ -1,14 +1,7 @@
-import { test, expect, type Page, type Locator } from '@playwright/test';
+import type { Page, Locator } from '@playwright/test';
+import { test, expect, createBoard, selectBoard, createTask, boardItem, taskCard } from './fixtures';
 
 test.describe('Settings Management', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('cascade_has_visited', 'true');
-    });
-    await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
-  });
-
   test('switches between light and dark theme', async ({ page }) => {
     await openSettings(page);
 
@@ -119,22 +112,6 @@ test.describe('Settings Management', () => {
     await expect(comboboxFor(page, 'Font size')).toContainText('Large');
 
     await selectByLabel(page, 'Font size', 'Medium');
-    await saveSettings(page);
-  });
-
-  test('toggles debug mode', async ({ page }) => {
-    await openSettings(page);
-    await ensureAdvancedExpanded(page);
-
-    const debugSwitch = page.getByRole('switch', { name: 'Debug mode' });
-    await debugSwitch.click();
-    await saveSettings(page);
-
-    await openSettings(page);
-    await ensureAdvancedExpanded(page);
-    await expect(debugSwitch).toBeChecked();
-
-    await debugSwitch.click();
     await saveSettings(page);
   });
 
@@ -282,43 +259,13 @@ async function saveSettings(page: Page): Promise<void> {
 
 async function ensureAdvancedExpanded(page: Page): Promise<void> {
   // SettingsDialog preserves showAdvanced state across close/open, so we only
-  // expand when the debug-mode switch (only present in the Advanced section)
-  // is not yet rendered.
-  const debugSwitch = page.locator('#debugMode');
-  if (!(await debugSwitch.isVisible().catch(() => false))) {
+  // expand when the keyboard-shortcuts switch (only present in the Advanced
+  // section) is not yet rendered.
+  const shortcutsSwitch = page.locator('#keyboardShortcuts');
+  if (!(await shortcutsSwitch.isVisible().catch(() => false))) {
     await page.getByRole('button', { name: 'Advanced' }).click();
-    await expect(debugSwitch).toBeVisible();
+    await expect(shortcutsSwitch).toBeVisible();
   }
-}
-
-function boardItem(page: Page, name: string): Locator {
-  return page.locator('[role="button"]', {
-    has: page.getByText(name, { exact: true }),
-  }).filter({ hasNotText: 'Move ' });
-}
-
-function taskCard(page: Page, title: string): Locator {
-  return page.locator('.task-card', { hasText: title });
-}
-
-async function createBoard(page: Page, name: string): Promise<void> {
-  await page.getByRole('button', { name: 'Add board' }).click();
-  await page.getByLabel('Board Name *').fill(name);
-  await page.getByRole('button', { name: 'Create Board' }).click();
-  await expect(page.getByRole('dialog')).toBeHidden();
-  await expect(boardItem(page, name).first()).toBeVisible();
-}
-
-async function selectBoard(page: Page, name: string): Promise<void> {
-  await boardItem(page, name).first().click();
-  await expect(page.getByRole('heading', { name })).toBeVisible();
-}
-
-async function createTask(page: Page, title: string): Promise<void> {
-  await page.getByRole('button', { name: 'New Task' }).click();
-  await page.getByLabel('Title *').fill(title);
-  await page.getByRole('button', { name: 'Create Task' }).click();
-  await expect(taskCard(page, title).first()).toBeVisible();
 }
 
 async function cancelOrDiscard(page: Page): Promise<void> {

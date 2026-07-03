@@ -12,26 +12,16 @@ Welcome to the comprehensive documentation for the Kanban Todos application. Thi
 ### Developer Documentation
 - [Developer Guide](./developer-guide.md) - Development setup and architecture
 - [API Reference](./api-reference.md) - Technical API documentation
-- [Refactoring Guide v3.0](./REFACTORING-V3.md) - Version 3.0 architecture improvements ⭐ NEW
-
-### Operational Documentation
-- [Security Guide](./security-guide.md) - Security features and best practices
-- [Performance Guide](./performance-guide.md) - Performance optimization and monitoring
-- [Accessibility Guide](./accessibility-guide.md) - Accessibility features and compliance
-- [Deployment Guide](./deployment-guide.md) - Production deployment instructions
-- [Troubleshooting](./troubleshooting.md) - Common issues and solutions
-
-### Contributing
-- [Contributing](./contributing.md) - How to contribute to the project
+- [Refactoring Guide v3.0](./REFACTORING-V3.md) - Version 3.0 architecture improvements
 
 ## 🚀 Quick Start
 
-1. **Installation**: Clone the repository and run `npm install`
-2. **Development**: Run `npm run dev` to start the development server
-3. **Build**: Run `npm run build` to create a production build
-4. **Test**: Run `npm test` to execute the test suite
+1. **Installation**: Clone the repository and run `bun install`
+2. **Development**: Run `bun run dev` to start the development server
+3. **Build**: Run `bun run build` to create a production build
+4. **Test**: Run `bun run test` to execute the test suite
 
-> **Version 3.0.1** includes major internal refactoring for improved code quality. See [Refactoring Guide](./REFACTORING-V3.md) for details.
+> **The v3.0.1 release** included major internal refactoring for improved code quality. See [Refactoring Guide](./REFACTORING-V3.md) for details.
 
 ## 🎯 Key Features
 
@@ -59,12 +49,10 @@ Each documentation file is designed to serve a specific audience:
 
 - **Users**: Start with [Getting Started](./getting-started.md) and [User Guide](./user-guide.md)
 - **Developers**: Begin with [Developer Guide](./developer-guide.md) and [API Reference](./api-reference.md)
-- **DevOps**: Focus on [Deployment Guide](./deployment-guide.md) and [Performance Guide](./performance-guide.md)
-- **Accessibility**: Check [Accessibility Guide](./accessibility-guide.md)
 
 ## 🤝 Contributing
 
-We welcome contributions! Please read our [Contributing Guide](./contributing.md) for details on how to get started.
+We welcome contributions! Fork the repository, open a feature branch, and submit a pull request — see the main [README](../README.md#-contributing) for the workflow.
 
 ## 📄 License
 
@@ -74,10 +62,8 @@ This project is licensed under the MIT License - see the [LICENSE](../LICENSE) f
 
 If you need help or have questions:
 
-1. Check the [Troubleshooting Guide](./troubleshooting.md)
-2. Review the [FAQ section](./user-guide.md#faq)
-3. Open an issue on GitHub
-4. Contact the development team
+1. Review the [FAQ section](./user-guide.md#faq)
+2. Open an issue on GitHub
 
 ---
 
@@ -89,8 +75,6 @@ If you need help or have questions:
 - **Enhanced Maintainability**: Following SOLID principles throughout
 - **100% Backward Compatible**: No breaking changes to public API
 
-See [CHANGELOG](../CHANGELOG.md) for complete version history.
-
 ---
 
-*Last updated: January 2025 (v3.0.1)*
+*Last updated: July 2026 (v5.2.1)*

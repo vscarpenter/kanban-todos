@@ -1,6 +1,5 @@
 {
   "domains": [
-    "https://todos.vinny.dev",
     "https://cascade.vinny.dev"
   ],
   "requiredHeaders": {

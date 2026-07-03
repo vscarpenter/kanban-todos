@@ -57,6 +57,25 @@ describe('TaskDatabase', () => {
       const freshDB = new TaskDatabase();
       await expect(freshDB.init()).resolves.toBeUndefined();
     });
+
+    it('rejects with a clear message instead of hanging forever when the open request is blocked', async () => {
+      const freshDB = new TaskDatabase();
+
+      // Simulates another tab holding an older-version connection open,
+      // which makes IndexedDB report the open request as blocked instead of
+      // resolving or erroring.
+      const openSpy = vi.spyOn(indexedDB, 'open').mockImplementation(() => {
+        const request = {} as IDBOpenDBRequest;
+        queueMicrotask(() => {
+          request.onblocked?.(new Event('blocked') as IDBVersionChangeEvent);
+        });
+        return request;
+      });
+
+      await expect(freshDB.init()).rejects.toThrow(/blocked/i);
+
+      openSpy.mockRestore();
+    });
   });
 
   describe('task CRUD operations', () => {
@@ -188,8 +207,6 @@ describe('TaskDatabase', () => {
         autoArchiveDays: 30,
         enableNotifications: false,
         enableKeyboardShortcuts: true,
-        enableDebugMode: false,
-        enableDeveloperMode: false,
         searchPreferences: {
           defaultScope: 'current-board',
           rememberScope: true,
@@ -215,8 +232,6 @@ describe('TaskDatabase', () => {
         autoArchiveDays: 7,
         enableNotifications: false,
         enableKeyboardShortcuts: true,
-        enableDebugMode: false,
-        enableDeveloperMode: false,
         searchPreferences: {
           defaultScope: 'current-board',
           rememberScope: true,
@@ -297,8 +312,6 @@ describe('TaskDatabase', () => {
         autoArchiveDays: 14,
         enableNotifications: true,
         enableKeyboardShortcuts: false,
-        enableDebugMode: false,
-        enableDeveloperMode: false,
         searchPreferences: {
           defaultScope: 'all-boards',
           rememberScope: false,
@@ -336,6 +349,69 @@ describe('TaskDatabase', () => {
       expect(tasks).toHaveLength(0);
     });
   });
+
+  describe('upsertTasks', () => {
+    it('adds new tasks in a single batch', async () => {
+      const tasks = [
+        createTestTask({ id: 'batch-task-1' }),
+        createTestTask({ id: 'batch-task-2' }),
+        createTestTask({ id: 'batch-task-3' }),
+      ];
+
+      await db.upsertTasks(tasks);
+
+      const stored = await db.getTasks();
+      expect(stored.map(t => t.id).sort()).toEqual(['batch-task-1', 'batch-task-2', 'batch-task-3']);
+    });
+
+    it('overwrites tasks that already exist by id, without touching untouched tasks', async () => {
+      await db.addTask(createTestTask({ id: 'existing-task', title: 'Original' }));
+      await db.addTask(createTestTask({ id: 'untouched-task', title: 'Leave me alone' }));
+
+      await db.upsertTasks([createTestTask({ id: 'existing-task', title: 'Updated' })]);
+
+      const stored = await db.getTasks();
+      expect(stored).toHaveLength(2);
+      expect(stored.find(t => t.id === 'existing-task')?.title).toBe('Updated');
+      expect(stored.find(t => t.id === 'untouched-task')?.title).toBe('Leave me alone');
+    });
+
+    it('does nothing for an empty array', async () => {
+      await db.addTask(createTestTask({ id: 'pre-existing' }));
+
+      await db.upsertTasks([]);
+
+      const stored = await db.getTasks();
+      expect(stored).toHaveLength(1);
+    });
+  });
+
+  describe('upsertBoards', () => {
+    it('adds new boards in a single batch', async () => {
+      const boards = [
+        createTestBoard({ id: 'batch-board-1' }),
+        createTestBoard({ id: 'batch-board-2' }),
+      ];
+
+      await db.upsertBoards(boards);
+
+      const stored = await db.getBoards();
+      expect(stored.map(b => b.id).sort()).toEqual(['batch-board-1', 'batch-board-2']);
+    });
+
+    it('overwrites boards that already exist by id, without touching untouched boards', async () => {
+      await db.addBoard(createTestBoard({ id: 'existing-board', name: 'Original' }));
+      await db.addBoard(createTestBoard({ id: 'untouched-board', name: 'Leave me alone' }));
+
+      await db.upsertBoards([createTestBoard({ id: 'existing-board', name: 'Updated' })]);
+
+      const stored = await db.getBoards();
+      expect(stored).toHaveLength(2);
+      expect(stored.find(b => b.id === 'existing-board')?.name).toBe('Updated');
+      expect(stored.find(b => b.id === 'untouched-board')?.name).toBe('Leave me alone');
+    });
+  });
+
 
   describe('resetDatabase', () => {
     it('clears all data', async () => {
@@ -405,8 +481,6 @@ describe('TaskDatabase', () => {
           autoArchiveDays: 30,
           enableNotifications: false,
           enableKeyboardShortcuts: true,
-          enableDebugMode: false,
-          enableDeveloperMode: false,
           searchPreferences: { defaultScope: 'current-board', rememberScope: true },
           accessibility: { highContrast: false, reduceMotion: false, fontSize: 'medium' },
         })
