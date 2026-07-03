@@ -36,6 +36,11 @@ jobs:
       - name: Test with coverage
         run: bun run test:coverage
 
+      # Fails the build on High/Critical advisories only — Moderate/Low
+      # findings are tracked separately and shouldn't block every PR.
+      - name: Audit dependencies
+        run: bun audit --audit-level=high
+
       # Skips cleanly when SONAR_TOKEN isn't configured, so a missing secret no
       # longer fails the whole job. Runs automatically once the secret is added.
       - name: SonarCloud Scan
