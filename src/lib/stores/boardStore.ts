@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Board } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
 import { useTaskStore } from './taskStore';
+import { useSettingsStore } from './settingsStore';
 import { ExportData } from '@/lib/utils/exportImport';
 import { sanitizeBoardData } from '@/lib/utils/security';
 import { logger } from '@/lib/utils/logger';
@@ -97,25 +98,6 @@ interface BoardActions {
   initializeBoards: () => Promise<void>;
 }
 
-// Default settings template for board persistence
-const DEFAULT_BOARD_SETTINGS = {
-  theme: 'system' as const,
-  autoArchiveDays: 30,
-  enableNotifications: false,
-  enableKeyboardShortcuts: true,
-  enableDebugMode: false,
-  enableDeveloperMode: false,
-  searchPreferences: {
-    defaultScope: 'current-board' as const,
-    rememberScope: true,
-  },
-  accessibility: {
-    highContrast: false,
-    reduceMotion: false,
-    fontSize: 'medium' as const,
-  },
-};
-
 // Use satisfies operator (TS 5.0+) for type-safe initial state
 const initialState = {
   boards: [],
@@ -132,13 +114,11 @@ export const useBoardStore = create<BoardState & BoardActions>((set, get) => ({
           set({ currentBoardId: boardId });
 
           try {
-            const existingSettings = await taskDB.getSettings();
-            const updatedSettings = {
-              ...DEFAULT_BOARD_SETTINGS,
-              ...existingSettings,
-              currentBoardId: boardId,
-            };
-            await taskDB.updateSettings(updatedSettings);
+            // settingsStore is the single owner of Settings — persist the
+            // selection through it instead of writing to the database
+            // directly behind its back (see taskStore.filters.ts for the
+            // same convention).
+            await useSettingsStore.getState().updateSettings({ currentBoardId: boardId });
           } catch (error) {
             logger.warn('Failed to persist current board selection:', error);
           }

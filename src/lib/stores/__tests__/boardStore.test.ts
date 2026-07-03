@@ -75,6 +75,15 @@ describe('boardStore', () => {
 
       expect(taskDB.updateSettings).toHaveBeenCalled();
     });
+
+    it('persists through settingsStore, the single owner of Settings, instead of writing to the database directly', async () => {
+      const { useSettingsStore } = await import('../settingsStore');
+      const { setCurrentBoard } = useBoardStore.getState();
+
+      await setCurrentBoard('board-789');
+
+      expect(useSettingsStore.getState().settings.currentBoardId).toBe('board-789');
+    });
   });
 
   describe('setLoading', () => {
