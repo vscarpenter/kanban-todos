@@ -370,12 +370,11 @@ Complete guide to using all features of the Kanban Todos application.
 
 | Shortcut | Action |
 |----------|--------|
-| `Ctrl/Cmd + N` | Create new task |
-| `Ctrl/Cmd + B` | Create new board |
-| `Ctrl/Cmd + F` | Focus search bar |
-| `Ctrl/Cmd + S` | Save current board |
-| `Ctrl/Cmd + E` | Export data |
-| `Ctrl/Cmd + I` | Import data |
+| `N` | Create new task |
+| `Ctrl/Cmd + K` | Create new task (quick add) |
+| `Ctrl/Cmd + 1` – `9` | Switch to board 1–9 |
+| `F1` | Show help |
+| `H` | Show keyboard shortcuts |
 | `Ctrl/Cmd + ,` | Open settings |
 | `Escape` | Close dialogs |
 
@@ -388,15 +387,6 @@ Complete guide to using all features of the Kanban Todos application.
 | `Enter` | Activate button/link |
 | `Space` | Toggle checkbox |
 | `Arrow Keys` | Navigate lists |
-
-### Task Shortcuts
-
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl/Cmd + Enter` | Save task |
-| `Escape` | Cancel task edit |
-| `Delete` | Delete selected task |
-| `Ctrl/Cmd + D` | Duplicate task |
 
 ## 📱 Mobile Usage
 
