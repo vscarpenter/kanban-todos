@@ -2,6 +2,14 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { KanbanBoard } from '@/components/KanbanBoard'
 
+// Hoisted so the same mock function reference persists across every call to
+// useTaskStore/useBoardStore/useSettingsStore, letting tests assert on it.
+const mocks = vi.hoisted(() => ({
+  initializeStore: vi.fn().mockResolvedValue(undefined),
+  initializeBoards: vi.fn().mockResolvedValue(undefined),
+  initializeSettings: vi.fn().mockResolvedValue(undefined),
+}))
+
 // Mock all the dependencies
 vi.mock('@/components/Sidebar', () => ({
   Sidebar: ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => void }) => (
@@ -39,7 +47,7 @@ vi.mock('@/lib/icons', () => ({
 
 vi.mock('@/lib/stores/taskStore', () => ({
   useTaskStore: () => ({
-    initializeStore: vi.fn().mockResolvedValue(undefined),
+    initializeStore: mocks.initializeStore,
     setBoardFilter: vi.fn(),
     tasks: [],
   }),
@@ -47,14 +55,14 @@ vi.mock('@/lib/stores/taskStore', () => ({
 
 vi.mock('@/lib/stores/boardStore', () => ({
   useBoardStore: () => ({
-    initializeBoards: vi.fn().mockResolvedValue(undefined),
+    initializeBoards: mocks.initializeBoards,
     currentBoardId: 'board-1',
   }),
 }))
 
 vi.mock('@/lib/stores/settingsStore', () => ({
   useSettingsStore: () => ({
-    initializeSettings: vi.fn().mockResolvedValue(undefined),
+    initializeSettings: mocks.initializeSettings,
     settings: { enableNotifications: false },
   }),
 }))
@@ -104,11 +112,11 @@ describe('KanbanBoard', () => {
 
   it('initializes stores on mount', async () => {
     render(<KanbanBoard />)
-    
-    // Wait for initialization to complete
+
     await waitFor(() => {
-      // The stores should be initialized (mocked functions called)
-      expect(true).toBe(true)
-    }, { timeout: 1000 })
+      expect(mocks.initializeSettings).toHaveBeenCalledTimes(1)
+      expect(mocks.initializeBoards).toHaveBeenCalledTimes(1)
+      expect(mocks.initializeStore).toHaveBeenCalledTimes(1)
+    })
   })
 })
