@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { useBoardStore } from "@/lib/stores/boardStore";
 import { useTaskStore } from "@/lib/stores/taskStore";
@@ -66,7 +66,43 @@ export function BoardView() {
     setInitialStatus(status);
     setShowCreateTask(true);
   }, []);
-  
+
+  // Determine which tasks to show based on search mode
+  const isSearchActive = filters.search.length > 0;
+  const isCrossBoardSearch = filters.crossBoardSearch && isSearchActive;
+
+  // Memoized so BoardView's own re-renders (e.g. an unrelated parent state
+  // change) don't hand children a fresh array/object reference every time —
+  // that would defeat KanbanBoard's own useMemo one level down, which is
+  // keyed on referential identity of `tasks`. Must run before any early
+  // return below (Rules of Hooks).
+  const { displayTasks, boardGroups } = useMemo(() => {
+    if (isCrossBoardSearch) {
+      // Show all filtered tasks from all boards during cross-board search
+      const tasks = filteredTasks.filter(task => !task.archivedAt);
+
+      // Group tasks by board for cross-board display
+      const boardById = new Map(boards.map(b => [b.id, b]));
+      const groups: Record<string, { board: Board; tasks: Task[] }> = {};
+      for (const task of tasks) {
+        const taskBoard = boardById.get(task.boardId);
+        if (taskBoard) {
+          if (!groups[task.boardId]) {
+            groups[task.boardId] = { board: taskBoard, tasks: [] };
+          }
+          groups[task.boardId].tasks.push(task);
+        }
+      }
+      return { displayTasks: tasks, boardGroups: groups };
+    }
+
+    // Show only tasks from current board
+    return {
+      displayTasks: filteredTasks.filter(task => task.boardId === currentBoardId && !task.archivedAt),
+      boardGroups: {} as Record<string, { board: Board; tasks: Task[] }>,
+    };
+  }, [filteredTasks, boards, isCrossBoardSearch, currentBoardId]);
+
   if (!currentBoard) {
     return <EmptyState type="no-board" />;
   }
@@ -74,36 +110,6 @@ export function BoardView() {
   if (isLoading) {
     return <EmptyState type="loading" />;
   }
-
-  // Determine which tasks to show based on search mode
-  const isSearchActive = filters.search.length > 0;
-  const isCrossBoardSearch = filters.crossBoardSearch && isSearchActive;
-  
-  let displayTasks;
-  const boardGroups: Record<string, { board: Board; tasks: Task[] }> = {};
-  
-  if (isCrossBoardSearch) {
-    // Show all filtered tasks from all boards during cross-board search
-    displayTasks = filteredTasks.filter(task => !task.archivedAt);
-    
-    // Group tasks by board for cross-board display
-    displayTasks.forEach(task => {
-      const taskBoard = boards.find(b => b.id === task.boardId);
-      if (taskBoard) {
-        if (!boardGroups[task.boardId]) {
-          boardGroups[task.boardId] = { board: taskBoard, tasks: [] };
-        }
-        boardGroups[task.boardId].tasks.push(task);
-      }
-    });
-  } else {
-    // Show only tasks from current board
-    displayTasks = filteredTasks.filter(task => 
-      task.boardId === currentBoardId && !task.archivedAt
-    );
-  }
-
-  
 
   return (
     <BoardNavigationProvider value={handleNavigateToBoard}>
