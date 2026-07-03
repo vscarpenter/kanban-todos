@@ -54,17 +54,25 @@ vi.mock('@/lib/stores/taskStore', () => ({
 }))
 
 vi.mock('@/lib/stores/boardStore', () => ({
-  useBoardStore: () => ({
-    initializeBoards: mocks.initializeBoards,
-    currentBoardId: 'board-1',
-  }),
+  useBoardStore: (selector?: (state: Record<string, unknown>) => unknown) => {
+    const state = {
+      initializeBoards: mocks.initializeBoards,
+      currentBoardId: 'board-1',
+      error: null,
+    }
+    return selector ? selector(state) : state
+  },
 }))
 
 vi.mock('@/lib/stores/settingsStore', () => ({
-  useSettingsStore: () => ({
-    initializeSettings: mocks.initializeSettings,
-    settings: { enableNotifications: false },
-  }),
+  useSettingsStore: (selector?: (state: Record<string, unknown>) => unknown) => {
+    const state = {
+      initializeSettings: mocks.initializeSettings,
+      settings: { enableNotifications: false },
+      error: null,
+    }
+    return selector ? selector(state) : state
+  },
 }))
 
 vi.mock('@/lib/utils/notifications', () => ({

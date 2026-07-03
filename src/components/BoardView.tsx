@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
+import { toast } from "sonner";
 import { useBoardStore } from "@/lib/stores/boardStore";
 import { useTaskStore } from "@/lib/stores/taskStore";
 import { Board, Task } from "@/lib/types";
@@ -53,6 +54,13 @@ export function BoardView() {
     }
   }, [currentBoardId, searchState.highlightedTaskId, setHighlightedTask]);
 
+  // A store error (e.g. a failed mutation) shouldn't hide the user's
+  // existing board behind a full-page error screen — surface it as a toast
+  // instead, so the board stays usable while the user retries.
+  useEffect(() => {
+    if (error) toast.error(error);
+  }, [error]);
+
   // Handle add task from column button
   const handleAddTask = useCallback((status: Task['status']) => {
     setInitialStatus(status);
@@ -65,16 +73,6 @@ export function BoardView() {
 
   if (isLoading) {
     return <EmptyState type="loading" />;
-  }
-
-  if (error) {
-    return (
-      <EmptyState
-        type="error"
-        error={error}
-        onRetry={() => window.location.reload()}
-      />
-    );
   }
 
   // Determine which tasks to show based on search mode

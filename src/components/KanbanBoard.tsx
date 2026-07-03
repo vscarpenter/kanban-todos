@@ -14,6 +14,7 @@ import { useSettingsStore } from "@/lib/stores/settingsStore";
 import { notificationManager } from "@/lib/utils/notifications";
 import { detectTouchCapabilities } from "@/lib/utils/iosDetection";
 import { logger } from "@/lib/utils/logger";
+import { useStoreErrorToasts } from "@/lib/hooks/useStoreErrorToasts";
 
 // Lazy load keyboard components
 const GlobalHotkeys = dynamic(() => import("./GlobalHotkeys").then(mod => ({ default: mod.GlobalHotkeys })), {
@@ -54,6 +55,8 @@ export function KanbanBoard() {
   const { initializeStore, setBoardFilter, tasks } = useTaskStore();
   const { initializeBoards, currentBoardId } = useBoardStore();
   const { initializeSettings, settings } = useSettingsStore();
+
+  useStoreErrorToasts();
 
   useEffect(() => {
     const initializeStores = async () => {
