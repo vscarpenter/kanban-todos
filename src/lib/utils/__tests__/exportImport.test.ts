@@ -50,8 +50,6 @@ function createSettings(overrides: Partial<Settings> = {}): Settings {
     autoArchiveDays: 30,
     enableNotifications: false,
     enableKeyboardShortcuts: true,
-    enableDebugMode: false,
-    enableDeveloperMode: false,
     searchPreferences: {
       defaultScope: 'current-board',
       rememberScope: false,
@@ -442,9 +440,9 @@ describe('exportImport', () => {
   });
 
   describe('processAdvancedImport', () => {
-    it('preserves enableDeveloperMode in settings round-trip', () => {
-      const importedSettings = createSettings({ enableDeveloperMode: true });
-      const existingSettings = createSettings({ enableDeveloperMode: false });
+    it('preserves enableNotifications in settings round-trip', () => {
+      const importedSettings = createSettings({ enableNotifications: true });
+      const existingSettings = createSettings({ enableNotifications: false });
       const importData: ExportData = {
         version: DATA_FORMAT_VERSION,
         exportedAt: new Date().toISOString(),
@@ -469,7 +467,7 @@ describe('exportImport', () => {
       );
 
       expect(result.resolvedSettings).toBeDefined();
-      expect(result.resolvedSettings?.enableDeveloperMode).toBe(true);
+      expect(result.resolvedSettings?.enableNotifications).toBe(true);
     });
   });
 

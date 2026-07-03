@@ -16,7 +16,7 @@ import {
   AppearanceSection,
   TaskManagementSection,
   AccessibilitySection,
-  DeveloperSection,
+  ShortcutsSection,
 } from "./SettingsSections";
 
 // Deep compare settings objects
@@ -26,8 +26,6 @@ function settingsEqual(a: Settings, b: Settings): boolean {
     a.autoArchiveDays === b.autoArchiveDays &&
     a.enableNotifications === b.enableNotifications &&
     a.enableKeyboardShortcuts === b.enableKeyboardShortcuts &&
-    a.enableDebugMode === b.enableDebugMode &&
-    a.enableDeveloperMode === b.enableDeveloperMode &&
     a.accessibility.highContrast === b.accessibility.highContrast &&
     a.accessibility.reduceMotion === b.accessibility.reduceMotion &&
     a.accessibility.fontSize === b.accessibility.fontSize
@@ -215,7 +213,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             <>
               <Separator />
               
-              <DeveloperSection
+              <ShortcutsSection
                 localSettings={localSettings}
                 updateLocalSetting={updateLocalSetting}
               />

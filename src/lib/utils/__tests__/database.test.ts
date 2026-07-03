@@ -207,8 +207,6 @@ describe('TaskDatabase', () => {
         autoArchiveDays: 30,
         enableNotifications: false,
         enableKeyboardShortcuts: true,
-        enableDebugMode: false,
-        enableDeveloperMode: false,
         searchPreferences: {
           defaultScope: 'current-board',
           rememberScope: true,
@@ -234,8 +232,6 @@ describe('TaskDatabase', () => {
         autoArchiveDays: 7,
         enableNotifications: false,
         enableKeyboardShortcuts: true,
-        enableDebugMode: false,
-        enableDeveloperMode: false,
         searchPreferences: {
           defaultScope: 'current-board',
           rememberScope: true,
@@ -316,8 +312,6 @@ describe('TaskDatabase', () => {
         autoArchiveDays: 14,
         enableNotifications: true,
         enableKeyboardShortcuts: false,
-        enableDebugMode: false,
-        enableDeveloperMode: false,
         searchPreferences: {
           defaultScope: 'all-boards',
           rememberScope: false,
@@ -487,8 +481,6 @@ describe('TaskDatabase', () => {
           autoArchiveDays: 30,
           enableNotifications: false,
           enableKeyboardShortcuts: true,
-          enableDebugMode: false,
-          enableDeveloperMode: false,
           searchPreferences: { defaultScope: 'current-board', rememberScope: true },
           accessibility: { highContrast: false, reduceMotion: false, fontSize: 'medium' },
         })

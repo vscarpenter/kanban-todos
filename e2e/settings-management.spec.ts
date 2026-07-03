@@ -115,22 +115,6 @@ test.describe('Settings Management', () => {
     await saveSettings(page);
   });
 
-  test('toggles debug mode', async ({ page }) => {
-    await openSettings(page);
-    await ensureAdvancedExpanded(page);
-
-    const debugSwitch = page.getByRole('switch', { name: 'Debug mode' });
-    await debugSwitch.click();
-    await saveSettings(page);
-
-    await openSettings(page);
-    await ensureAdvancedExpanded(page);
-    await expect(debugSwitch).toBeChecked();
-
-    await debugSwitch.click();
-    await saveSettings(page);
-  });
-
   test('toggles keyboard shortcuts', async ({ page }) => {
     await openSettings(page);
     await ensureAdvancedExpanded(page);
@@ -275,12 +259,12 @@ async function saveSettings(page: Page): Promise<void> {
 
 async function ensureAdvancedExpanded(page: Page): Promise<void> {
   // SettingsDialog preserves showAdvanced state across close/open, so we only
-  // expand when the debug-mode switch (only present in the Advanced section)
-  // is not yet rendered.
-  const debugSwitch = page.locator('#debugMode');
-  if (!(await debugSwitch.isVisible().catch(() => false))) {
+  // expand when the keyboard-shortcuts switch (only present in the Advanced
+  // section) is not yet rendered.
+  const shortcutsSwitch = page.locator('#keyboardShortcuts');
+  if (!(await shortcutsSwitch.isVisible().catch(() => false))) {
     await page.getByRole('button', { name: 'Advanced' }).click();
-    await expect(debugSwitch).toBeVisible();
+    await expect(shortcutsSwitch).toBeVisible();
   }
 }
 

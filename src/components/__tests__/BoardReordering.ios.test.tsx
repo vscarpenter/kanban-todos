@@ -88,7 +88,6 @@ describe('Board Reordering iOS Tests', () => {
         autoArchiveDays: 30,
         enableNotifications: false,
         enableKeyboardShortcuts: true,
-        enableDebugMode: false,
         searchPreferences: {
           defaultScope: 'current-board',
           rememberScope: true,

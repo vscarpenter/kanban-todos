@@ -39,8 +39,6 @@ const defaultSettings = {
   autoArchiveDays: 30,
   enableNotifications: true,
   enableKeyboardShortcuts: true,
-  enableDebugMode: false,
-  enableDeveloperMode: false,
   searchPreferences: {
     defaultScope: 'current-board',
     rememberScope: true,
