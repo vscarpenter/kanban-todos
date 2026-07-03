@@ -151,7 +151,7 @@ describe('SearchBar Integration Tests', () => {
       );
     });
 
-    it('should call setSearchQuery when typing in search input', async () => {
+    it('keeps typed input in the search box', async () => {
       render(<SearchBar />);
 
       const searchInput = screen.getByRole('searchbox');

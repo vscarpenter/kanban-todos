@@ -29,7 +29,6 @@ import {
   createSetFilters,
   createSetBoardFilter,
   createSetCrossBoardSearch,
-  createSetSearchQuery,
   createApplyFilters,
   createClearFilters,
   createClearSearch,
@@ -68,7 +67,6 @@ interface TaskActions {
   setFilters: (filters: Partial<TaskFilters>) => void;
   setBoardFilter: (boardId: string | null) => void;
   setCrossBoardSearch: (enabled: boolean) => void;
-  setSearchQuery: (query: string) => void;
   setLoading: (loading: boolean) => void;
   setSearching: (searching: boolean) => void;
   setError: (error: string | null) => void;
@@ -252,7 +250,6 @@ export const useTaskStore = create<TaskState & TaskActions>()(
       setFilters: createSetFilters(get, set),
       setBoardFilter: createSetBoardFilter(get, set),
       setCrossBoardSearch: createSetCrossBoardSearch(get, set),
-      setSearchQuery: createSetSearchQuery(get, set),
       applyFilters: createApplyFilters(get, set),
       clearFilters: createClearFilters(get, set),
       clearSearch: createClearSearch(get, set),

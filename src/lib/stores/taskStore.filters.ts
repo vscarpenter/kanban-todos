@@ -6,19 +6,9 @@
 import { Task, TaskFilters, SearchScope } from '@/lib/types';
 import { taskDB } from '@/lib/utils/database';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
-import { sanitizeSearchQuery, searchRateLimiter } from '@/lib/utils/security';
 import { searchTasks } from '@/lib/utils/taskSearch';
 import { validateTaskCollection } from '@/lib/utils/taskValidation';
 import { logger } from '@/lib/utils/logger';
-
-// ============================================================================
-// Configuration
-// ============================================================================
-
-const SEARCH_DEBOUNCE_MS = 300;
-
-// Module-scoped search debounce timeout
-let searchTimeout: ReturnType<typeof setTimeout> | undefined;
 
 // ============================================================================
 // Type Definitions
@@ -163,52 +153,6 @@ export function createSetCrossBoardSearch(get: () => TaskStoreState, set: StoreS
     }));
     void get().applyFilters();
     void get().saveSearchScope(enabled ? 'all-boards' : 'current-board');
-  };
-}
-
-export function createSetSearchQuery(get: () => TaskStoreState, set: StoreSetter) {
-  return (query: string) => {
-    const sanitizedQuery = sanitizeSearchQuery(query);
-
-    // Rate limiting for search operations
-    if (sanitizedQuery.trim() && !searchRateLimiter.isAllowed('search')) {
-      set({
-        error: 'Search rate limit exceeded. Please wait a moment before searching again.',
-        isSearching: false
-      });
-      return;
-    }
-
-    set((state: TaskStoreState) => ({ filters: { ...state.filters, search: sanitizedQuery } }));
-
-    // Clear any existing timeout
-    if (searchTimeout !== undefined) {
-      clearTimeout(searchTimeout);
-      searchTimeout = undefined;
-    }
-
-    // Handle empty queries immediately
-    if (!sanitizedQuery.trim()) {
-      set({ isSearching: false });
-      void get().applyFilters();
-      return;
-    }
-
-    // Show loading state and debounce filter application
-    set({ isSearching: true, error: null });
-
-    searchTimeout = setTimeout(async () => {
-      searchTimeout = undefined;
-      try {
-        await get().applyFilters();
-      } catch (error: unknown) {
-        logger.error('Search operation failed:', error);
-        set({
-          error: error instanceof Error ? error.message : 'Search failed',
-          isSearching: false
-        });
-      }
-    }, SEARCH_DEBOUNCE_MS);
   };
 }
 
