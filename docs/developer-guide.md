@@ -1,6 +1,6 @@
 # Developer Guide
 
-Complete guide for developers working on the Kanban Todos application.
+Complete guide for developers working on the Cascade (kanban-todos) application.
 
 ## 📋 Table of Contents
 
@@ -11,7 +11,6 @@ Complete guide for developers working on the Kanban Todos application.
 - [State Management](#state-management)
 - [Component Guidelines](#component-guidelines)
 - [Testing Strategy](#testing-strategy)
-- [Performance Considerations](#performance-considerations)
 - [Security Guidelines](#security-guidelines)
 - [Deployment Process](#deployment-process)
 - [Contributing](#contributing)
@@ -21,37 +20,37 @@ Complete guide for developers working on the Kanban Todos application.
 ```
 kanban-todos/
 ├── docs/                    # Documentation
-├── e2e/                     # End-to-end tests
+├── e2e/                     # Playwright end-to-end tests
 ├── public/                  # Static assets
 ├── src/
 │   ├── app/                 # Next.js App Router
 │   │   ├── globals.css      # Global styles
 │   │   ├── layout.tsx       # Root layout
-│   │   └── page.tsx         # Home page
+│   │   ├── page.tsx         # Home page
+│   │   └── error.tsx        # App Router error boundary
 │   ├── components/          # React components
 │   │   ├── accessibility/   # Accessibility components
-│   │   ├── ui/             # UI components
-│   │   └── *.tsx           # Feature components
-│   ├── lib/                # Utilities and configurations
-│   │   ├── stores/         # Zustand stores
-│   │   ├── types/          # TypeScript types
-│   │   └── utils/          # Utility functions
-│   └── test/               # Test setup
-├── .github/                # GitHub workflows
-├── .vscode/                # VS Code settings
-├── playwright.config.ts    # Playwright config
-├── vitest.config.ts        # Vitest config
-├── next.config.ts          # Next.js config
-├── package.json            # Dependencies
-└── README.md               # Project overview
+│   │   ├── ui/               # shadcn/ui base components
+│   │   └── *.tsx             # Feature components
+│   ├── lib/                 # Utilities and configurations
+│   │   ├── stores/          # Zustand stores
+│   │   ├── types/           # TypeScript types
+│   │   └── utils/           # Utility functions
+│   └── test/                # Vitest setup
+├── .github/                 # GitHub workflows
+├── .vscode/                 # VS Code settings
+├── playwright.config.ts     # Playwright config
+├── vitest.config.ts         # Vitest config
+├── next.config.ts           # Next.js config
+├── package.json             # Dependencies
+└── README.md                # Project overview
 ```
 
 ## 🚀 Development Setup
 
 ### Prerequisites
 
-- Node.js 18+
-- npm or yarn
+- [Bun](https://bun.sh) (package manager and script runner — this project is bun-only; `package.json` pins `packageManager: bun@1.3.5`)
 - Git
 - VS Code (recommended)
 
@@ -61,33 +60,36 @@ kanban-todos/
    ```bash
    git clone https://github.com/your-username/kanban-todos.git
    cd kanban-todos
-   npm install
+   bun install
    ```
 
 2. **Environment Setup**
    ```bash
    # Copy environment template
    cp .env.example .env.local
-   
+
    # Edit environment variables
    nano .env.local
    ```
 
 3. **Start Development Server**
    ```bash
-   npm run dev
+   bun run dev
    ```
 
 4. **Run Tests**
    ```bash
-   # Unit tests
-   npm test
-   
-   # E2E tests
-   npm run test:e2e
-   
-   # All tests
-   npm run test:all
+   # Unit/component tests (Vitest)
+   bun run test
+
+   # Unit tests with coverage
+   bun run test:coverage
+
+   # Unit tests in watch mode
+   bun run test:watch
+
+   # E2E tests (Playwright)
+   bun run test:e2e
    ```
 
 ### VS Code Setup
@@ -112,24 +114,24 @@ kanban-todos/
 
 ### Technology Stack
 
-- **Framework**: Next.js 15 (App Router)
-- **Language**: TypeScript
+- **Framework**: Next.js 16 (App Router, static export)
+- **Language**: TypeScript (strict)
 - **UI Library**: React 19
-- **Styling**: Tailwind CSS v4
+- **Styling**: Tailwind CSS v4, shadcn/ui
 - **State Management**: Zustand
-- **Data Storage**: IndexedDB
+- **Data Storage**: IndexedDB (custom `TaskDatabase` wrapper in `src/lib/utils/database.ts`)
 - **Testing**: Vitest + Testing Library + Playwright
-- **Deployment**: Static export to S3/CloudFront
+- **Deployment**: Static export to S3/CloudFront (`todos.vinny.dev` and `cascade.vinny.dev`)
 
 ### Core Principles
 
 1. **Component-First**: Build reusable, composable components
 2. **Type Safety**: Leverage TypeScript for better code quality
-3. **Performance**: Optimize for speed and efficiency
+3. **Performance**: Optimize for speed and efficiency (lazy-loaded drag-and-drop, `React.memo`, dynamic imports)
 4. **Accessibility**: Ensure WCAG 2.1 AA compliance
-5. **Security**: Implement defense-in-depth security
-6. **Testing**: Maintain high test coverage
-7. **Code Quality** (v3.0+):
+5. **Security**: Input sanitization and XSS defense (see [Security Guidelines](#security-guidelines))
+6. **Testing**: Maintain meaningful test coverage (see `vitest.config.ts` thresholds)
+7. **Code Quality**:
    - Functions under 30 lines for readability
    - Single Responsibility Principle
    - YAGNI (You Aren't Gonna Need It)
@@ -139,9 +141,9 @@ kanban-todos/
 ### Data Flow
 
 ```
-User Interaction → Component → Store → Database → UI Update
+User Interaction → Component → Store → IndexedDB → UI Update
      ↓
-  Error Handling → State Validation → Performance Optimization
+  Store-level error handling (try/catch → set({ error }))
 ```
 
 ## 📁 Code Organization
@@ -162,9 +164,6 @@ export function Component({ prop1, prop2 }: ComponentProps) {
     </div>
   );
 }
-
-// Default export for easier imports
-export default Component;
 ```
 
 ### Store Structure
@@ -193,10 +192,6 @@ export interface UtilityConfig {
   // Configuration interface
 }
 
-export class UtilityClass {
-  // Class implementation
-}
-
 export function utilityFunction(): ReturnType {
   // Function implementation
 }
@@ -206,101 +201,78 @@ export function utilityFunction(): ReturnType {
 
 ### Zustand Stores
 
-The application uses a modular Zustand store architecture (v3.0+) for improved maintainability:
+The application uses three Zustand stores, each persisted to IndexedDB through `src/lib/utils/database.ts`:
 
-**Task Store** (Modular Architecture)
-- **Main Store** (`src/lib/stores/taskStore.ts`) - Composition layer (190 lines)
-  - Combines all task-related functionality
-  - Provides unified API for components
-  - Maintains backward compatibility
+**Task Store** (split across 4 files in `src/lib/stores/` for maintainability)
+- **Main Store** (`taskStore.ts`) — composition layer: owns the `TaskState`/`TaskActions` interfaces, initial state, and wires the action creators from the other three files into one `create()` call
+- **CRUD Actions** (`taskStore.crudActions.ts`) — `addTask`, `updateTask`, `deleteTask`, `moveTask`, `moveTaskToBoard`, `archiveTask`, `unarchiveTask`
+- **Filters** (`taskStore.filters.ts`) — search/filter state, debounced search query handling, the search-result cache (`SearchCache`), and cross-board search navigation
+- **Import/Export** (`taskStore.import.ts`) — `exportTasks`, `importTasks`, `bulkAddTasks`
 
-- **Actions Module** (`src/lib/stores/taskStoreActions.ts`)
-  - Task CRUD operations (create, read, update, delete)
-  - Task movement between statuses
-  - Board assignment operations
-  - Archive/unarchive functionality
-
-- **Filters Module** (`src/lib/stores/taskStoreFilters.ts`)
-  - Search query handling with debouncing
-  - Filter application logic
-  - Search result caching
-  - Rate limiting for search operations
-
-- **Search Module** (`src/lib/stores/taskStoreSearch.ts`)
-  - Search navigation
-  - Task highlighting
-  - Search preferences management
-  - Board navigation validation
-
-- **Import/Export Module** (`src/lib/stores/taskStoreImportExport.ts`)
-  - Bulk task operations
-  - Data export functionality
-  - Import conflict handling
-  - Batch processing
-
-- **Validation Module** (`src/lib/stores/taskStoreValidation.ts`)
-  - Board access validation
-  - Error recovery mechanisms
-  - Data integrity checks
-  - Store initialization
-
-- **Helpers Module** (`src/lib/stores/taskStoreHelpers.ts`)
-  - Filter application utilities
-  - Error recovery helpers
-  - Common helper functions
-
-**Board Store** (`src/lib/stores/boardStore.ts`)
-- Manages board operations
-- Handles board switching
-- Implements data validation
-- Board initialization and defaults
+**Board Store** (`src/lib/stores/boardStore.ts`, with import/export actions extracted to `boardStore.importActions.ts`)
+- Board CRUD, reordering, and selection (`currentBoardId`)
+- Ensures a default board always exists on init
+- Deleting a board removes its tasks from `useTaskStore` too (see [API Reference](./api-reference.md#board-store))
 
 **Settings Store** (`src/lib/stores/settingsStore.ts`)
-- Manages user preferences
-- Handles theme and language settings
-- Implements data persistence
-- Auto-archive configuration
+- Theme, auto-archive, keyboard shortcuts, accessibility, and search preferences
+- Persists to the `settings` IndexedDB object store under a single `'default'` record
+
+See the [API Reference](./api-reference.md#store-apis) for the exact `State`/`Actions` interfaces of each store.
 
 ### Store Patterns
 
-**Modular Store Pattern (v3.0+):**
+**Action Creator Pattern** — each store's mutating actions are built by factory functions that close over `get`/`set`, then composed in the main store file. This is the real pattern from `taskStore.crudActions.ts`:
+
 ```typescript
-// Main store composition
-import { createAddTask, createUpdateTask } from './taskStoreActions';
-import { createApplyFilters } from './taskStoreFilters';
-
-export const useTaskStore = create<TaskState & TaskActions>()(
-  devtools((set, get) => ({
-    ...initialState,
-
-    // Composed from modules
-    addTask: createAddTask(get, set),
-    updateTask: createUpdateTask(get, set),
-    applyFilters: createApplyFilters(get, set),
-  }))
-);
-```
-
-**Action Creator Pattern:**
-```typescript
-// In module file (e.g., taskStoreActions.ts)
-export function createAddTask(get, set) {
-  return async (taskData) => {
+// taskStore.crudActions.ts
+export function createAddTask(_get: GetState, set: StoreSetter) {
+  return async (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
       set({ isLoading: true, error: null });
-      const newTask = { ...taskData, id: crypto.randomUUID() };
+
+      const sanitizedData = sanitizeTaskData({
+        title: taskData.title,
+        description: taskData.description,
+        tags: taskData.tags,
+      });
+
+      const newTask: Task = {
+        ...taskData,
+        ...sanitizedData,
+        id: crypto.randomUUID(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
       await taskDB.addTask(newTask);
 
-      const { tasks, filters } = get();
+      // Functional updater avoids stale state after the await above
+      set((state) => ({
+        tasks: [...state.tasks, newTask],
+        filteredTasks: applyFiltersToTasks([...state.tasks, newTask], state.filters),
+        isLoading: false,
+        searchCache: new Map(),
+      }));
+    } catch (error: unknown) {
       set({
-        tasks: [...tasks, newTask],
+        error: error instanceof Error ? error.message : 'Failed to add task',
         isLoading: false,
       });
-    } catch (error) {
-      set({ error: error.message, isLoading: false });
+      throw error;
     }
   };
 }
+
+// taskStore.ts
+export const useTaskStore = create<TaskState & TaskActions>()(
+  devtools((set, get) => ({
+    ...initialState,
+    addTask: createAddTask(get, set),
+    updateTask: createUpdateTask(get, set),
+    // ...composed from taskStore.crudActions.ts / .filters.ts / .import.ts
+  }))
+);
 ```
 
 **Selector Pattern:**
@@ -321,25 +293,25 @@ const activeTasks = useTaskStore(state =>
 
 ### Component Design
 
-**Functional Components:**
+**Functional Components** (following the real `src/components/ui/button.tsx` pattern):
 ```typescript
 interface ButtonProps {
-  variant?: 'primary' | 'secondary';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: 'default' | 'secondary' | 'outline' | 'ghost' | 'destructive';
+  size?: 'sm' | 'default' | 'lg';
   children: React.ReactNode;
   onClick?: () => void;
 }
 
-export function Button({ 
-  variant = 'primary', 
-  size = 'md', 
-  children, 
-  onClick 
+export function Button({
+  variant = 'default',
+  size = 'default',
+  children,
+  onClick
 }: ButtonProps) {
   return (
     <button
       className={cn(
-        'px-4 py-2 rounded',
+        'inline-flex items-center justify-center rounded-md transition-colors',
         variants[variant],
         sizes[size]
       )}
@@ -353,19 +325,23 @@ export function Button({
 
 **Custom Hooks:**
 ```typescript
-export function useTaskOperations() {
+export function useTaskOperations(boardId: string) {
   const { tasks, addTask, updateTask, deleteTask } = useTaskStore();
-  
-  const createTask = useCallback((taskData: TaskData) => {
-    // Validation
-    if (!taskData.title) {
+
+  const createTask = useCallback((title: string) => {
+    if (!title.trim()) {
       throw new Error('Title is required');
     }
-    
-    // Create task
-    addTask(taskData);
-  }, [addTask]);
-  
+
+    addTask({
+      title,
+      status: 'todo',
+      priority: 'medium',
+      tags: [],
+      boardId,
+    });
+  }, [addTask, boardId]);
+
   return { tasks, createTask, updateTask, deleteTask };
 }
 ```
@@ -374,18 +350,18 @@ export function useTaskOperations() {
 
 **Tailwind CSS Classes:**
 ```typescript
-// Use cn utility for conditional classes
+// Use the cn() utility (src/lib/utils.ts) for conditional classes
 const buttonClass = cn(
   'px-4 py-2 rounded transition-colors',
   {
-    'bg-blue-500 text-white': variant === 'primary',
-    'bg-gray-200 text-gray-800': variant === 'secondary',
+    'bg-primary text-primary-foreground': variant === 'primary',
+    'bg-secondary text-secondary-foreground': variant === 'secondary',
   },
   disabled && 'opacity-50 cursor-not-allowed'
 );
 ```
 
-**CSS Custom Properties:**
+**CSS Custom Properties (Tailwind v4 theme):**
 ```css
 :root {
   --color-primary: theme('colors.blue.500');
@@ -397,250 +373,100 @@ const buttonClass = cn(
 
 ## 🧪 Testing Strategy
 
-### Unit Testing
+See the [Testing Guide](./testing-guide.md) for full detail — this section is a summary.
 
-**Component Testing:**
+**Unit/component tests** run with Vitest + Testing Library against `jsdom`:
 ```typescript
 import { render, screen, fireEvent } from '@testing-library/react';
-import { Button } from './Button';
+import { Button } from '../ui/button';
 
 describe('Button', () => {
-  it('renders with correct text', () => {
-    render(<Button>Click me</Button>);
-    expect(screen.getByText('Click me')).toBeInTheDocument();
-  });
-  
   it('calls onClick when clicked', () => {
     const handleClick = vi.fn();
     render(<Button onClick={handleClick}>Click me</Button>);
-    
+
     fireEvent.click(screen.getByText('Click me'));
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
 });
 ```
 
-**Store Testing:**
+**Store tests** mock `@/lib/utils/database` per-file (the global `src/test/setup.ts` also mocks it by default) and call store actions directly via `useTaskStore.getState()`:
 ```typescript
-import { renderHook, act } from '@testing-library/react';
-import { useTaskStore } from './taskStore';
+import { useTaskStore } from '@/lib/stores/taskStore';
 
-describe('TaskStore', () => {
-  it('adds task correctly', () => {
-    const { result } = renderHook(() => useTaskStore());
-    
-    act(() => {
-      result.current.addTask({
-        id: '1',
-        title: 'Test Task',
-        status: 'todo'
-      });
+describe('taskStore', () => {
+  it('adds a task', async () => {
+    const { addTask } = useTaskStore.getState();
+
+    await addTask({
+      title: 'Test Task',
+      status: 'todo',
+      priority: 'medium',
+      tags: [],
+      boardId: 'board-1',
     });
-    
-    expect(result.current.tasks).toHaveLength(1);
-    expect(result.current.tasks[0].title).toBe('Test Task');
+
+    expect(useTaskStore.getState().tasks).toHaveLength(1);
   });
 });
 ```
 
-### Integration Testing
-
-**API Integration:**
-```typescript
-describe('Task API', () => {
-  it('fetches tasks successfully', async () => {
-    const mockTasks = [{ id: '1', title: 'Test' }];
-    vi.mocked(api.getTasks).mockResolvedValue(mockTasks);
-    
-    const { result } = renderHook(() => useTaskStore());
-    
-    await act(async () => {
-      await result.current.fetchTasks();
-    });
-    
-    expect(result.current.tasks).toEqual(mockTasks);
-  });
-});
-```
-
-### E2E Testing
-
-**Playwright Tests:**
+**E2E tests** run with Playwright against `e2e/*.spec.ts`, using accessible queries (`getByRole`, `getByLabel`) rather than `data-testid` selectors:
 ```typescript
 import { test, expect } from '@playwright/test';
 
-test('creates and manages tasks', async ({ page }) => {
+test('creates a task', async ({ page }) => {
   await page.goto('/');
-  
-  // Create task
-  await page.click('[data-testid="add-task"]');
-  await page.fill('[data-testid="task-title"]', 'Test Task');
-  await page.click('[data-testid="save-task"]');
-  
-  // Verify task created
-  await expect(page.locator('[data-testid="task-card"]')).toContainText('Test Task');
-  
-  // Move task
-  await page.dragAndDrop(
-    '[data-testid="task-card"]',
-    '[data-testid="in-progress-column"]'
-  );
-  
-  // Verify task moved
-  await expect(page.locator('[data-testid="in-progress-column"] [data-testid="task-card"]'))
-    .toContainText('Test Task');
+  await page.getByRole('button', { name: 'New Task' }).click();
+  await page.getByLabel('Title *').fill('Test Task');
+  await page.getByRole('button', { name: 'Create Task' }).click();
+
+  await expect(page.getByText('Test Task')).toBeVisible();
 });
 ```
 
-## ⚡ Performance Considerations
-
-### React Performance
-
-**Memoization:**
-```typescript
-const TaskCard = memo(({ task }: TaskCardProps) => {
-  return (
-    <div className="task-card">
-      {task.title}
-    </div>
-  );
-});
-
-// Custom comparison
-const TaskCard = memo(({ task }: TaskCardProps) => {
-  // Component implementation
-}, (prevProps, nextProps) => {
-  return prevProps.task.id === nextProps.task.id;
-});
-```
-
-**Lazy Loading:**
-```typescript
-const LazyComponent = lazy(() => import('./HeavyComponent'));
-
-function App() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <LazyComponent />
-    </Suspense>
-  );
-}
-```
-
-### Data Performance
-
-**Virtual Scrolling:**
-```typescript
-import { FixedSizeList as List } from 'react-window';
-
-function TaskList({ tasks }: { tasks: Task[] }) {
-  const Row = ({ index, style }: { index: number; style: CSSProperties }) => (
-    <div style={style}>
-      <TaskCard task={tasks[index]} />
-    </div>
-  );
-  
-  return (
-    <List
-      height={600}
-      itemCount={tasks.length}
-      itemSize={80}
-    >
-      {Row}
-    </List>
-  );
-}
-```
-
-**Debounced Search:**
-```typescript
-const useDebouncedSearch = (query: string, delay: number = 300) => {
-  const [debouncedQuery, setDebouncedQuery] = useState(query);
-  
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedQuery(query);
-    }, delay);
-    
-    return () => clearTimeout(timer);
-  }, [query, delay]);
-  
-  return debouncedQuery;
-};
-```
+Run everything with `bun run test`, `bun run test:coverage`, or `bun run test:e2e` — see [Development Setup](#development-setup).
 
 ## 🔒 Security Guidelines
 
-### Input Validation
+### Input Sanitization
 
-**Sanitization:**
+This app does not use DOMPurify or a schema library like zod. Two layers do the work instead:
+
+1. **React's automatic escaping** — the real XSS defense. Any value rendered as JSX text or an attribute is escaped by React; `dangerouslySetInnerHTML` is forbidden by the `react/no-danger` ESLint rule.
+2. **`src/lib/utils/security.ts`** — a defence-in-depth layer that strips raw `<`/`>` characters and enforces per-field length limits before user text (task titles/descriptions/tags, board names/descriptions, search queries) is written to IndexedDB:
+
 ```typescript
-import DOMPurify from 'dompurify';
+import { sanitizeTaskData } from '@/lib/utils/security';
 
-export function sanitizeInput(input: string): string {
-  return DOMPurify.sanitize(input, {
-    ALLOWED_TAGS: ['b', 'i', 'em', 'strong'],
-    ALLOWED_ATTR: []
-  });
+export function createAddTask(/* ... */) {
+  return async (taskData) => {
+    const sanitized = sanitizeTaskData({
+      title: taskData.title,
+      description: taskData.description,
+      tags: taskData.tags,
+    });
+    // ...persist `sanitized` fields, not the raw input
+  };
 }
 ```
 
-**Validation:**
-```typescript
-export function validateTaskData(data: unknown): TaskData {
-  const schema = z.object({
-    title: z.string().min(1).max(100),
-    description: z.string().max(500).optional(),
-    priority: z.enum(['low', 'medium', 'high']),
-    dueDate: z.date().optional()
-  });
-  
-  return schema.parse(data);
-}
-```
-
-### XSS Prevention
-
-**Safe Rendering:**
-```typescript
-function TaskDescription({ description }: { description: string }) {
-  const sanitized = useMemo(() => 
-    DOMPurify.sanitize(description), 
-    [description]
-  );
-  
-  return (
-    <div 
-      dangerouslySetInnerHTML={{ __html: sanitized }}
-    />
-  );
-}
-```
+Import/export payloads are validated with a hand-written schema validator instead — see `src/lib/utils/validation.ts` and `validationSchemas.ts`, and [API Reference: Data Validation](./api-reference.md#data-validation).
 
 ### Rate Limiting
 
-**API Rate Limiting:**
 ```typescript
-class RateLimiter {
-  private requests = new Map<string, number[]>();
-  
-  isAllowed(key: string, limit: number, window: number): boolean {
-    const now = Date.now();
-    const requests = this.requests.get(key) || [];
-    
-    // Remove old requests
-    const validRequests = requests.filter(time => now - time < window);
-    
-    if (validRequests.length >= limit) {
-      return false;
-    }
-    
-    validRequests.push(now);
-    this.requests.set(key, validRequests);
-    return true;
-  }
+import { searchRateLimiter } from '@/lib/utils/security';
+
+if (searchRateLimiter.isAllowed('search')) {
+  // Perform search
+} else {
+  // Rate limited
 }
 ```
+
+`searchRateLimiter` is a pre-configured instance (10 requests / 1-second window); the `RateLimiter` class backing it is not exported. See [API Reference: Security APIs](./api-reference.md#security-apis) for the full sanitization/rate-limiting surface.
 
 ## 🚀 Deployment Process
 
@@ -649,51 +475,45 @@ class RateLimiter {
 **Production Build:**
 ```bash
 # Install dependencies
-npm ci
+bun install
 
 # Run tests
-npm run test
+bun run test
 
-# Build application
-npm run build
+# Build application (static export to ./out)
+bun run build
 
-# Verify build
-npm run start
+# Verify build locally
+bun run start
 ```
 
-**Environment Variables:**
-```bash
-# .env.production
-NEXT_PUBLIC_APP_VERSION=1.0.0
-NEXT_PUBLIC_BUILD_TIME=2024-12-01T00:00:00Z
-NEXT_PUBLIC_BUILD_HASH=abc123
-```
+`bun run build` cleans `.next`/`out`, then runs `next build` with `NEXT_PUBLIC_APP_VERSION`, `NEXT_PUBLIC_BUILD_TIME`, `NEXT_PUBLIC_BUILD_HASH`, and `NEXT_PUBLIC_BUILD_TIMESTAMP` populated from `package.json` and `git rev-parse`.
 
 ### Deployment Steps
 
-1. **Build Application**
-   ```bash
-   npm run build
-   ```
+This project ships prebuilt scripts rather than raw AWS CLI calls — use these instead of hand-rolling `aws s3 sync`:
 
-2. **Upload to S3**
-   ```bash
-   aws s3 sync out/ s3://your-bucket-name --delete
-   ```
+```bash
+# Single-environment deploy (todos.vinny.dev)
+bun run deploy
 
-3. **Invalidate CloudFront**
-   ```bash
-   aws cloudfront create-invalidation --distribution-id YOUR_DISTRIBUTION_ID --paths "/*"
-   ```
+# Interactive multi-environment deploy
+bun run deploy:multi
 
-4. **Verify Deployment**
-   - Check application loads correctly
-   - Verify all features work
-   - Run smoke tests
+# Deploy to a specific environment
+bun run deploy:cascade   # cascade.vinny.dev
+bun run deploy:all       # every configured environment
+
+# Verify a deployment
+bun run deploy:check           # todos.vinny.dev
+bun run deploy:check:cascade   # cascade.vinny.dev
+```
+
+Under the hood, `deploy:s3` syncs `./out` to S3 (long-cache for static assets, no-cache for HTML) and `deploy:invalidate`/`invalidate` issue a CloudFront invalidation — see `scripts/deploy.sh` and `scripts/deploy-multi.sh`.
 
 ### CI/CD Pipeline
 
-**GitHub Actions:**
+**GitHub Actions** (bun-based, not npm):
 ```yaml
 name: Deploy
 on:
@@ -704,14 +524,12 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      - run: npm ci
-      - run: npm run test
-      - run: npm run build
-      - run: npm run deploy
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun run test
+      - run: bun run build
+      - run: bun run deploy
 ```
 
 ## 🤝 Contributing
@@ -730,9 +548,9 @@ jobs:
 
 3. **Test Changes**
    ```bash
-   npm run test
-   npm run test:e2e
-   npm run lint
+   bun run test
+   bun run test:e2e
+   bun run lint
    ```
 
 4. **Submit Pull Request**
@@ -780,13 +598,13 @@ type(scope): description
 ```
 feat(task): add drag and drop functionality
 
-fix(auth): resolve login validation issue
+fix(board): resolve board deletion race condition
 
-docs(api): update authentication endpoints
+docs(api): update store action signatures
 
 test(task): add unit tests for task operations
 ```
 
 ---
 
-*For more detailed information, see the [API Reference](./api-reference.md) and [Security Guide](./security-guide.md).*
+*For more detailed information, see the [API Reference](./api-reference.md) and [Testing Guide](./testing-guide.md).*
