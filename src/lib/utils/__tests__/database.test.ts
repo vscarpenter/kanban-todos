@@ -337,6 +337,69 @@ describe('TaskDatabase', () => {
     });
   });
 
+  describe('upsertTasks', () => {
+    it('adds new tasks in a single batch', async () => {
+      const tasks = [
+        createTestTask({ id: 'batch-task-1' }),
+        createTestTask({ id: 'batch-task-2' }),
+        createTestTask({ id: 'batch-task-3' }),
+      ];
+
+      await db.upsertTasks(tasks);
+
+      const stored = await db.getTasks();
+      expect(stored.map(t => t.id).sort()).toEqual(['batch-task-1', 'batch-task-2', 'batch-task-3']);
+    });
+
+    it('overwrites tasks that already exist by id, without touching untouched tasks', async () => {
+      await db.addTask(createTestTask({ id: 'existing-task', title: 'Original' }));
+      await db.addTask(createTestTask({ id: 'untouched-task', title: 'Leave me alone' }));
+
+      await db.upsertTasks([createTestTask({ id: 'existing-task', title: 'Updated' })]);
+
+      const stored = await db.getTasks();
+      expect(stored).toHaveLength(2);
+      expect(stored.find(t => t.id === 'existing-task')?.title).toBe('Updated');
+      expect(stored.find(t => t.id === 'untouched-task')?.title).toBe('Leave me alone');
+    });
+
+    it('does nothing for an empty array', async () => {
+      await db.addTask(createTestTask({ id: 'pre-existing' }));
+
+      await db.upsertTasks([]);
+
+      const stored = await db.getTasks();
+      expect(stored).toHaveLength(1);
+    });
+  });
+
+  describe('upsertBoards', () => {
+    it('adds new boards in a single batch', async () => {
+      const boards = [
+        createTestBoard({ id: 'batch-board-1' }),
+        createTestBoard({ id: 'batch-board-2' }),
+      ];
+
+      await db.upsertBoards(boards);
+
+      const stored = await db.getBoards();
+      expect(stored.map(b => b.id).sort()).toEqual(['batch-board-1', 'batch-board-2']);
+    });
+
+    it('overwrites boards that already exist by id, without touching untouched boards', async () => {
+      await db.addBoard(createTestBoard({ id: 'existing-board', name: 'Original' }));
+      await db.addBoard(createTestBoard({ id: 'untouched-board', name: 'Leave me alone' }));
+
+      await db.upsertBoards([createTestBoard({ id: 'existing-board', name: 'Updated' })]);
+
+      const stored = await db.getBoards();
+      expect(stored).toHaveLength(2);
+      expect(stored.find(b => b.id === 'existing-board')?.name).toBe('Updated');
+      expect(stored.find(b => b.id === 'untouched-board')?.name).toBe('Leave me alone');
+    });
+  });
+
+
   describe('resetDatabase', () => {
     it('clears all data', async () => {
       await db.addTask(createTestTask({ id: 'task-1' }));

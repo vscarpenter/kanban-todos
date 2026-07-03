@@ -17,19 +17,12 @@ export function createExportBoards(get: GetState) {
   };
 }
 
-export function createImportBoards(get: GetState, set: SetState) {
+export function createImportBoards(set: SetState) {
   return async (boards: Board[]) => {
     try {
       set({ isLoading: true, error: null });
 
-      const { boards: existingBoards } = get();
-      const existingIds = new Set(existingBoards.map(b => b.id));
-
-      await Promise.all(
-        boards.map(board =>
-          existingIds.has(board.id) ? taskDB.updateBoard(board) : taskDB.addBoard(board)
-        )
-      );
+      await taskDB.upsertBoards(boards);
 
       set((state) => {
         const boardMap = new Map(state.boards.map(b => [b.id, b]));

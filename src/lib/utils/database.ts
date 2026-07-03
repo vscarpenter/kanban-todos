@@ -119,6 +119,29 @@ export class TaskDatabase {
     });
   }
 
+  /**
+   * Adds or updates many tasks in a single transaction. Unlike calling
+   * addTask/updateTask per item, this doesn't open one transaction per task —
+   * used by the import flow, which can otherwise fire hundreds of
+   * transactions for one backup restore.
+   */
+  async upsertTasks(tasks: Task[]): Promise<void> {
+    const db = this.db;
+    if (!db) throw new Error('Database not initialized');
+    if (tasks.length === 0) return;
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['tasks'], 'readwrite');
+      transaction.onerror = () => reject(transaction.error);
+      transaction.oncomplete = () => resolve();
+
+      const store = transaction.objectStore('tasks');
+      for (const task of tasks) {
+        store.put(task);
+      }
+    });
+  }
+
   async getBoards(): Promise<Board[]> {
     const db = this.db;
     if (!db) throw new Error('Database not initialized');
@@ -158,6 +181,26 @@ export class TaskDatabase {
 
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve();
+    });
+  }
+
+  /**
+   * Adds or updates many boards in a single transaction — see upsertTasks.
+   */
+  async upsertBoards(boards: Board[]): Promise<void> {
+    const db = this.db;
+    if (!db) throw new Error('Database not initialized');
+    if (boards.length === 0) return;
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['boards'], 'readwrite');
+      transaction.onerror = () => reject(transaction.error);
+      transaction.oncomplete = () => resolve();
+
+      const store = transaction.objectStore('boards');
+      for (const board of boards) {
+        store.put(board);
+      }
     });
   }
 

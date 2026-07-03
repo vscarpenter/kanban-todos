@@ -306,7 +306,7 @@ export const useBoardStore = create<BoardState & BoardActions>((set, get) => ({
 
         // Export/Import operations
         exportBoards: createExportBoards(get),
-        importBoards: createImportBoards(get, set),
+        importBoards: createImportBoards(set),
         bulkAddBoards: createBulkAddBoards(set),
 
         initializeBoards: async () => {

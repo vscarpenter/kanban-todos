@@ -9,6 +9,7 @@ vi.mock('@/lib/utils/database', () => ({
     init: vi.fn().mockResolvedValue(undefined),
     addTask: vi.fn().mockResolvedValue(undefined),
     updateTask: vi.fn().mockResolvedValue(undefined),
+    upsertTasks: vi.fn().mockResolvedValue(undefined),
     deleteTask: vi.fn().mockResolvedValue(undefined),
     getBoards: vi.fn().mockResolvedValue([]),
     getTasks: vi.fn().mockResolvedValue([]),
@@ -492,6 +493,35 @@ describe('taskStore', () => {
       const { error, tasks } = useTaskStore.getState();
       expect(error).toBe('IndexedDB write failed');
       expect(tasks[0].archivedAt).toEqual(archivedAt);
+    });
+  });
+
+  describe('importTasks', () => {
+    it('persists a mix of new and existing tasks in a single batched transaction, not one per task', async () => {
+      useTaskStore.setState({
+        tasks: [{
+          id: 'task-1', title: 'Existing', status: 'todo', boardId: 'board-1',
+          priority: 'low', tags: [], createdAt: new Date(), updatedAt: new Date(),
+        }],
+        filteredTasks: [],
+      });
+
+      const { importTasks } = useTaskStore.getState();
+      await importTasks([
+        { id: 'task-1', title: 'Existing Updated', status: 'todo', boardId: 'board-1', priority: 'low', tags: [], createdAt: new Date(), updatedAt: new Date() },
+        { id: 'task-2', title: 'New Task', status: 'todo', boardId: 'board-1', priority: 'low', tags: [], createdAt: new Date(), updatedAt: new Date() },
+      ]);
+
+      expect(taskDB.upsertTasks).toHaveBeenCalledTimes(1);
+      expect(taskDB.upsertTasks).toHaveBeenCalledWith(expect.arrayContaining([
+        expect.objectContaining({ id: 'task-1' }),
+        expect.objectContaining({ id: 'task-2' }),
+      ]));
+      expect(taskDB.addTask).not.toHaveBeenCalled();
+      expect(taskDB.updateTask).not.toHaveBeenCalled();
+
+      const { tasks } = useTaskStore.getState();
+      expect(tasks.map(t => t.id).sort()).toEqual(['task-1', 'task-2']);
     });
   });
 
