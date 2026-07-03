@@ -160,16 +160,34 @@ describe('taskStore', () => {
     it('sets error when title is empty', async () => {
       const { addTask } = useTaskStore.getState();
 
-      await addTask({
+      await expect(addTask({
         title: '   ',
         status: 'todo',
         boardId: 'board-1',
         priority: 'low',
         tags: [],
-      });
+      })).rejects.toThrow('Task title is required');
 
       const { error, tasks } = useTaskStore.getState();
       expect(error).toBe('Task title is required');
+      expect(tasks).toHaveLength(0);
+    });
+
+    it('re-throws when the database write fails, so callers do not report false success', async () => {
+      vi.mocked(taskDB.addTask).mockRejectedValueOnce(new Error('IndexedDB write failed'));
+
+      const { addTask } = useTaskStore.getState();
+
+      await expect(addTask({
+        title: 'Task that fails to persist',
+        status: 'todo',
+        boardId: 'board-1',
+        priority: 'low',
+        tags: [],
+      })).rejects.toThrow('IndexedDB write failed');
+
+      const { error, tasks } = useTaskStore.getState();
+      expect(error).toBe('IndexedDB write failed');
       expect(tasks).toHaveLength(0);
     });
   });
@@ -220,6 +238,32 @@ describe('taskStore', () => {
       const { tasks } = useTaskStore.getState();
       expect(tasks[0].updatedAt.getTime()).toBeGreaterThan(oldDate.getTime());
     });
+
+    it('re-throws when the database write fails, so callers do not report false success', async () => {
+      useTaskStore.setState({
+        tasks: [{
+          id: 'task-1',
+          title: 'Original Title',
+          status: 'todo',
+          boardId: 'board-1',
+          priority: 'low',
+          tags: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }],
+        filteredTasks: [],
+      });
+      vi.mocked(taskDB.updateTask).mockRejectedValueOnce(new Error('IndexedDB write failed'));
+
+      const { updateTask } = useTaskStore.getState();
+
+      await expect(updateTask('task-1', { title: 'Updated Title' }))
+        .rejects.toThrow('IndexedDB write failed');
+
+      const { error, tasks } = useTaskStore.getState();
+      expect(error).toBe('IndexedDB write failed');
+      expect(tasks[0].title).toBe('Original Title');
+    });
   });
 
   describe('deleteTask', () => {
@@ -238,6 +282,24 @@ describe('taskStore', () => {
       const { tasks } = useTaskStore.getState();
       expect(tasks).toHaveLength(1);
       expect(tasks[0].id).toBe('task-2');
+    });
+
+    it('re-throws when the database write fails, so callers do not report false success', async () => {
+      useTaskStore.setState({
+        tasks: [
+          { id: 'task-1', title: 'Task 1', status: 'todo', boardId: 'board-1', priority: 'low', tags: [], createdAt: new Date(), updatedAt: new Date() },
+        ],
+        filteredTasks: [],
+      });
+      vi.mocked(taskDB.deleteTask).mockRejectedValueOnce(new Error('IndexedDB write failed'));
+
+      const { deleteTask } = useTaskStore.getState();
+
+      await expect(deleteTask('task-1')).rejects.toThrow('IndexedDB write failed');
+
+      const { error, tasks } = useTaskStore.getState();
+      expect(error).toBe('IndexedDB write failed');
+      expect(tasks).toHaveLength(1);
     });
   });
 
@@ -367,6 +429,25 @@ describe('taskStore', () => {
       const { tasks } = useTaskStore.getState();
       expect(tasks[0].archivedAt).toBeInstanceOf(Date);
     });
+
+    it('re-throws when the database write fails, so callers do not report false success', async () => {
+      useTaskStore.setState({
+        tasks: [{
+          id: 'task-1', title: 'Test', status: 'done', boardId: 'board-1',
+          priority: 'low', tags: [], createdAt: new Date(), updatedAt: new Date(),
+        }],
+        filteredTasks: [],
+      });
+      vi.mocked(taskDB.updateTask).mockRejectedValueOnce(new Error('IndexedDB write failed'));
+
+      const { archiveTask } = useTaskStore.getState();
+
+      await expect(archiveTask('task-1')).rejects.toThrow('IndexedDB write failed');
+
+      const { error, tasks } = useTaskStore.getState();
+      expect(error).toBe('IndexedDB write failed');
+      expect(tasks[0].archivedAt).toBeUndefined();
+    });
   });
 
   describe('unarchiveTask', () => {
@@ -391,6 +472,26 @@ describe('taskStore', () => {
 
       const { tasks } = useTaskStore.getState();
       expect(tasks[0].archivedAt).toBeUndefined();
+    });
+
+    it('re-throws when the database write fails, so callers do not report false success', async () => {
+      const archivedAt = new Date();
+      useTaskStore.setState({
+        tasks: [{
+          id: 'task-1', title: 'Test', status: 'done', boardId: 'board-1',
+          priority: 'low', tags: [], createdAt: new Date(), updatedAt: new Date(), archivedAt,
+        }],
+        filteredTasks: [],
+      });
+      vi.mocked(taskDB.updateTask).mockRejectedValueOnce(new Error('IndexedDB write failed'));
+
+      const { unarchiveTask } = useTaskStore.getState();
+
+      await expect(unarchiveTask('task-1')).rejects.toThrow('IndexedDB write failed');
+
+      const { error, tasks } = useTaskStore.getState();
+      expect(error).toBe('IndexedDB write failed');
+      expect(tasks[0].archivedAt).toEqual(archivedAt);
     });
   });
 

@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Settings, Trash2, Copy } from "lucide-react";
+import { toast } from "sonner";
 import { Board } from "@/lib/types";
 import { useBoardStore } from "@/lib/stores/boardStore";
 import { logger } from "@/lib/utils/logger";
@@ -34,6 +35,8 @@ export function BoardMenu({ board }: BoardMenuProps) {
       await duplicateBoard(board.id);
     } catch (error) {
       logger.error('Failed to duplicate board', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      toast.error(`Failed to duplicate board: ${message}`);
     } finally {
       setIsLoading(false);
     }

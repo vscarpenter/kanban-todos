@@ -175,6 +175,7 @@ export const useBoardStore = create<BoardState & BoardActions>((set, get) => ({
               error: error instanceof Error ? error.message : 'Failed to add board',
               isLoading: false
             });
+            throw error;
           }
         },
 
@@ -211,10 +212,11 @@ export const useBoardStore = create<BoardState & BoardActions>((set, get) => ({
               isLoading: false,
             }));
           } catch (error) {
-            set({ 
+            set({
               error: error instanceof Error ? error.message : 'Failed to update board',
-              isLoading: false 
+              isLoading: false
             });
+            throw error;
           }
         },
 
@@ -254,10 +256,11 @@ export const useBoardStore = create<BoardState & BoardActions>((set, get) => ({
               await get().setCurrentBoard(finalState.currentBoardId);
             }
           } catch (error) {
-            set({ 
+            set({
               error: error instanceof Error ? error.message : 'Failed to delete board',
-              isLoading: false 
+              isLoading: false
             });
+            throw error;
           }
         },
 
@@ -277,9 +280,10 @@ export const useBoardStore = create<BoardState & BoardActions>((set, get) => ({
 
             await get().addBoard(duplicatedBoard);
           } catch (error) {
-            set({ 
+            set({
               error: error instanceof Error ? error.message : 'Failed to duplicate board'
             });
+            throw error;
           }
         },
 

@@ -196,12 +196,12 @@ describe('boardStore', () => {
     it('sets error for empty board name', async () => {
       const { addBoard } = useBoardStore.getState();
 
-      await addBoard({
+      await expect(addBoard({
         name: '',
         color: '#3b82f6',
         isDefault: false,
         order: 0,
-      });
+      })).rejects.toThrow('Board name is required');
 
       const { error, boards } = useBoardStore.getState();
       expect(error).toBe('Board name is required');
@@ -224,14 +224,32 @@ describe('boardStore', () => {
       });
 
       const { addBoard } = useBoardStore.getState();
-      await addBoard({
+      await expect(addBoard({
         name: 'My Board',
         color: '#ef4444',
         isDefault: false,
         order: 1,
-      });
+      })).rejects.toThrow('A board with this name already exists');
 
       expect(useBoardStore.getState().error).toBe('A board with this name already exists');
+    });
+
+    it('re-throws when the database write fails, so callers do not report false success', async () => {
+      const { taskDB } = await import('@/lib/utils/database');
+      vi.mocked(taskDB.addBoard).mockRejectedValueOnce(new Error('IndexedDB write failed'));
+
+      const { addBoard } = useBoardStore.getState();
+
+      await expect(addBoard({
+        name: 'Board That Fails To Persist',
+        color: '#3b82f6',
+        isDefault: false,
+        order: 0,
+      })).rejects.toThrow('IndexedDB write failed');
+
+      const { error, boards } = useBoardStore.getState();
+      expect(error).toBe('IndexedDB write failed');
+      expect(boards).toHaveLength(0);
     });
 
     it('sorts boards by order after adding', async () => {
@@ -329,6 +347,20 @@ describe('boardStore', () => {
       const { boards } = useBoardStore.getState();
       expect(boards[0].name).not.toContain('<script>');
     });
+
+    it('re-throws when the database write fails, so callers do not report false success', async () => {
+      const { taskDB } = await import('@/lib/utils/database');
+      vi.mocked(taskDB.updateBoard).mockRejectedValueOnce(new Error('IndexedDB write failed'));
+
+      const { updateBoard } = useBoardStore.getState();
+
+      await expect(updateBoard('board-1', { name: 'New Name' }))
+        .rejects.toThrow('IndexedDB write failed');
+
+      const { error, boards } = useBoardStore.getState();
+      expect(error).toBe('IndexedDB write failed');
+      expect(boards[0].name).toBe('Original Name');
+    });
   });
 
   describe('deleteBoard', () => {
@@ -401,11 +433,24 @@ describe('boardStore', () => {
     it('prevents deleting the default board', async () => {
       const { deleteBoard } = useBoardStore.getState();
 
-      await deleteBoard('board-1');
+      await expect(deleteBoard('board-1')).rejects.toThrow('Cannot delete the default board');
 
       const { boards, error } = useBoardStore.getState();
       expect(boards).toHaveLength(2);
       expect(error).toBe('Cannot delete the default board');
+    });
+
+    it('re-throws when the database write fails, so callers do not report false success', async () => {
+      const { taskDB } = await import('@/lib/utils/database');
+      vi.mocked(taskDB.deleteBoard).mockRejectedValueOnce(new Error('IndexedDB write failed'));
+
+      const { deleteBoard } = useBoardStore.getState();
+
+      await expect(deleteBoard('board-2')).rejects.toThrow('IndexedDB write failed');
+
+      const { error, boards } = useBoardStore.getState();
+      expect(error).toBe('IndexedDB write failed');
+      expect(boards).toHaveLength(2);
     });
 
     it('switches current board when deleting the active board', async () => {
@@ -608,6 +653,33 @@ describe('boardStore', () => {
       await duplicateBoard('non-existent');
 
       expect(useBoardStore.getState().boards).toHaveLength(0);
+    });
+
+    it('re-throws when the database write fails, so callers do not report false success', async () => {
+      useBoardStore.setState({
+        boards: [
+          {
+            id: 'board-1',
+            name: 'Original',
+            color: '#3b82f6',
+            isDefault: true,
+            order: 0,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ],
+      });
+
+      const { taskDB } = await import('@/lib/utils/database');
+      vi.mocked(taskDB.addBoard).mockRejectedValueOnce(new Error('IndexedDB write failed'));
+
+      const { duplicateBoard } = useBoardStore.getState();
+
+      await expect(duplicateBoard('board-1')).rejects.toThrow('IndexedDB write failed');
+
+      const { error, boards } = useBoardStore.getState();
+      expect(error).toBe('IndexedDB write failed');
+      expect(boards).toHaveLength(1);
     });
   });
 

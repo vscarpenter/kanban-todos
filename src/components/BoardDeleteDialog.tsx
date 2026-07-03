@@ -43,6 +43,8 @@ export function BoardDeleteDialog({ open, onOpenChange, board }: BoardDeleteDial
       setConfirmationText("");
     } catch (error) {
       logger.error('Failed to delete board', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      toast.error(`Failed to delete board: ${message}`);
     } finally {
       setIsLoading(false);
     }

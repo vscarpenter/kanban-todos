@@ -250,6 +250,30 @@ describe('critical dialog flows', () => {
     });
   });
 
+  it('shows an error toast and keeps the dialog open when deletion fails, instead of reporting false success', async () => {
+    const onOpenChange = vi.fn();
+    boardStore.deleteBoard.mockRejectedValueOnce(new Error('IndexedDB write failed'));
+
+    render(
+      <BoardDeleteDialog
+        open
+        onOpenChange={onOpenChange}
+        board={makeBoard({ id: 'board-3', name: 'Client Work' })}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText(/type .* to confirm deletion/i), {
+      target: { value: 'Client Work' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /^delete board$/i }));
+
+    await waitFor(() => {
+      expect(mocks.toastError).toHaveBeenCalledWith('Failed to delete board: IndexedDB write failed');
+    });
+    expect(mocks.toastSuccess).not.toHaveBeenCalled();
+    expect(onOpenChange).not.toHaveBeenCalledWith(false);
+  });
+
   it('uses an explicit confirmation step before moving a task to the default board', async () => {
     const onOpenChange = vi.fn();
 
