@@ -92,6 +92,7 @@
     "postcss": "^8.4.49",
     "vite": "^8.0.16",
     "undici": "^7.28.0",
+    "js-yaml": "^4.1.2",
     "ws": "^7.5.11"
   },
   "packageManager": "bun@1.3.5"
