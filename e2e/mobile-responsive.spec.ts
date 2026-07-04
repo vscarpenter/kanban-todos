@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { resetAppStorage } from './fixtures';
+import { pressShortcutUntilVisible } from './helpers/keyboard';
 
 const MOBILE = { width: 375, height: 667 };
 const TABLET = { width: 768, height: 1024 };
@@ -19,9 +20,9 @@ test.describe('Mobile and Responsive', () => {
   test('board layout adapts to mobile viewport', async ({ page }) => {
     await boot(page, MOBILE);
 
-    await expect(page.getByText('To Do')).toBeVisible();
-    await expect(page.getByText('In Progress')).toBeVisible();
-    await expect(page.getByText('Done')).toBeVisible();
+    await expect(page.getByRole('button', { name: /^To Do\(\d+\)$/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /^In Progress\(\d+\)$/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /^Done\(\d+\)$/ })).toBeVisible();
   });
 
   test('sidebar toggle is visible on mobile', async ({ page }) => {
@@ -95,9 +96,9 @@ test.describe('Mobile and Responsive', () => {
   test('tablet viewport displays correctly', async ({ page }) => {
     await boot(page, TABLET);
 
-    await expect(page.getByText('To Do')).toBeVisible();
-    await expect(page.getByText('In Progress')).toBeVisible();
-    await expect(page.getByText('Done')).toBeVisible();
+    await expect(page.getByRole('button', { name: /^To Do\(\d+\)$/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /^In Progress\(\d+\)$/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /^Done\(\d+\)$/ })).toBeVisible();
   });
 
   test('orientation change works correctly', async ({ page }) => {
@@ -134,16 +135,15 @@ test.describe('Mobile and Responsive', () => {
     const box = await newTaskButton.boundingBox();
     expect(box).not.toBeNull();
     if (box) {
-      expect(box.height).toBeGreaterThanOrEqual(36);
-      expect(box.width).toBeGreaterThanOrEqual(36);
+      expect(box.height).toBeGreaterThanOrEqual(44);
+      expect(box.width).toBeGreaterThanOrEqual(44);
     }
   });
 
   test('keyboard navigation works on mobile', async ({ page }) => {
     await boot(page, MOBILE);
 
-    await page.keyboard.press('n');
-    await expect(page.getByRole('dialog')).toBeVisible();
+    await pressShortcutUntilVisible(page, 'n', page.getByRole('dialog'));
 
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toBeHidden();

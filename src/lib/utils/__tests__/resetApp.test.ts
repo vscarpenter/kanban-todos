@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { resetApplication } from '@/lib/utils/resetApp';
+import { VISITED_KEY } from '@/components/about/visitedKey';
 
 vi.mock('@/lib/utils/database', () => ({
   taskDB: {
@@ -10,10 +11,12 @@ vi.mock('@/lib/utils/database', () => ({
 describe('resetApplication', () => {
   let originalLocation: Location;
   let hrefSetter: ReturnType<typeof vi.fn>;
+  let assignMock: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     originalLocation = window.location;
     hrefSetter = vi.fn();
+    assignMock = vi.fn();
     // Replace window.location with a writable mock
     Object.defineProperty(window, 'location', {
       value: {
@@ -21,6 +24,7 @@ describe('resetApplication', () => {
         origin: 'http://localhost:3000',
         pathname: '/',
         reload: vi.fn(),
+        assign: assignMock,
         hostname: 'localhost',
       },
       writable: true,
@@ -58,16 +62,22 @@ describe('resetApplication', () => {
     expect(window.localStorage.getItem('test-key')).toBeNull();
   });
 
+  it('preserves the visited flag so reset returns to the board', async () => {
+    const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
+    await resetApplication();
+    expect(setItemSpy).toHaveBeenCalledWith(VISITED_KEY, 'true');
+    setItemSpy.mockRestore();
+  });
+
   it('clears sessionStorage', async () => {
     window.sessionStorage.setItem('session-key', 'session-value');
     await resetApplication();
     expect(window.sessionStorage.getItem('session-key')).toBeNull();
   });
 
-  it('navigates to origin after a short delay', async () => {
+  it('navigates to the app root immediately', async () => {
     await resetApplication();
-    vi.runAllTimers();
-    expect(hrefSetter).toHaveBeenCalledWith('http://localhost:3000/');
+    expect(assignMock).toHaveBeenCalledWith('http://localhost:3000/');
   });
 
   it('still navigates even when database reset fails', async () => {

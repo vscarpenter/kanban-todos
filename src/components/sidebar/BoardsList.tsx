@@ -24,7 +24,7 @@ export function BoardsList({ onCreateBoard }: BoardsListProps) {
           type="button"
           onClick={onCreateBoard}
           aria-label="Add board"
-          className="inline-flex h-[22px] w-[22px] items-center justify-center rounded-md transition-colors"
+          className="inline-flex h-[45px] w-[45px] items-center justify-center rounded-md transition-colors md:h-[22px] md:w-[22px]"
           style={{
             border: "1px solid var(--hairline-strong)",
             background: "var(--paper-card)",

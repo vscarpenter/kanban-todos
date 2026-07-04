@@ -52,6 +52,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
   // Store initial settings when dialog opens
   const initialSettingsRef = useRef<Settings | null>(null);
+  const localSettingsRef = useRef<Settings>(settings);
+  const suppressSettingsCloseRef = useRef(false);
 
   // Seed localSettings from the store only on the closed->open transition.
   // Previously this ran on every `settings`/`theme` change while open too,
@@ -67,8 +69,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         ...settings,
         theme: (theme as Settings['theme']) || 'system'
       };
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLocalSettings(currentSettings);
+      localSettingsRef.current = currentSettings;
       initialSettingsRef.current = currentSettings;
     }
     // Reset initial ref when dialog closes
@@ -80,35 +82,51 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   // Check if there are unsaved changes
   const hasUnsavedChanges = useCallback((): boolean => {
     if (!initialSettingsRef.current) return false;
-    return !settingsEqual(localSettings, initialSettingsRef.current);
-  }, [localSettings]);
+    return !settingsEqual(localSettingsRef.current, initialSettingsRef.current);
+  }, []);
 
   // Handle dialog close with unsaved changes check
   const handleOpenChange = useCallback((newOpen: boolean) => {
+    if (!newOpen && suppressSettingsCloseRef.current) {
+      suppressSettingsCloseRef.current = false;
+      return;
+    }
+
+    if (!newOpen && (showResetConfirm || showAppResetDialog || showUnsavedChangesDialog)) {
+      return;
+    }
+
     if (!newOpen && hasUnsavedChanges()) {
       setShowUnsavedChangesDialog(true);
       return;
     }
     onOpenChange(newOpen);
-  }, [hasUnsavedChanges, onOpenChange]);
+  }, [
+    hasUnsavedChanges,
+    onOpenChange,
+    showAppResetDialog,
+    showResetConfirm,
+    showUnsavedChangesDialog,
+  ]);
 
   // Discard changes and close (revert theme if changed)
   const handleDiscardChanges = useCallback(() => {
     // Revert theme to initial value if it was changed
-    if (initialSettingsRef.current && localSettings.theme !== initialSettingsRef.current.theme) {
+    if (initialSettingsRef.current && localSettingsRef.current.theme !== initialSettingsRef.current.theme) {
       setTheme(initialSettingsRef.current.theme);
     }
     setShowUnsavedChangesDialog(false);
     onOpenChange(false);
-  }, [localSettings.theme, onOpenChange, setTheme]);
+  }, [onOpenChange, setTheme]);
 
   const handleSave = async () => {
+    const settingsToSave = localSettingsRef.current;
     const succeeded = await execute(async () => {
       // Ensure next-themes is in sync with local settings
-      if (localSettings.theme !== theme) {
-        setTheme(localSettings.theme);
+      if (settingsToSave.theme !== theme) {
+        setTheme(settingsToSave.theme);
       }
-      await updateSettings(localSettings);
+      await updateSettings(settingsToSave);
       return true as const;
     });
 
@@ -132,8 +150,9 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
   const handleAppResetConfirm = async () => {
     setIsAppResetting(true);
+    setShowAppResetDialog(false);
+    onOpenChange(false);
     try {
-      // Note: resetApplication() will reload the page, so we don't need to close dialogs
       await resetApplication();
     } catch (error) {
       logger.error('Failed to reset application', error);
@@ -152,18 +171,33 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       // For theme changes, update next-themes immediately
       setTheme(value as string);
     }
-    setLocalSettings(prev => ({ ...prev, [key]: value }));
+    setLocalSettings(prev => {
+      const next = { ...prev, [key]: value };
+      localSettingsRef.current = next;
+      return next;
+    });
   };
 
   const updateAccessibilitySetting = <K extends keyof Settings['accessibility']>(
     key: K,
     value: Settings['accessibility'][K]
   ) => {
-    setLocalSettings(prev => ({
-      ...prev,
-      accessibility: { ...prev.accessibility, [key]: value }
-    }));
+    setLocalSettings(prev => {
+      const next = {
+        ...prev,
+        accessibility: { ...prev.accessibility, [key]: value }
+      };
+      localSettingsRef.current = next;
+      return next;
+    });
   };
+
+  const handleUnsavedDialogOpenChange = useCallback((newOpen: boolean) => {
+    if (!newOpen) {
+      suppressSettingsCloseRef.current = true;
+    }
+    setShowUnsavedChangesDialog(newOpen);
+  }, []);
 
   return (
     <>
@@ -279,32 +313,32 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           </div>
         </div>
       </DialogContent>
-
-      {/* Reset Confirmation Dialog */}
-      <ConfirmationDialog
-        open={showResetConfirm}
-        onOpenChange={setShowResetConfirm}
-        title="Reset Settings"
-        description="Are you sure you want to reset all settings to default? This will restore all preferences to their original values."
-        confirmText="Reset"
-        type="warning"
-        onConfirm={handleResetConfirm}
-        loading={isLoading}
-      />
-
-      {/* App Reset Dialog */}
-      <AppResetDialog
-        open={showAppResetDialog}
-        onOpenChange={setShowAppResetDialog}
-        onConfirm={handleAppResetConfirm}
-        loading={isAppResetting}
-      />
     </Dialog>
+
+    {/* Reset Confirmation Dialog */}
+    <ConfirmationDialog
+      open={showResetConfirm}
+      onOpenChange={setShowResetConfirm}
+      title="Reset Settings"
+      description="Are you sure you want to reset all settings to default? This will restore all preferences to their original values."
+      confirmText="Reset"
+      type="warning"
+      onConfirm={handleResetConfirm}
+      loading={isLoading}
+    />
+
+    {/* App Reset Dialog */}
+    <AppResetDialog
+      open={showAppResetDialog}
+      onOpenChange={setShowAppResetDialog}
+      onConfirm={handleAppResetConfirm}
+      loading={isAppResetting}
+    />
 
     {/* Unsaved Changes Confirmation */}
     <ConfirmationDialog
       open={showUnsavedChangesDialog}
-      onOpenChange={setShowUnsavedChangesDialog}
+      onOpenChange={handleUnsavedDialogOpenChange}
       title="Unsaved Changes"
       description="You have unsaved settings changes. Are you sure you want to discard them? Any theme changes will be reverted."
       confirmText="Discard"

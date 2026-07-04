@@ -24,9 +24,11 @@ export function TaskCard({
   isCurrentBoard = true,
 }: TaskCardProps) {
   const navigateToBoard = useBoardNavigation();
+  const isNavigable = showBoardIndicator && !isCurrentBoard;
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: task.id,
     data: { type: "task", task },
+    disabled: isNavigable,
   });
 
   const style = { transform: CSS.Translate.toString(transform) };
@@ -62,7 +64,6 @@ export function TaskCard({
     );
   }
 
-  const isNavigable = showBoardIndicator && !isCurrentBoard;
   const interactiveProps = isNavigable
     ? {
         onClick: handleCardClick,
@@ -76,8 +77,8 @@ export function TaskCard({
     <div
       ref={setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
+      {...(!isNavigable ? attributes : {})}
+      {...(!isNavigable ? listeners : {})}
       className={[
         "task-card cursor-grab active:cursor-grabbing draggable-element touch-optimized",
         isNavigable ? "cursor-pointer" : "",

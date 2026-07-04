@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: 'jsdom',
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
     environmentOptions: {
       jsdom: {
         url: 'http://localhost',
@@ -13,7 +14,14 @@ export default defineConfig({
     },
     setupFiles: ['./src/test/setup.ts'],
     globals: true,
-    exclude: ['**/node_modules/**', '**/e2e/**'],
+    exclude: [
+      '**/node_modules/**',
+      '**/e2e/**',
+      '**/.agents/**',
+      '**/.claude/**',
+      '**/.devin/**',
+      '**/brag-output/**',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],

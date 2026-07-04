@@ -58,10 +58,10 @@ export function SearchBar() {
 
   return (
     <div
-      className="px-6 py-4"
+      className="px-4 py-4 sm:px-6"
       style={{ borderBottom: "1px solid var(--hairline)", background: "var(--paper-0)" }}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex min-w-0 items-center gap-2 sm:gap-3">
         <SearchInput
           searchValue={searchValue}
           isSearching={isSearching}
@@ -89,7 +89,22 @@ export function SearchBar() {
           />
         )}
 
-        <div className="flex-1" />
+        <div className="hidden flex-1 sm:block" />
+
+        {hasActiveFilters && (
+          <button
+            type="button"
+            onClick={handleClearFilters}
+            className="hidden min-h-10 items-center rounded-lg px-3 text-xs font-semibold transition-colors sm:inline-flex"
+            style={{
+              background: "var(--paper-card)",
+              border: "1px solid var(--hairline-strong)",
+              color: "var(--ink-3)",
+            }}
+          >
+            Clear all
+          </button>
+        )}
 
         <SearchFilterPopover
           filters={filters}

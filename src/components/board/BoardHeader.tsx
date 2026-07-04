@@ -34,7 +34,7 @@ export function BoardHeader({
   const dotColor = board ? getDotCssVar(board.dotColor) : "var(--accent-500)";
 
   return (
-    <div className="px-8 pt-7 pb-5 board-animate-in" style={{ background: "var(--paper-0)" }}>
+    <div className="px-4 pt-7 pb-5 board-animate-in sm:px-6 lg:px-8" style={{ background: "var(--paper-0)" }}>
       <div className="flex items-start justify-between gap-6">
         <div className="flex items-start gap-4 min-w-0">
           {Icon && !isCrossBoardSearch && (
@@ -125,7 +125,7 @@ export function BoardHeader({
           type="button"
           onClick={onCreateTask}
           disabled={isCrossBoardSearch}
-          className="inline-flex items-center gap-2 rounded-lg px-3.5 py-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+          className="inline-flex min-h-[45px] items-center gap-2 rounded-lg px-3.5 py-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
           style={{
             background: "var(--accent-500)",
             color: "var(--accent-ink)",

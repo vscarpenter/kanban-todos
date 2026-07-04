@@ -1,5 +1,6 @@
 import { taskDB } from './database';
 import { logger } from './logger';
+import { VISITED_KEY } from '@/components/about/visitedKey';
 
 /**
  * Completely resets the application to its default state by:
@@ -17,6 +18,7 @@ export async function resetApplication(): Promise<void> {
     // 2. Clear localStorage
     if (typeof window !== 'undefined' && window.localStorage) {
       window.localStorage.clear();
+      window.localStorage.setItem(VISITED_KEY, 'true');
     }
 
     // 3. Clear sessionStorage
@@ -58,23 +60,14 @@ export async function resetApplication(): Promise<void> {
       }
     }
 
-    // 6. Use a more reliable page reload method
+    // 6. Use a direct navigation so any open dialogs and in-memory stores are
+    // discarded after the destructive reset completes.
     if (typeof window !== 'undefined') {
-      // Add a small delay to ensure all operations complete
-      setTimeout(() => {
-        // Try multiple reload methods for maximum compatibility
-        try {
-          window.location.href = window.location.origin + window.location.pathname;
-        } catch {
-          try {
-            // Use forced reload approach - legacy method
-            const location = window.location as Location & { reload(forcedReload?: boolean): void };
-            location.reload(true);
-          } catch {
-            window.location.reload();
-          }
-        }
-      }, 100);
+      try {
+        window.location.assign(`${window.location.origin}/`);
+      } catch {
+        window.location.reload();
+      }
     }
   } catch (error) {
     logger.error('Failed to reset application:', error);

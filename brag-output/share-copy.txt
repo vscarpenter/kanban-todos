@@ -1,0 +1,1 @@
+Introducing Cascade: a kanban board that keeps every task in your browser — no account, no server, no tracking. It's not a privacy policy, it's architecture.

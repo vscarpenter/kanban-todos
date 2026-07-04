@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useState, useMemo, useCallback, useRef } from "react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +23,7 @@ export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const suppressArchiveCloseRef = useRef(false);
   const { tasks, unarchiveTask, deleteTask } = useTaskStore();
   const { boards } = useBoardStore();
 
@@ -34,11 +35,16 @@ export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
 
   // Reset search when dialog closes and reopens
   const handleOpenChange = useCallback((newOpen: boolean) => {
+    if (!newOpen && suppressArchiveCloseRef.current) {
+      suppressArchiveCloseRef.current = false;
+      return;
+    }
+    if (!newOpen && showDeleteDialog) return;
     if (newOpen && !open) {
       setSearchQuery("");
     }
     onOpenChange(newOpen);
-  }, [open, onOpenChange]);
+  }, [open, onOpenChange, showDeleteDialog]);
 
   const getBoardName = useCallback((boardId: string) => {
     const board = boards.find(b => b.id === boardId);
@@ -77,6 +83,16 @@ export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
   const handleDelete = (task: Task) => {
     setTaskToDelete(task);
     setShowDeleteDialog(true);
+  };
+
+  const handleDeleteDialogOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      suppressArchiveCloseRef.current = true;
+    }
+    setShowDeleteDialog(newOpen);
+    if (!newOpen) {
+      setTaskToDelete(null);
+    }
   };
 
   const confirmDelete = async () => {
@@ -123,6 +139,9 @@ export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
             <Calendar className="h-5 w-5" />
             Archive ({archivedTasks.length} tasks)
           </DialogTitle>
+          <DialogDescription>
+            Review archived tasks, restore them to the board, or permanently delete tasks you no longer need.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -142,6 +161,7 @@ export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
                   size="sm"
                   className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
                   onClick={() => setSearchQuery("")}
+                  aria-label="Clear archive search"
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -221,6 +241,7 @@ export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
                             onClick={() => handleUnarchive(task.id)}
                             className="h-8 w-8 p-0"
                             title="Restore task"
+                            aria-label="Restore task"
                           >
                             <RotateCcw className="h-4 w-4" />
                           </Button>
@@ -230,6 +251,7 @@ export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
                             onClick={() => handleDelete(task)}
                             className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                             title="Delete permanently"
+                            aria-label="Delete permanently"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -254,7 +276,7 @@ export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
       {/* Delete Task Dialog */}
       <DeleteTaskDialog
         open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
+        onOpenChange={handleDeleteDialogOpenChange}
         task={taskToDelete}
         onConfirm={confirmDelete}
         isPermanent={true}

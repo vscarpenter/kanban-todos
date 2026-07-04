@@ -18,8 +18,19 @@ export function EnterAppLink({ children, className }: EnterAppLinkProps) {
     }
   }, []);
 
+  const handleClick = useCallback((event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      markVisited();
+      return;
+    }
+
+    event.preventDefault();
+    markVisited();
+    window.location.assign("/");
+  }, [markVisited]);
+
   return (
-    <Link href="/" onClick={markVisited} className={className}>
+    <Link href="/" prefetch={false} onClick={handleClick} className={className}>
       {children}
     </Link>
   );

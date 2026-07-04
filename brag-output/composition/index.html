@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Cascade — Own your data.</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/TextPlugin.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #000;
+      }
+      body {
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+      }
+      .clip { position: absolute; inset: 0; }
+
+      /* ===== Scene 0 — About-screen feature tour ===== */
+      #scene-0 { background: #F4F4F0; }
+      .s0-eyebrow {
+        position: absolute; left: 0; top: 148px; width: 100%; text-align: center;
+        font-family: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+        font-size: 22px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+        color: #6F6F75; opacity: 0;
+      }
+      .s0-heading {
+        position: absolute; left: 0; top: 208px; width: 100%; text-align: center;
+        font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
+        font-weight: 500; font-size: 56px; line-height: 1.3; letter-spacing: -0.01em;
+        color: #13141B; opacity: 0;
+      }
+      .s0-heading .accent { color: #3B4A8C; }
+      #s0-grid {
+        position: absolute; left: 244px; top: 460px; width: 1432px; height: 412px;
+        display: grid; grid-template-columns: 700px 700px; grid-template-rows: 190px 190px;
+        gap: 32px;
+      }
+      .s0-card {
+        display: flex; align-items: flex-start; gap: 20px;
+        background: #FFFFFF; border: 1px solid #E1E1DE; border-radius: 12px;
+        box-shadow: 0 1px 0 rgba(20,20,19,0.04);
+        padding: 28px 26px; opacity: 0;
+      }
+      .s0-icon-chip {
+        width: 64px; height: 64px; border-radius: 10px; flex-shrink: 0;
+        background: #EDEDEA; border: 1px solid #E1E1DE;
+        display: flex; align-items: center; justify-content: center;
+        color: #3B4A8C;
+      }
+      .s0-card-title {
+        font-size: 22px; font-weight: 600; letter-spacing: -0.005em; color: #13141B;
+        margin-bottom: 8px;
+      }
+      .s0-card-desc { font-size: 16px; line-height: 1.5; color: #6F6F75; }
+
+      /* ===== Scene 1 — Hook ===== */
+      #scene-1 {
+        background: #F4F4F0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #s1-glow {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 900px;
+        height: 900px;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(59,74,140,0.16) 0%, rgba(59,74,140,0) 70%);
+        opacity: 0.6;
+      }
+      #s1-frame-ghost {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 760px;
+        height: 420px;
+        transform: translate(-50%, -50%);
+        border: 1.5px solid #CFCFCC;
+        border-radius: 14px;
+        opacity: 0;
+      }
+      #s1-headline {
+        position: relative;
+        font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
+        font-weight: 500;
+        font-size: 128px;
+        letter-spacing: -0.02em;
+        color: #13141B;
+        opacity: 0;
+        white-space: nowrap;
+      }
+      #s1-period {
+        display: inline-block;
+        color: #3B4A8C;
+        transform-origin: bottom center;
+      }
+
+      /* ===== Scenes 2-3 — shared board recreation ===== */
+      .board-scene { background: #F4F4F0; }
+      .board-wordmark {
+        position: absolute; left: 170px; top: 108px;
+        display: flex; align-items: center; gap: 10px;
+      }
+      .board-wordmark img { width: 36px; height: 36px; }
+      .board-wordmark span {
+        font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
+        font-weight: 500; font-size: 26px; color: #13141B;
+      }
+      .board-column {
+        position: absolute; top: 220px; width: 500px; height: 760px;
+        background: #EDEDEA; border: 1.5px solid #CFCFCC; border-radius: 14px;
+        padding: 16px 28px;
+      }
+      .board-col-1 { left: 170px; }
+      .board-col-2 { left: 710px; }
+      .board-col-3 { left: 1250px; }
+      .board-col-header {
+        display: flex; align-items: center; gap: 8px;
+        height: 32px; flex-shrink: 0;
+      }
+      .board-col-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+      .board-col-title {
+        font-size: 15px; font-weight: 600; letter-spacing: 0.02em; color: #13141B;
+        text-transform: uppercase;
+      }
+      .board-col-count {
+        margin-left: auto; font-family: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+        font-size: 12px; color: #6F6F75; background: #FFFFFF; border: 1px solid #CFCFCC;
+        border-radius: 999px; padding: 1px 8px;
+      }
+      .board-add-input {
+        width: 444px; height: 50px; flex-shrink: 0;
+        background: #FFFFFF; border: 1.5px solid #CFCFCC; border-radius: 8px;
+        display: flex; align-items: center; padding: 0 14px;
+        font-size: 15px; color: #13141B;
+      }
+      .board-add-input .caret {
+        display: inline-block; width: 2px; height: 18px; background: #3B4A8C;
+        margin-left: 2px; opacity: 0;
+      }
+      /* Filler cards: normal flow inside the flex column */
+      .board-card {
+        width: 444px; min-height: 100px; flex-shrink: 0;
+        background: #FFFFFF; border: 1.5px solid #CFCFCC; border-radius: 12px;
+        padding: 14px 14px 12px; box-shadow: 0 1px 2px rgba(20,20,19,0.06);
+      }
+      /* The two cards that travel between columns via transform, not flow */
+      .board-card--moving { position: absolute; width: 444px; }
+      .board-card__title {
+        font-size: 16px; font-weight: 600; letter-spacing: -0.005em; color: #13141B;
+        line-height: 1.35;
+      }
+      .board-card__meta {
+        margin-top: 8px; font-size: 12px; color: #6F6F75; display: flex; align-items: center; gap: 6px;
+      }
+      .board-cursor { position: absolute; z-index: 999; pointer-events: none; }
+
+      /* Moving card (the one real card that gets dragged) sits above columns, absolutely positioned */
+      #s2-moving-card, #s3-moving-card { z-index: 50; }
+
+      /* Toast — "Task completed" */
+      .board-toast {
+        position: absolute; right: 170px; top: 130px;
+        display: flex; align-items: center; gap: 10px;
+        background: #181A24; color: #E8E8EE; border-radius: 10px;
+        padding: 14px 20px; box-shadow: 0 12px 28px rgba(20,20,19,0.18);
+        font-size: 16px; font-weight: 600;
+        opacity: 0; transform: translateY(-12px);
+      }
+      .board-toast__dot { width: 8px; height: 8px; border-radius: 50%; background: #9CB07A; flex-shrink: 0; }
+
+      /* Confetti — deterministic burst, fixed piece list (no Math.random) */
+      .confetti-piece {
+        position: absolute; width: 10px; height: 14px; opacity: 0;
+        will-change: transform, opacity;
+      }
+
+      /* ===== Scene 4 — Punchline / outro (dark mode) ===== */
+      #scene-4 {
+        background: #0F1018;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 28px;
+      }
+      .s4-line {
+        font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
+        font-weight: 500; font-size: 72px; letter-spacing: -0.01em;
+        color: #E8E8EE; opacity: 0; text-align: center;
+      }
+      #s4-logo-card {
+        position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+        display: flex; flex-direction: column; align-items: center; gap: 18px;
+        opacity: 0;
+      }
+      #s4-logo-glow {
+        position: absolute; left: 50%; top: 50%; width: 820px; height: 820px;
+        transform: translate(-50%, -50%);
+        border-radius: 50%; opacity: 0.5;
+        background: radial-gradient(circle, rgba(122,138,209,0.20) 0%, rgba(122,138,209,0) 70%);
+      }
+      .s4-lockup-row { display: flex; align-items: center; gap: 14px; }
+      .s4-lockup-row img { width: 56px; height: 56px; }
+      .s4-lockup-row span {
+        font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
+        font-weight: 500; font-size: 48px; color: #E8E8EE;
+      }
+      #s4-url { font-size: 22px; color: #9A9AA0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+      #s4-subline { font-size: 18px; color: #7A8AD1; letter-spacing: 0.01em; }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="cascade-brag"
+      data-start="0"
+      data-width="1920"
+      data-height="1080"
+      data-duration="31.2"
+    >
+      <!-- ===== Scene 0 — About-screen feature tour (NEW, 0.0-9.0s) ===== -->
+      <section id="scene-0" class="clip" data-start="0" data-duration="9" data-track-index="1">
+        <div id="s0-eyebrow" class="s0-eyebrow">Features</div>
+        <div id="s0-heading" class="s0-heading">
+          <div>Everything a task manager needs<span class="accent">.</span></div>
+          <div>Nothing it doesn't<span class="accent">.</span></div>
+        </div>
+
+        <div id="s0-grid">
+          <div id="s0-card-1" class="s0-card">
+            <div class="s0-icon-chip">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="18" x="3" y="3" rx="2" />
+                <path d="M9 3v18" />
+                <path d="M15 3v18" />
+              </svg>
+            </div>
+            <div>
+              <div class="s0-card-title">Multiple Boards</div>
+              <div class="s0-card-desc">Separate boards for every project, client, or area of life. Unlimited.</div>
+            </div>
+          </div>
+
+          <div id="s0-card-2" class="s0-card">
+            <div class="s0-icon-chip">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.3-4.3" />
+              </svg>
+            </div>
+            <div>
+              <div class="s0-card-title">Search and Filters</div>
+              <div class="s0-card-desc">Filter by text, tags, priority, status, or overdue. Find anything in seconds.</div>
+            </div>
+          </div>
+
+          <div id="s0-card-3" class="s0-card">
+            <div class="s0-icon-chip">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="20" height="16" x="2" y="4" rx="2" />
+                <path d="M6 8h.001" /><path d="M10 8h.001" /><path d="M14 8h.001" /><path d="M18 8h.001" />
+                <path d="M8 12h.001" /><path d="M12 12h.001" /><path d="M16 12h.001" />
+                <path d="M7 16h10" />
+              </svg>
+            </div>
+            <div>
+              <div class="s0-card-title">Keyboard Shortcuts</div>
+              <div class="s0-card-desc">Press H to see all shortcuts. Power users welcome.</div>
+            </div>
+          </div>
+
+          <div id="s0-card-4" class="s0-card">
+            <div class="s0-icon-chip">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
+                <path d="M12 18h.01" />
+              </svg>
+            </div>
+            <div>
+              <div class="s0-card-title">PWA Ready</div>
+              <div class="s0-card-desc">Install on desktop or mobile. Offline support built in. No app store needed.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Scene 1 — Hook (9.0-12.0s global; UNCHANGED content/timing, only shifted +9.0s) ===== -->
+      <section id="scene-1" class="clip" data-start="9" data-duration="3" data-track-index="1">
+        <div id="s1-glow"></div>
+        <div id="s1-frame-ghost"></div>
+        <h1 id="s1-headline">Own your data<span id="s1-period">.</span></h1>
+      </section>
+      <!-- ===== Scene 2 — Reveal + flow (12.0-18.5s global, local 0-6.5s; UNCHANGED, shifted +9.0s) ===== -->
+      <section id="scene-2" class="clip board-scene" data-start="12" data-duration="6.5" data-track-index="1">
+        <div class="board-wordmark">
+          <img src="assets/cascade-icon.svg" alt="" />
+          <span>Cascade</span>
+        </div>
+
+        <div class="board-column board-col-1" style="display:flex; flex-direction:column; gap:14px;">
+          <div class="board-col-header">
+            <span class="board-col-dot" style="background:#5C7CA3;"></span>
+            <span class="board-col-title">To Do</span>
+            <span class="board-col-count">3</span>
+          </div>
+          <div class="board-add-input">
+            <span id="s2-typed-text"></span><span id="s2-caret" class="caret"></span>
+          </div>
+          <div style="height:100px; flex-shrink:0;"></div>
+          <div class="board-card">
+            <div class="board-card__title">Update onboarding copy</div>
+            <div class="board-card__meta">Design</div>
+          </div>
+          <div class="board-card">
+            <div class="board-card__title">Review pricing page</div>
+            <div class="board-card__meta">Marketing</div>
+          </div>
+        </div>
+
+        <div class="board-column board-col-2" style="display:flex; flex-direction:column; gap:14px;">
+          <div class="board-col-header">
+            <span class="board-col-dot" style="background:#C78E3F;"></span>
+            <span class="board-col-title">In Progress</span>
+            <span class="board-col-count">1</span>
+          </div>
+          <div style="height:100px; flex-shrink:0;"></div>
+          <div class="board-card">
+            <div class="board-card__title">Fix Safari drag bug</div>
+            <div class="board-card__meta">Engineering</div>
+          </div>
+        </div>
+
+        <div class="board-column board-col-3" style="display:flex; flex-direction:column; gap:14px;">
+          <div class="board-col-header">
+            <span class="board-col-dot" style="background:#788C5D;"></span>
+            <span class="board-col-title">Done</span>
+            <span class="board-col-count">1</span>
+          </div>
+          <div class="board-card">
+            <div class="board-card__title">Design system audit</div>
+            <div class="board-card__meta">Design</div>
+          </div>
+        </div>
+
+        <!-- The one real card that gets typed, then dragged To Do -> In Progress -->
+        <div id="s2-moving-card" class="board-card board-card--moving" style="left:198px; top:346px; opacity:0;">
+          <div class="board-card__title">Ship the launch video</div>
+          <div class="board-card__meta">Marketing</div>
+        </div>
+
+        <div id="s2-cursor" class="board-cursor" style="left:900px; top:650px;">
+          <svg width="30" height="30" viewBox="0 0 24 24">
+            <path d="M5 3L19 12L12 13L9 20L5 3Z" fill="#13141B" stroke="#F4F4F0" stroke-width="1.2" />
+          </svg>
+        </div>
+      </section>
+
+      <!-- ===== Scene 3 — Completion + confetti (18.5-23.5s global | local 0-5.0s; UNCHANGED, shifted +9.0s) ===== -->
+      <section id="scene-3" class="clip board-scene" data-start="18.5" data-duration="5" data-track-index="1">
+        <div class="board-wordmark">
+          <img src="assets/cascade-icon.svg" alt="" />
+          <span>Cascade</span>
+        </div>
+
+        <div class="board-column board-col-1" style="display:flex; flex-direction:column; gap:14px;">
+          <div class="board-col-header">
+            <span class="board-col-dot" style="background:#5C7CA3;"></span>
+            <span class="board-col-title">To Do</span>
+            <span class="board-col-count">2</span>
+          </div>
+          <div class="board-add-input" style="color:#6F6F75;">Add a task...</div>
+          <div class="board-card">
+            <div class="board-card__title">Update onboarding copy</div>
+            <div class="board-card__meta">Design</div>
+          </div>
+          <div class="board-card">
+            <div class="board-card__title">Review pricing page</div>
+            <div class="board-card__meta">Marketing</div>
+          </div>
+        </div>
+
+        <div class="board-column board-col-2" style="display:flex; flex-direction:column; gap:14px;">
+          <div class="board-col-header">
+            <span class="board-col-dot" style="background:#C78E3F;"></span>
+            <span class="board-col-title">In Progress</span>
+            <span id="s3-col2-count" class="board-col-count">2</span>
+          </div>
+          <div style="height:100px; flex-shrink:0;"></div>
+          <div class="board-card">
+            <div class="board-card__title">Fix Safari drag bug</div>
+            <div class="board-card__meta">Engineering</div>
+          </div>
+        </div>
+
+        <div class="board-column board-col-3" style="display:flex; flex-direction:column; gap:14px;">
+          <div class="board-col-header">
+            <span class="board-col-dot" style="background:#788C5D;"></span>
+            <span class="board-col-title">Done</span>
+            <span id="s3-col3-count" class="board-col-count">1</span>
+          </div>
+          <div class="board-card">
+            <div class="board-card__title">Design system audit</div>
+            <div class="board-card__meta">Design</div>
+          </div>
+          <div style="height:100px; flex-shrink:0;"></div>
+        </div>
+
+        <!-- The same real card, continuing In Progress -> Done -->
+        <div id="s3-moving-card" class="board-card board-card--moving" style="left:738px; top:282px;">
+          <div class="board-card__title">Ship the launch video</div>
+          <div class="board-card__meta">Marketing</div>
+        </div>
+
+        <div id="s3-cursor" class="board-cursor" style="left:960px; top:332px;">
+          <svg width="30" height="30" viewBox="0 0 24 24">
+            <path d="M5 3L19 12L12 13L9 20L5 3Z" fill="#13141B" stroke="#F4F4F0" stroke-width="1.2" />
+          </svg>
+        </div>
+
+        <div id="s3-confetti" style="position:absolute; left:0; top:0; width:100%; height:100%;">
+          <div class="confetti-piece" style="left:1500px; top:446px; background:#3B4A8C;"></div>
+          <div class="confetti-piece" style="left:1500px; top:446px; background:#788C5D;"></div>
+          <div class="confetti-piece" style="left:1500px; top:446px; background:#C78E3F;"></div>
+          <div class="confetti-piece" style="left:1500px; top:446px; background:#5C7CA3;"></div>
+          <div class="confetti-piece" style="left:1500px; top:446px; background:#3B4A8C;"></div>
+          <div class="confetti-piece" style="left:1500px; top:446px; background:#788C5D;"></div>
+          <div class="confetti-piece" style="left:1500px; top:446px; background:#C78E3F;"></div>
+          <div class="confetti-piece" style="left:1500px; top:446px; background:#5C7CA3;"></div>
+          <div class="confetti-piece" style="left:1500px; top:446px; background:#3B4A8C;"></div>
+          <div class="confetti-piece" style="left:1500px; top:446px; background:#788C5D;"></div>
+          <div class="confetti-piece" style="left:1500px; top:446px; background:#C78E3F;"></div>
+          <div class="confetti-piece" style="left:1500px; top:446px; background:#5C7CA3;"></div>
+          <div class="confetti-piece" style="left:1500px; top:446px; background:#3B4A8C;"></div>
+          <div class="confetti-piece" style="left:1500px; top:446px; background:#788C5D;"></div>
+        </div>
+
+        <div id="s3-toast" class="board-toast">
+          <span class="board-toast__dot"></span>
+          <span>Task completed</span>
+        </div>
+      </section>
+
+      <!-- ===== Scene 4 — Punchline / outro (23.5-31.2s global | local 0-7.7s; UNCHANGED, shifted +9.0s; extra hold lets the closing chime ring out) ===== -->
+      <section id="scene-4" class="clip" data-start="23.5" data-duration="7.7" data-track-index="1">
+        <p id="s4-line1" class="s4-line">This isn't a privacy policy.</p>
+        <p id="s4-line2" class="s4-line">It's an architectural fact.</p>
+
+        <div id="s4-logo-glow"></div>
+        <div id="s4-logo-card">
+          <div class="s4-lockup-row">
+            <img src="assets/cascade-icon.svg" alt="" />
+            <span>Cascade</span>
+          </div>
+          <div id="s4-url">cascade.vinny.dev</div>
+          <div id="s4-subline">No account. No server. No tracking.</div>
+        </div>
+      </section>
+
+      <!-- ===== Audio (music + SFX), higher track indices ===== -->
+      <!-- Scene 0 card-landing ticks — light SFX only, no score under the About tour. -->
+      <audio id="sfx-s0-card-1" src="assets/sfx/click-soft.mp3" data-start="2.55" data-duration="0.37" data-track-index="15" data-volume="0.4"></audio>
+      <audio id="sfx-s0-card-2" src="assets/sfx/click-soft.mp3" data-start="2.80" data-duration="0.37" data-track-index="16" data-volume="0.4"></audio>
+      <audio id="sfx-s0-card-3" src="assets/sfx/click-soft.mp3" data-start="3.05" data-duration="0.37" data-track-index="17" data-volume="0.4"></audio>
+      <audio id="sfx-s0-card-4" src="assets/sfx/click-soft.mp3" data-start="3.30" data-duration="0.37" data-track-index="18" data-volume="0.4"></audio>
+
+      <audio
+        id="bgm"
+        src="assets/music/happy-beats-business-moves-vol-12-by-ende-dot-app.mp3"
+        data-start="9.0"
+        data-duration="22.2"
+        data-track-index="10"
+        data-volume="0.30"
+      ></audio>
+
+      <audio
+        id="sfx-period-stamp"
+        src="assets/sfx/click-soft.mp3"
+        data-start="11.35"
+        data-duration="0.37"
+        data-track-index="11"
+        data-volume="0.5"
+      ></audio>
+
+      <audio
+        id="sfx-typing-start"
+        src="assets/sfx/key-press.mp3"
+        data-start="13.6"
+        data-duration="0.4"
+        data-track-index="11"
+        data-volume="0.45"
+      ></audio>
+
+      <audio
+        id="sfx-card-drop-1"
+        src="assets/sfx/click-soft.mp3"
+        data-start="17.74"
+        data-duration="0.37"
+        data-track-index="12"
+        data-volume="0.55"
+      ></audio>
+
+      <audio
+        id="sfx-confetti-chime"
+        src="assets/sfx/notification.mp3"
+        data-start="22.11"
+        data-duration="2.46"
+        data-track-index="13"
+        data-volume="0.5"
+      ></audio>
+
+      <audio
+        id="sfx-logo-lock-chime"
+        src="assets/sfx/chime.mp3"
+        data-start="28.66"
+        data-duration="2.5"
+        data-track-index="14"
+        data-volume="0.4"
+      ></audio>
+    </div>
+
+    <script>
+      // Pre-extracted RMS audio data for the subtle accent-glow breathe (Scene 1 + Scene 4).
+      // See DESIGN.md for the extraction command.
+      var AUDIO_DATA = null;
+      (function loadAudioData() {
+        try {
+          var xhr = new XMLHttpRequest();
+          xhr.open("GET", "assets/audio-data.json", false);
+          xhr.send();
+          if (xhr.status === 200 || xhr.status === 0) {
+            AUDIO_DATA = JSON.parse(xhr.responseText);
+          }
+        } catch (e) {
+          AUDIO_DATA = null;
+        }
+      })();
+
+      gsap.registerPlugin(TextPlugin);
+      window.__timelines = window.__timelines || {};
+      var tl = gsap.timeline({ paused: true });
+
+      // ===== SCENE TIMELINE BUILDERS (appended below, one per scene) =====
+
+      // ---- Scene 0 — About-screen feature tour (global 0.0-9.0s, NEW) ----
+      tl.fromTo("#s0-eyebrow", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, 0.1);
+      tl.fromTo("#s0-heading", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 0.35);
+      // Four real feature cards stagger into the 2x2 grid, ~0.25s apart, card-enter style.
+      var s0CardIds = ["#s0-card-1", "#s0-card-2", "#s0-card-3", "#s0-card-4"];
+      var s0CardStarts = [2.2, 2.45, 2.7, 2.95];
+      for (var c0 = 0; c0 < s0CardIds.length; c0++) {
+        tl.fromTo(
+          s0CardIds[c0],
+          { y: 8, scale: 0.98, opacity: 0 },
+          { y: 0, scale: 1, opacity: 1, duration: 0.4, ease: "power2.out" },
+          s0CardStarts[c0]
+        );
+      }
+      // Soft crossfade: the whole grid dissolves as Scene 1's own headline fades in (unchanged) at 9.15s.
+      tl.to(["#s0-eyebrow", "#s0-heading", "#s0-grid"], { opacity: 0, duration: 0.5, ease: "power1.in" }, 8.5);
+      // Hard kill at the clip boundary so non-linear seeking never lands mid-fade with stale opacity.
+      tl.set(["#s0-eyebrow", "#s0-heading", "#s0-grid"], { opacity: 0 }, 9.0);
+
+      // ---- Scene 1 — Hook (global 9.0-12.0s; UNCHANGED content/timing, shifted +9.0s) ----
+      // S1 = the moment the music starts too (see bgm data-start="9.0" above) — Scene 1
+      // always begins exactly when the score begins, by design, both before and after this shift.
+      var S1 = 9.0;
+      // Headline: fast in, then holds.
+      tl.fromTo(
+        "#s1-headline",
+        { opacity: 0, y: 16 },
+        { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" },
+        S1 + 0.15
+      );
+      // Faint hairline card-frame ghost fades in behind the type.
+      tl.to("#s1-frame-ghost", { opacity: 0.5, duration: 0.6, ease: "power2.out" }, S1 + 0.3);
+      // Accent-indigo period stamps in like a seal, timed to the 2.19-2.73s beat window.
+      // fromTo (not .to) is required here — the runtime flags a plain .to as a CSS/GSAP
+      // transform conflict when CSS also sets an initial transform on the same element.
+      tl.fromTo(
+        "#s1-period",
+        { scale: 0 },
+        { scale: 1, duration: 0.35, ease: "back.out(1.6)" },
+        S1 + 2.35
+      );
+
+      // Subtle audio-reactive breathe on the hook glow (bass/RMS driven), if data loaded.
+      // AUDIO_DATA.frames[].time is relative to the MUSIC TRACK's own start (0-20s), which
+      // now begins at global S1 (9.0s) instead of global 0 — so the comparison bounds below
+      // stay track-relative (unchanged from the original cut) and we add S1 only when
+      // scheduling the tl.call on the shared, whole-video timeline.
+      if (AUDIO_DATA) {
+        var s1Start = 0, s1End = 3;
+        for (var f1 = 0; f1 < AUDIO_DATA.totalFrames; f1++) {
+          var frame1 = AUDIO_DATA.frames[f1];
+          if (frame1.time < s1Start || frame1.time > s1End) continue;
+          (function (rms, t) {
+            tl.call(
+              function () {
+                var el = document.getElementById("s1-glow");
+                if (el) el.style.opacity = String(0.45 + rms * 0.25);
+              },
+              [],
+              t + S1
+            );
+          })(frame1.rms, frame1.time);
+        }
+      }
+
+      // ---- Scene 2 — Reveal + flow (global 12.0-18.5s | local 0-6.5s; UNCHANGED, shifted +9.0s) ----
+      var S2 = 12.0;
+      tl.fromTo("#scene-2", { opacity: 0, y: 4, scale: 0.99 }, { opacity: 1, y: 0, scale: 1, duration: 0.3, ease: "power2.out" }, S2 + 0.0);
+      // Cursor travels from its resting spot to the Add Task field.
+      tl.to("#s2-cursor", { x: 420 - 900, y: 307 - 650, duration: 0.5, ease: "power2.inOut" }, S2 + 0.35);
+      tl.to("#s2-cursor", { scale: 0.85, duration: 0.075, ease: "power2.in", yoyo: true, repeat: 1 }, S2 + 0.85);
+      // Caret goes solid, brief pause, then the title types (one key-tick SFX at the start only).
+      tl.set("#s2-caret", { opacity: 1 }, S2 + 1.0);
+      tl.to("#s2-typed-text", { text: { value: "Ship the launch video" }, duration: 1.69, ease: "none" }, S2 + 1.6);
+      tl.set("#s2-caret", { opacity: 0 }, S2 + 3.4);
+      tl.set("#s2-typed-text", { text: { value: "" } }, S2 + 3.5);
+      // Card-enter reveal — matches the app's card-enter keyframe (fade + translateY(8px)->0 + scale .98->1).
+      tl.fromTo("#s2-moving-card", { y: 8, scale: 0.98, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.3, ease: "power2.out" }, S2 + 3.55);
+      // Hold so the card reads, then cursor moves down to grab it.
+      tl.to("#s2-cursor", { x: 420 - 900, y: 396 - 650, duration: 0.4, ease: "power2.inOut" }, S2 + 4.55);
+      tl.to(["#s2-cursor", "#s2-moving-card"], { scale: 1.04, duration: 0.075, ease: "power2.in", yoyo: true, repeat: 1 }, S2 + 4.95);
+      // Lift (slight rotate + scale) then drag To Do -> In Progress, landing exactly on the 8.74s beat cue.
+      tl.to("#s2-moving-card", { rotation: -1.5, scale: 1.02, duration: 0.1, ease: "power1.out" }, S2 + 5.10);
+      tl.to("#s2-moving-card", { x: 540, y: -64, duration: 0.64, ease: "power2.inOut" }, S2 + 5.10);
+      tl.to("#s2-cursor", { x: 960 - 900, y: 332 - 650, duration: 0.64, ease: "power2.inOut" }, S2 + 5.10);
+      // Drop settle (card lands at local 5.74s = global 8.74s, matched by sfx-card-drop-1).
+      tl.to("#s2-moving-card", { rotation: 0, scale: 1, duration: 0.15, ease: "back.out(1.4)" }, S2 + 5.74);
+
+      // ---- Scene 3 — Completion + confetti (global 18.5-23.5s | local 0-5.0s; UNCHANGED, shifted +9.0s) ----
+      var S3 = 18.5;
+      var S3_DROP = S3 + 3.61; // = 13.11s, the strong beat cue
+      tl.to(["#s3-cursor", "#s3-moving-card"], { scale: 1.04, duration: 0.075, ease: "power2.in", yoyo: true, repeat: 1 }, S3 + 2.3);
+      tl.to("#s3-moving-card", { rotation: -1.5, scale: 1.02, duration: 0.1, ease: "power1.out" }, S3 + 2.45);
+      tl.to("#s3-moving-card", { x: 540, y: 114, duration: 1.16, ease: "power2.inOut" }, S3 + 2.45);
+      tl.to("#s3-cursor", { x: 1500 - 960, y: 446 - 332, duration: 1.16, ease: "power2.inOut" }, S3 + 2.45);
+      tl.to("#s3-moving-card", { rotation: 0, scale: 1, duration: 0.15, ease: "back.out(1.4)" }, S3_DROP);
+
+      // Column count pills flip at the drop moment.
+      tl.call(function () {
+        var c2 = document.getElementById("s3-col2-count");
+        var c3 = document.getElementById("s3-col3-count");
+        if (c2) c2.textContent = "1";
+        if (c3) c3.textContent = "2";
+      }, [], S3_DROP);
+
+      // "Task completed" toast slides in on the drop.
+      tl.fromTo("#s3-toast", { opacity: 0, y: -12 }, { opacity: 1, y: 0, duration: 0.3, ease: "back.out(1.4)" }, S3_DROP);
+
+      // Confetti burst — deterministic angle/distance per piece (index-driven, no Math.random).
+      (function buildConfetti() {
+        var pieces = document.querySelectorAll("#s3-confetti .confetti-piece");
+        var n = pieces.length;
+        for (var i = 0; i < n; i++) {
+          var angle = (i / n) * Math.PI * 2 - Math.PI / 2 + (i % 2 ? 0.2 : -0.15);
+          var dist = 150 + (i % 4) * 35;
+          var dx = Math.cos(angle) * dist;
+          var dy = Math.sin(angle) * dist * 0.75 - 30;
+          var rot = (i % 2 === 0 ? 1 : -1) * (160 + i * 18);
+          var delay = i * 0.015;
+          (function (el, dx, dy, rot, delay) {
+            tl.fromTo(
+              el,
+              { x: 0, y: 0, opacity: 0, rotation: 0, scale: 0.8 },
+              { x: dx, y: dy, opacity: 1, rotation: rot, scale: 1, duration: 0.5, ease: "power2.out" },
+              S3_DROP + delay
+            );
+            tl.to(el, { opacity: 0, duration: 0.4, ease: "power1.in" }, S3_DROP + 0.45 + delay);
+          })(pieces[i], dx, dy, rot, delay);
+        }
+      })();
+
+      // ---- Scene 4 — Punchline / outro (global 23.5-31.2s | local 0-7.7s; UNCHANGED, shifted +9.0s) ----
+      var S4 = 23.5;
+      tl.fromTo("#s4-line1", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, S4 + 0.15);
+      // Line 2 settles at the 17.47s strong beat cue.
+      tl.fromTo("#s4-line2", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, S4 + 2.52);
+      // Both lines resolve so the closing lockup can take the frame.
+      tl.to(["#s4-line1", "#s4-line2"], { opacity: 0, duration: 0.3, ease: "power1.in" }, S4 + 4.40);
+      // Cascade wordmark + icon + URL lock in near the 19.66s strong beat cue.
+      tl.fromTo("#s4-logo-card", { opacity: 0, scale: 0.96 }, { opacity: 1, scale: 1, duration: 0.7, ease: "power2.out" }, S4 + 4.46);
+
+      // Music: small swell under the confetti beat, fade to ~0 under the closing logo lock.
+      tl.to("#bgm", { volume: 0.35, duration: 0.3, ease: "power1.out" }, S3_DROP);
+      tl.to("#bgm", { volume: 0.30, duration: 0.5, ease: "power1.in" }, S3_DROP + 0.5);
+      tl.to("#bgm", { volume: 0, duration: 1.5, ease: "power1.in" }, S4 + 4.0);
+
+      // Subtle audio-reactive breathe on the closing logo glow (bass/RMS driven), if data loaded.
+      // Same track-relative-vs-global split as Scene 1's loop above: these bounds are the
+      // ORIGINAL (pre-shift) numbers, i.e. relative to the music track's own start, since
+      // AUDIO_DATA.frames[].time never changed — only add S1 when scheduling on the timeline.
+      if (AUDIO_DATA) {
+        var s4GlowStartTrack = 18.96, s4GlowEndTrack = 20.0;
+        for (var f4 = 0; f4 < AUDIO_DATA.totalFrames; f4++) {
+          var frame4 = AUDIO_DATA.frames[f4];
+          if (frame4.time < s4GlowStartTrack || frame4.time > s4GlowEndTrack) continue;
+          (function (rms, t) {
+            tl.call(
+              function () {
+                var el = document.getElementById("s4-logo-glow");
+                if (el) el.style.opacity = String(0.4 + rms * 0.25);
+              },
+              [],
+              t + S1
+            );
+          })(frame4.rms, frame4.time);
+        }
+      }
+
+      window.__timelines["cascade-brag"] = tl;
+    </script>
+  </body>
+</html>

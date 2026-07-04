@@ -35,14 +35,14 @@ export function ColumnTabs({
   // Visibility (mobile only) is owned by the parent in KanbanBoard; this
   // component is layout only.
   return (
-    <div className="flex gap-2 overflow-x-auto pb-2 px-4 -mx-4 scrollbar-hide">
+    <div className="flex max-w-full gap-2 overflow-x-auto pb-2 scrollbar-hide">
       {COLUMNS.map((column) => (
         <button
           key={column.id}
           onClick={() => onColumnChange(column.id)}
           aria-pressed={activeColumn === column.id}
           className={cn(
-            "flex-1 min-w-[100px] px-4 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap",
+            "flex-1 min-h-[45px] min-w-[100px] px-4 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap",
             activeColumn === column.id
               ? "bg-primary text-primary-foreground shadow-sm"
               : "bg-surface-2 text-foreground hover:bg-surface-2/80"
