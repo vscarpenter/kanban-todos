@@ -77,7 +77,7 @@ src/
 Three main Zustand stores with IndexedDB persistence:
 1. **useBoardStore**: Board CRUD, selection, import/export
 2. **useTaskStore**: Task lifecycle, search, filtering, archive
-3. **useSettingsStore**: Theme, auto-archive, accessibility, debug mode
+3. **useSettingsStore**: Theme, auto-archive, accessibility, search preferences
 
 ### Database Layer
 - IndexedDB wrapper with TaskDatabase class (async/await API)
@@ -279,4 +279,3 @@ Five canonical triage roles map to identically-named labels (`needs-triage`, `ne
 ### Domain docs
 
 Single-context: one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
-

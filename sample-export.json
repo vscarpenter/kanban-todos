@@ -1,11 +1,11 @@
 {
   "version": "1.0.0",
-  "exportedAt": "2026-04-07T18:30:00.000Z",
+  "exportedAt": "2026-07-04T18:30:00.000Z",
   "boards": [
     {
       "id": "default-board",
-      "name": "🚀 Product Launch",
-      "description": "Q2 2026 product launch planning and execution",
+      "name": "Work Tasks",
+      "description": "Default board for work-related tasks",
       "color": "#3b82f6",
       "isDefault": true,
       "order": 0,
@@ -25,7 +25,7 @@
     {
       "id": "marketing-campaign",
       "name": "🎯 Marketing Campaign",
-      "description": "Q2 marketing campaign planning and execution",
+      "description": "Q3 marketing campaign planning and execution",
       "color": "#10b981",
       "isDefault": false,
       "order": 2,
@@ -65,7 +65,7 @@
   ],
   "tasks": [
     {
-      "id": "task-personal-1",
+      "id": "task-launch-1",
       "title": "Finalize product requirements document",
       "description": "Complete the PRD with all stakeholder feedback incorporated. Include user stories, acceptance criteria, and technical specifications.",
       "status": "done",
@@ -75,70 +75,70 @@
       "createdAt": "2026-03-05T09:15:00.000Z",
       "updatedAt": "2026-03-18T14:30:00.000Z",
       "completedAt": "2026-03-18T14:30:00.000Z",
-      "dueDate": "2026-03-22T17:00:00.000Z",
+      "dueDate": "2026-07-01T17:00:00.000Z",
       "progress": 100
     },
     {
-      "id": "task-personal-2",
-      "title": "Organize photo collection",
-      "description": "Sort through vacation photos and create albums",
+      "id": "task-launch-2",
+      "title": "Prepare launch readiness checklist",
+      "description": "Track owners for pricing, onboarding, support, and analytics before go-live.",
       "status": "in-progress",
       "boardId": "default-board",
-      "priority": "low",
-      "tags": ["organization", "photos"],
+      "priority": "medium",
+      "tags": ["launch", "operations", "checklist"],
       "progress": 35,
       "createdAt": "2026-02-28T14:30:00.000Z",
       "updatedAt": "2026-04-06T10:15:00.000Z",
-      "dueDate": "2026-04-20T17:00:00.000Z"
+      "dueDate": "2026-07-09T17:00:00.000Z"
     },
     {
-      "id": "task-personal-3",
-      "title": "Complete annual health checkup",
-      "description": "Schedule and attend routine medical appointments",
+      "id": "task-launch-3",
+      "title": "Review beta feedback themes",
+      "description": "Summarize the top beta-user requests and confirm which issues must be fixed before launch.",
       "status": "done",
       "boardId": "default-board",
-      "priority": "high",
-      "tags": ["health", "appointments"],
+      "priority": "medium",
+      "tags": ["beta", "feedback", "research"],
       "createdAt": "2026-02-25T11:00:00.000Z",
       "updatedAt": "2026-03-15T16:45:00.000Z",
       "completedAt": "2026-03-15T16:45:00.000Z"
     },
     {
-      "id": "task-personal-4",
-      "title": "Learn Spanish basics",
-      "description": "Complete first 3 lessons on language learning app",
+      "id": "task-launch-4",
+      "title": "Finalize pricing page copy",
+      "description": "Update hero messaging, plan details, and FAQ answers for the public launch page.",
       "status": "in-progress",
       "boardId": "default-board",
       "priority": "medium",
-      "tags": ["learning", "language"],
+      "tags": ["pricing", "copy", "website"],
       "progress": 60,
       "createdAt": "2026-02-27T19:20:00.000Z",
       "updatedAt": "2026-04-05T20:30:00.000Z",
-      "dueDate": "2026-04-25T17:00:00.000Z"
+      "dueDate": "2026-07-13T17:00:00.000Z"
     },
     {
-      "id": "task-personal-5",
-      "title": "Update home insurance policy",
-      "description": "Review coverage options and renew policy",
+      "id": "task-launch-5",
+      "title": "Confirm support handoff plan",
+      "description": "Document launch-day coverage, escalation paths, and customer response templates.",
       "status": "todo",
       "boardId": "default-board",
       "priority": "high",
-      "tags": ["insurance", "paperwork"],
+      "tags": ["support", "handoff", "launch"],
       "createdAt": "2026-03-10T13:15:00.000Z",
       "updatedAt": "2026-03-10T13:15:00.000Z",
-      "dueDate": "2026-04-22T17:00:00.000Z"
+      "dueDate": "2026-07-10T17:00:00.000Z"
     },
     {
-      "id": "task-personal-6",
-      "title": "Clean garage and donate unused items",
-      "description": "Sort through garage items and prepare donation boxes",
+      "id": "task-launch-6",
+      "title": "Schedule launch retrospective",
+      "description": "Book the follow-up meeting and collect agenda items from product, marketing, and support.",
       "status": "todo",
       "boardId": "default-board",
       "priority": "low",
-      "tags": ["cleaning", "donation"],
+      "tags": ["retrospective", "planning"],
       "createdAt": "2026-03-12T08:45:00.000Z",
       "updatedAt": "2026-03-12T08:45:00.000Z",
-      "dueDate": "2026-04-28T17:00:00.000Z"
+      "dueDate": "2026-07-24T17:00:00.000Z"
     },
     {
       "id": "task-alpha-1",
@@ -163,7 +163,7 @@
       "progress": 75,
       "createdAt": "2026-02-26T10:00:00.000Z",
       "updatedAt": "2026-04-07T15:30:00.000Z",
-      "dueDate": "2026-04-17T17:00:00.000Z"
+      "dueDate": "2026-07-08T17:00:00.000Z"
     },
     {
       "id": "task-alpha-3",
@@ -176,7 +176,7 @@
       "progress": 40,
       "createdAt": "2026-03-02T11:15:00.000Z",
       "updatedAt": "2026-04-06T09:20:00.000Z",
-      "dueDate": "2026-04-21T17:00:00.000Z"
+      "dueDate": "2026-07-15T17:00:00.000Z"
     },
     {
       "id": "task-alpha-4",
@@ -188,7 +188,7 @@
       "tags": ["devops", "ci-cd", "github"],
       "createdAt": "2026-03-08T14:45:00.000Z",
       "updatedAt": "2026-03-08T14:45:00.000Z",
-      "dueDate": "2026-04-24T17:00:00.000Z"
+      "dueDate": "2026-07-22T17:00:00.000Z"
     },
     {
       "id": "task-alpha-5",
@@ -200,7 +200,7 @@
       "tags": ["testing", "api", "backend"],
       "createdAt": "2026-03-10T16:00:00.000Z",
       "updatedAt": "2026-03-10T16:00:00.000Z",
-      "dueDate": "2026-04-28T17:00:00.000Z"
+      "dueDate": "2026-07-29T17:00:00.000Z"
     },
     {
       "id": "task-alpha-6",
@@ -212,7 +212,7 @@
       "tags": ["performance", "images", "optimization"],
       "createdAt": "2026-03-12T12:30:00.000Z",
       "updatedAt": "2026-03-12T12:30:00.000Z",
-      "dueDate": "2026-05-02T17:00:00.000Z"
+      "dueDate": "2026-08-05T17:00:00.000Z"
     },
     {
       "id": "task-alpha-7",
@@ -224,7 +224,7 @@
       "tags": ["documentation", "api"],
       "createdAt": "2026-03-14T09:45:00.000Z",
       "updatedAt": "2026-03-14T09:45:00.000Z",
-      "dueDate": "2026-05-06T17:00:00.000Z"
+      "dueDate": "2026-08-12T17:00:00.000Z"
     },
     {
       "id": "task-marketing-1",
@@ -249,7 +249,7 @@
       "progress": 65,
       "createdAt": "2026-02-28T13:00:00.000Z",
       "updatedAt": "2026-04-06T11:30:00.000Z",
-      "dueDate": "2026-04-18T17:00:00.000Z"
+      "dueDate": "2026-07-07T17:00:00.000Z"
     },
     {
       "id": "task-marketing-3",
@@ -262,7 +262,7 @@
       "progress": 80,
       "createdAt": "2026-03-04T15:45:00.000Z",
       "updatedAt": "2026-04-07T10:15:00.000Z",
-      "dueDate": "2026-04-15T17:00:00.000Z"
+      "dueDate": "2026-07-09T17:00:00.000Z"
     },
     {
       "id": "task-marketing-4",
@@ -274,7 +274,7 @@
       "tags": ["research", "competitors", "analysis"],
       "createdAt": "2026-03-06T09:20:00.000Z",
       "updatedAt": "2026-03-06T09:20:00.000Z",
-      "dueDate": "2026-04-20T17:00:00.000Z"
+      "dueDate": "2026-07-17T17:00:00.000Z"
     },
     {
       "id": "task-marketing-5",
@@ -286,7 +286,7 @@
       "tags": ["video", "testimonials", "customers"],
       "createdAt": "2026-03-08T16:30:00.000Z",
       "updatedAt": "2026-03-08T16:30:00.000Z",
-      "dueDate": "2026-05-10T17:00:00.000Z"
+      "dueDate": "2026-08-03T17:00:00.000Z"
     },
     {
       "id": "task-marketing-6",
@@ -298,7 +298,7 @@
       "tags": ["influencers", "partnerships", "outreach"],
       "createdAt": "2026-03-10T12:15:00.000Z",
       "updatedAt": "2026-03-10T12:15:00.000Z",
-      "dueDate": "2026-04-30T17:00:00.000Z"
+      "dueDate": "2026-07-28T17:00:00.000Z"
     },
     {
       "id": "task-home-1",
@@ -323,7 +323,7 @@
       "progress": 50,
       "createdAt": "2026-02-28T10:30:00.000Z",
       "updatedAt": "2026-04-05T15:20:00.000Z",
-      "dueDate": "2026-04-19T17:00:00.000Z"
+      "dueDate": "2026-07-18T17:00:00.000Z"
     },
     {
       "id": "task-home-3",
@@ -336,7 +336,7 @@
       "progress": 25,
       "createdAt": "2026-03-04T12:45:00.000Z",
       "updatedAt": "2026-04-02T14:10:00.000Z",
-      "dueDate": "2026-05-15T17:00:00.000Z"
+      "dueDate": "2026-08-08T17:00:00.000Z"
     },
     {
       "id": "task-home-4",
@@ -348,7 +348,7 @@
       "tags": ["painting", "bedroom", "interior"],
       "createdAt": "2026-03-07T09:15:00.000Z",
       "updatedAt": "2026-03-07T09:15:00.000Z",
-      "dueDate": "2026-04-29T17:00:00.000Z"
+      "dueDate": "2026-07-25T17:00:00.000Z"
     },
     {
       "id": "task-home-5",
@@ -360,7 +360,7 @@
       "tags": ["plumbing", "bathroom", "fixtures"],
       "createdAt": "2026-03-08T11:40:00.000Z",
       "updatedAt": "2026-03-08T11:40:00.000Z",
-      "dueDate": "2026-05-05T17:00:00.000Z"
+      "dueDate": "2026-08-01T17:00:00.000Z"
     },
     {
       "id": "task-home-6",
@@ -372,7 +372,7 @@
       "tags": ["organization", "garage", "storage"],
       "createdAt": "2026-03-12T13:25:00.000Z",
       "updatedAt": "2026-03-12T13:25:00.000Z",
-      "dueDate": "2026-05-01T17:00:00.000Z"
+      "dueDate": "2026-07-30T17:00:00.000Z"
     },
     {
       "id": "task-learning-1",
@@ -385,7 +385,7 @@
       "progress": 70,
       "createdAt": "2026-02-25T09:00:00.000Z",
       "updatedAt": "2026-04-07T19:15:00.000Z",
-      "dueDate": "2026-04-26T17:00:00.000Z"
+      "dueDate": "2026-07-19T17:00:00.000Z"
     },
     {
       "id": "task-learning-2",
@@ -398,7 +398,7 @@
       "progress": 45,
       "createdAt": "2026-03-02T20:30:00.000Z",
       "updatedAt": "2026-04-06T21:00:00.000Z",
-      "dueDate": "2026-05-15T17:00:00.000Z"
+      "dueDate": "2026-08-16T17:00:00.000Z"
     },
     {
       "id": "task-learning-3",
@@ -410,7 +410,7 @@
       "tags": ["typescript", "programming", "practice"],
       "createdAt": "2026-03-07T18:45:00.000Z",
       "updatedAt": "2026-03-07T18:45:00.000Z",
-      "dueDate": "2026-04-30T17:00:00.000Z"
+      "dueDate": "2026-07-27T17:00:00.000Z"
     },
     {
       "id": "task-learning-4",
@@ -434,7 +434,7 @@
       "tags": ["nodejs", "cli", "project"],
       "createdAt": "2026-03-10T17:10:00.000Z",
       "updatedAt": "2026-03-10T17:10:00.000Z",
-      "dueDate": "2026-05-30T17:00:00.000Z"
+      "dueDate": "2026-09-05T17:00:00.000Z"
     },
     {
       "id": "task-learning-6",
@@ -446,7 +446,7 @@
       "tags": ["docker", "devops", "containers"],
       "createdAt": "2026-03-12T14:55:00.000Z",
       "updatedAt": "2026-03-12T14:55:00.000Z",
-      "dueDate": "2026-05-10T17:00:00.000Z"
+      "dueDate": "2026-08-09T17:00:00.000Z"
     },
     {
       "id": "task-learning-7",
@@ -459,7 +459,7 @@
       "progress": 30,
       "createdAt": "2026-03-04T08:30:00.000Z",
       "updatedAt": "2026-04-07T20:45:00.000Z",
-      "dueDate": "2026-05-20T17:00:00.000Z"
+      "dueDate": "2026-08-30T17:00:00.000Z"
     },
     {
       "id": "task-side-1",
@@ -496,7 +496,7 @@
       "progress": 60,
       "createdAt": "2026-03-07T09:30:00.000Z",
       "updatedAt": "2026-04-07T16:20:00.000Z",
-      "dueDate": "2026-04-18T17:00:00.000Z"
+      "dueDate": "2026-07-16T17:00:00.000Z"
     },
     {
       "id": "task-side-4",
@@ -509,7 +509,7 @@
       "progress": 40,
       "createdAt": "2026-03-08T11:45:00.000Z",
       "updatedAt": "2026-04-05T14:10:00.000Z",
-      "dueDate": "2026-04-24T17:00:00.000Z"
+      "dueDate": "2026-07-24T17:00:00.000Z"
     },
     {
       "id": "task-side-5",
@@ -521,7 +521,7 @@
       "tags": ["mobile", "responsive", "ui"],
       "createdAt": "2026-03-10T15:20:00.000Z",
       "updatedAt": "2026-03-10T15:20:00.000Z",
-      "dueDate": "2026-05-01T17:00:00.000Z"
+      "dueDate": "2026-07-31T17:00:00.000Z"
     },
     {
       "id": "task-side-6",
@@ -533,7 +533,7 @@
       "tags": ["analytics", "monitoring", "tracking"],
       "createdAt": "2026-03-12T10:35:00.000Z",
       "updatedAt": "2026-03-12T10:35:00.000Z",
-      "dueDate": "2026-05-15T17:00:00.000Z"
+      "dueDate": "2026-08-14T17:00:00.000Z"
     },
     {
       "id": "task-side-7",
@@ -545,7 +545,7 @@
       "tags": ["deployment", "hosting", "production"],
       "createdAt": "2026-03-14T12:50:00.000Z",
       "updatedAt": "2026-03-14T12:50:00.000Z",
-      "dueDate": "2026-05-10T17:00:00.000Z"
+      "dueDate": "2026-08-07T17:00:00.000Z"
     },
     {
       "id": "task-side-8",
@@ -557,7 +557,7 @@
       "tags": ["documentation", "guides", "help"],
       "createdAt": "2026-03-15T14:25:00.000Z",
       "updatedAt": "2026-03-15T14:25:00.000Z",
-      "dueDate": "2026-05-25T17:00:00.000Z"
+      "dueDate": "2026-08-21T17:00:00.000Z"
     }
   ],
   "settings": {
@@ -565,8 +565,6 @@
     "autoArchiveDays": 30,
     "enableNotifications": true,
     "enableKeyboardShortcuts": true,
-    "enableDebugMode": false,
-    "enableDeveloperMode": false,
     "currentBoardId": "default-board",
     "searchPreferences": {
       "defaultScope": "current-board",

@@ -1,0 +1,234 @@
+/* =====================================================================
+   Inkwell — design tokens & dark-mode cascade.
+   Version: 3.0.1
+   Default palette: Indigo & Cloud (cool stone + deep indigo).
+
+   This file contains ONLY:
+     • :root custom-property declarations — every color token is a
+       single light-dark(light, dark) declaration; alpha tints derive
+       from their base token via color-mix()
+     • The color-scheme mode machinery (auto via `light dark`, manual
+       override via [data-theme="dark"|"light"] on <html>, print
+       forced light)
+     • The dark-mode .select chevron overrides — the ONE surviving
+       Pattern B residue: light-dark() only accepts colors, and the
+       chevron is a background-image data URI (see BACKLOG for the
+       mask-image strategy that would retire it)
+
+   Component CSS lives in inkwell-components.css. inkwell.css is the
+   canonical entry; the legacy tokens.css is a deprecated alias.
+   Tailwind v4 consumers should import inkwell-theme.css instead.
+
+   Browser floor (3.0): light-dark() needs Chrome/Edge 123, Firefox
+   120, Safari 17.5 (all mid-2024). Pin v2.1.0 for older browsers.
+
+   Derivation rule: tints derive from their base via color-mix() by
+   default; a token is declared explicitly wherever the contrast gate
+   (scripts/check-contrast.mjs) forced a hand-tuned value. The system
+   separates structure (borders, type scale, spacing, motion,
+   components) from brand (colors). Three alternate palettes — clay,
+   sage, burgundy — live in /variants/ as standalone files that
+   override only the brand-layer tokens.
+   ===================================================================== */
+
+:root {
+  /* ---------- Surfaces ---------- */
+  --ivory: light-dark(#F4F4F0, #0F1018); /* page background — cool stone, barely warm */
+  --paper: light-dark(#FFFFFF, #181A24); /* card / panel surface */
+  --slate: light-dark(#13141B, #E8E8EE); /* primary text, slight cool undertone */
+  --oat:   light-dark(#DDDCDF, #2B2D38); /* tertiary surface, hover thumbnails */
+
+  /* ---------- Accent (saturated indigo, lifted to periwinkle in dark) ---------- */
+  --accent:   light-dark(#3B4A8C, #7A8AD1);
+  --accent-d: light-dark(#2A3768, #8B9ADB); /* hover/pressed — LIGHTENS in dark: paper label on old #6273C0 read 3.90:1; lifted value reads 6.39:1 */
+  /* Tints derive from --accent. Dark alpha 10% (was 18%) — dark
+     badge-accent text read 4.07:1 on the heavier tint; 10% reads 4.61:1. */
+  --accent-tint: light-dark(
+    color-mix(in srgb, var(--accent) 14%, transparent),
+    color-mix(in srgb, var(--accent) 10%, transparent)); /* badge bg, periwinkle on cool paper */
+  --accent-focus-ring: light-dark(
+    color-mix(in srgb, var(--accent) 18%, transparent),
+    color-mix(in srgb, var(--accent) 28%, transparent)); /* input focus halo */
+  --accent-strong-border: light-dark(
+    color-mix(in srgb, var(--accent) 50%, transparent),
+    color-mix(in srgb, var(--accent) 60%, transparent)); /* tinted chip border */
+  --accent-ink: var(--accent); /* accent as TEXT/outline — variants override when their accent is too light to read */
+  --on-accent:  var(--paper);  /* label color on accent fills (btn-primary, pill.sev, pagination current) */
+
+  /* ---------- Semantic (lifted in dark — same hue, more luminance) ---------- */
+  --olive: light-dark(#788C5D, #9CB07A); /* success, additions */
+  --olive-tint: light-dark(
+    color-mix(in srgb, var(--olive) 16%, transparent),
+    color-mix(in srgb, var(--olive) 18%, transparent));
+  --olive-strong-border: light-dark(
+    color-mix(in srgb, var(--olive) 45%, transparent),
+    color-mix(in srgb, var(--olive) 60%, transparent)); /* tinted success border */
+  --olive-dark: light-dark(#566740, #9CB07A); /* olive as text/solid fill (badge-success, stat-delta.up, pill.resolved) — 5.19:1 on olive-tint; dark = lifted --olive */
+  --rust:   light-dark(#B04A3F, #D27468); /* danger, deletions */
+  --rust-d: light-dark(#9A3F3F, #C96B5F); /* rust hover/pressed */
+  --rust-tint: light-dark(
+    color-mix(in srgb, var(--rust) 10%, transparent),
+    color-mix(in srgb, var(--rust) 18%, transparent)); /* danger alert background */
+  --rust-tint-border: light-dark(
+    color-mix(in srgb, var(--rust) 45%, transparent),
+    color-mix(in srgb, var(--rust) 60%, transparent)); /* danger alert border */
+  --rust-focus-ring: light-dark(
+    color-mix(in srgb, var(--rust) 18%, transparent),
+    color-mix(in srgb, var(--rust) 28%, transparent)); /* danger input focus halo */
+  --warning:      light-dark(#C78E3F, #D9A55F);
+  --warning-dark: light-dark(#85561E, #D9A55F); /* warning text — darker for contrast in light (5.41:1 on warning-tint); dark = lifted --warning */
+  --warning-tint: light-dark(
+    color-mix(in srgb, var(--warning) 16%, transparent),
+    color-mix(in srgb, var(--warning) 18%, transparent));
+  --warning-strong-border: light-dark(
+    color-mix(in srgb, var(--warning) 45%, transparent),
+    color-mix(in srgb, var(--warning) 60%, transparent)); /* tinted warning border */
+  --info: light-dark(#5C7CA3, #7C9FD2); /* informational */
+  --sky:  light-dark(#6A8CAF, #85A6CB); /* alt info / data viz */
+  --info-tint: light-dark(
+    color-mix(in srgb, var(--info) 16%, transparent),
+    color-mix(in srgb, var(--info) 18%, transparent)); /* info alert background */
+  --info-strong-border: light-dark(
+    color-mix(in srgb, var(--info) 45%, transparent),
+    color-mix(in srgb, var(--info) 60%, transparent)); /* info alert border */
+
+  /* ---------- Neutral scale (cool putty) ---------- */
+  --gray-100: light-dark(#EDEDEA, #1E1F29);
+  --gray-200: light-dark(#E1E1DE, #262732);
+  --gray-300: light-dark(#CFCFCC, #34363F);
+  --gray-400: light-dark(#88888E, #666874); /* control boundaries — 3.5:1 on paper, 3.2:1 on ivory light; 3.1:1 on dark paper (WCAG 1.4.11) */
+  --gray-500: light-dark(#6F6F75, #9A9AA0); /* WCAG AA: 5.05:1 on --paper, 4.64:1 on --ivory (light) */
+  --gray-700: light-dark(#3A3B41, #C0C0C7);
+
+  /* ---------- Typography ----------
+     Headline serif: leads with platform serifs we've QA'd at display sizes.
+     ui-serif was dropped in 1.4.0 — it resolves to wildly variable fonts
+     (New York on Apple, Noto Serif on Android, DejaVu Serif on many Linux
+     distros) and can't be QA'd. Iowan Old Style is preinstalled on
+     iOS/macOS and renders well at display weights; Palatino covers
+     Windows; Source Serif Pro picks up where it's installed; Georgia
+     is the final fallback and renders consistently everywhere. */
+  --serif: "Iowan Old Style", "Palatino", "Palatino Linotype",
+           "Source Serif Pro", Georgia, serif;
+  --sans:  system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono:  ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+
+  /* Type scale */
+  --t-display: 48px;
+  --t-h1:      32px;
+  --t-h2:      24px;
+  --t-h3:      19px;
+  --t-lede:    20px;  /* deck/intro paragraph — sits between h3 and body */
+  --t-body:    16px;
+  --t-small:   14px;
+  --t-caption: 12px;
+  --t-eyebrow: 11px;
+
+  /* ---------- Spacing (8px base, 4px micro) ---------- */
+  --sp-1:  4px;
+  --sp-2:  8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+  --sp-8: 64px;
+
+  /* ---------- Radius ---------- */
+  --r-xs:    4px;
+  --r-sm:    8px;
+  --r-md:   12px;
+  --r-lg:   14px;
+  --r-xl:   20px;
+  --r-pill: 999px;
+
+  /* ---------- Borders (signature 1.5px) ---------- */
+  --border:        1.5px solid var(--gray-300);
+  --border-strong: 1.5px solid var(--slate);
+  --border-hair:   1px   solid var(--gray-100);
+  --border-rule:   1px   solid var(--gray-300);
+  --control-border: 1.5px solid var(--gray-400);   /* checkbox/radio/switch — functional state boundary, >=3:1 */
+
+  /* ---------- Shadows (warm low-spread in light, deep pure black in dark) ---------- */
+  --shadow-sm:         0 1px 2px  light-dark(rgba(20, 20, 19, 0.06), rgba(0, 0, 0, 0.45));
+  --shadow-md:         0 4px 14px light-dark(rgba(20, 20, 19, 0.08), rgba(0, 0, 0, 0.50));
+  --shadow-lg:         0 12px 28px light-dark(rgba(20, 20, 19, 0.12), rgba(0, 0, 0, 0.55));
+  --shadow-card-hover: 0 10px 30px light-dark(rgba(20, 20, 19, 0.10), rgba(0, 0, 0, 0.50));
+
+  /* ---------- Backdrop (dialog::backdrop, modal scrims) ---------- */
+  --backdrop: light-dark(rgba(15, 16, 24, 0.55), rgba(0, 0, 0, 0.6)); /* pure-black scrim on dark surfaces */
+
+  /* ---------- TLDR code-chip tint ----------
+     Subtle overlay on the inverted .tldr surface. The .tldr panel flips
+     light↔dark with the theme (it always shows the *opposite* of body),
+     so this tint inverts too: white-at-8% on dark, black-at-8% on light. */
+  --tldr-code-tint: light-dark(rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.08));
+
+  /* ---------- Motion ---------- */
+  --t-fast:   120ms;
+  --t-base:   150ms;
+  --t-slow:   300ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ---------- Layout ---------- */
+  --content-narrow:  820px;
+  --content-default: 920px;
+  --content-wide:   1120px;
+  --page-pad-x:      24px;
+
+  /* ---------- Z-index scale ---------- */
+  --z-base:    1;
+  --z-raised: 10;
+  --z-sticky: 20;
+  --z-overlay: 30;
+  --z-modal:  50;
+
+  /* Auto mode: light-dark() follows the OS preference */
+  color-scheme: light dark;
+}
+
+/* =====================================================================
+   Mode machinery — Pattern B, expressed as color-scheme flips.
+   • auto: color-scheme `light dark` on :root, light-dark() follows OS
+   • data-theme="light" → forces light regardless of OS preference
+   • data-theme="dark"  → forces dark, screen-only so print stays light
+   ===================================================================== */
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+/* @media screen: keep the manual dark theme out of print (print is always light) */
+@media screen {
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+  }
+}
+
+@media print {
+  :root {
+    color-scheme: light;
+  }
+}
+
+/* =====================================================================
+   Select chevron — the one surviving Pattern B residue.
+   The base .select rule in inkwell-components.css uses a data URI SVG
+   with a hardcoded stroke color. light-dark() only accepts <color>
+   values and data URIs can't reference CSS variables, so the dark
+   chevron needs explicit dark-active selectors (auto + manual). The
+   stroke is the dark --gray-500 (#9A9AA0). Specificity is locked
+   above the base rule so the dark chevron wins regardless of cascade
+   order.
+   ===================================================================== */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .select {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'><path d='M1 1.5L6 6.5L11 1.5' stroke='%239A9AA0' stroke-width='1.5' stroke-linecap='round'/></svg>");
+  }
+}
+@media screen {
+  :root[data-theme="dark"] .select {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'><path d='M1 1.5L6 6.5L11 1.5' stroke='%239A9AA0' stroke-width='1.5' stroke-linecap='round'/></svg>");
+  }
+}
