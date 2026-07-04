@@ -77,7 +77,7 @@ src/
 Three main Zustand stores with IndexedDB persistence:
 1. **useBoardStore**: Board CRUD, selection, import/export
 2. **useTaskStore**: Task lifecycle, search, filtering, archive
-3. **useSettingsStore**: Theme, auto-archive, accessibility, debug mode
+3. **useSettingsStore**: Theme, auto-archive, accessibility, search preferences
 
 ### Database Layer
 - IndexedDB wrapper with TaskDatabase class (async/await API)
@@ -280,3 +280,13 @@ Five canonical triage roles map to identically-named labels (`needs-triage`, `ne
 
 Single-context: one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
 
+## OpenWiki
+
+This repository has documentation located in the /openwiki directory.
+
+Start here:
+- [OpenWiki quickstart](openwiki/quickstart.md)
+
+OpenWiki includes repository overview, architecture notes, workflows, domain concepts, operations, integrations, testing guidance, and source maps.
+
+When working in this repository, read the OpenWiki quickstart first, then follow its links to the relevant architecture, workflow, domain, operation, and testing notes.

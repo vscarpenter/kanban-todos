@@ -100,7 +100,6 @@ Implement comprehensive end-to-end tests using Playwright to cover all major use
 - Enable auto-archive with custom days
 - Disable auto-archive
 - Toggle accessibility mode
-- Toggle debug mode
 - Reset all settings to defaults
 - Settings validation (invalid auto-archive days)
 

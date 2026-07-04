@@ -423,8 +423,6 @@ export interface Settings {
   autoArchiveDays: number;
   enableNotifications: boolean;
   enableKeyboardShortcuts: boolean;
-  enableDebugMode: boolean;
-  enableDeveloperMode: boolean;
   currentBoardId?: string;
   searchPreferences: {
     defaultScope: SearchScope;

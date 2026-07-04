@@ -1,0 +1,21 @@
+/* =====================================================================
+   Inkwell — design system entry.
+   Version: 3.0.1
+   Default palette: Indigo & Cloud (cool stone + deep indigo).
+
+   Link this file from <head>:
+       <link rel="stylesheet" href="inkwell.css">
+
+   Tokens stay unlayered so custom properties resolve everywhere.
+   Components import into @layer inkwell, so YOUR unlayered CSS always
+   overrides Inkwell components without specificity fights. If you load
+   a second reset (normalize etc.), import it into a lower layer or
+   drop it — Inkwell ships its own.
+
+   Tailwind v4 consumers: use inkwell-theme.css instead (it assigns
+   its own layer). Legacy consumers of tokens.css: that file is now a
+   deprecated alias of this one (removal slated for 4.0).
+   ===================================================================== */
+
+@import './inkwell-tokens.css';
+@import './inkwell-components.css' layer(inkwell);

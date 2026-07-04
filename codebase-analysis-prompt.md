@@ -64,7 +64,8 @@ Report structure:
 4. Prioritized 30, 60, 90 day remediation roadmap
 
 Output requirements:
-- Save the report as docs/codebase-analysis-report.html and upload to https://ht-ml.app/
+- Save the report as docs/codebase-analysis-report.html 
+- Read https://raw.githubusercontent.com/vscarpenter/inkwell/main/agent-instructions.md and apply the Inkwell Design System 
 - Make it executive ready: clean tables, severity color coding, collapsible
   detail sections, and anchored navigation
 - Include a "Methodology and limitations" section so readers know what was
