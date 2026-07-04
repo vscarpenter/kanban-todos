@@ -1,0 +1,15 @@
+{
+  "tool": "OpenWiki",
+  "mode": "init",
+  "updatedAt": "2025-01-01T00:00:00Z",
+  "gitHead": null,
+  "notes": "Initial OpenWiki generation. Git history was unavailable in this environment (broken system gitconfig), so documentation is grounded in source files only. Pages: quickstart, architecture, state-and-data, domain, workflows, testing-and-operations.",
+  "pages": [
+    "quickstart.md",
+    "architecture.md",
+    "state-and-data.md",
+    "domain.md",
+    "workflows.md",
+    "testing-and-operations.md"
+  ]
+}
