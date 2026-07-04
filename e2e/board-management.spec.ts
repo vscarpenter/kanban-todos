@@ -70,6 +70,24 @@ test.describe('Board Management', () => {
     await expect(boardItem(page, boardName)).toHaveCount(0);
   });
 
+  test('deletes board with tasks after confirmation', async ({ page }) => {
+    const boardName = 'Board With Tasks';
+
+    await createBoard(page, boardName);
+    await selectBoard(page, boardName);
+    await createTask(page, 'Task on Board');
+    await createTask(page, 'Second Task');
+
+    await deleteBoard(page, boardName);
+
+    await expect(boardItem(page, boardName)).toHaveCount(0);
+    await expect(page.locator('.task-card', { hasText: 'Task on Board' })).toHaveCount(0);
+    await expect(page.locator('.task-card', { hasText: 'Second Task' })).toHaveCount(0);
+
+    await page.reload();
+    await expect(boardItem(page, boardName)).toHaveCount(0);
+  });
+
   test('cannot delete default board', async ({ page }) => {
     await openBoardMenu(page, 'Work Tasks');
     await expect(page.getByRole('menuitem', { name: 'Delete Board' })).toBeDisabled();

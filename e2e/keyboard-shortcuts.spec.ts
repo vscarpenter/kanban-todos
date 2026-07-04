@@ -77,6 +77,18 @@ test.describe('Keyboard Shortcuts', () => {
     await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
   });
 
+  test('press Ctrl+2 switches to second board', async ({ page }) => {
+    const secondBoard = 'Second Board';
+
+    await createBoard(page, secondBoard);
+    await selectBoard(page, 'Work Tasks');
+    await expect(page.getByRole('heading', { name: 'Work Tasks' })).toBeVisible();
+
+    await page.keyboard.press('Control+2');
+
+    await expect(page.getByRole('heading', { name: secondBoard })).toBeVisible();
+  });
+
   test('press Cmd+1 switches to first board', async ({ page }) => {
     await createBoard(page, 'Second Board');
     await selectBoard(page, 'Second Board');

@@ -33,6 +33,23 @@ test.describe('Mobile and Responsive', () => {
     await expect(page.getByRole('button', { name: /Open sidebar|Close sidebar/ })).toBeVisible();
   });
 
+  test('sidebar toggle closes and reopens the mobile sidebar', async ({ page }) => {
+    await boot(page, MOBILE);
+
+    const toggle = page.getByRole('button', { name: /Open sidebar|Close sidebar/ });
+
+    // Sidebar starts open — Settings should be reachable.
+    await expect(page.getByRole('button', { name: 'Settings', exact: true })).toBeVisible();
+
+    await toggle.click();
+    await expect(page.getByRole('button', { name: 'Open sidebar' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Settings', exact: true })).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Open sidebar' }).click();
+    await expect(page.getByRole('button', { name: 'Close sidebar' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Settings', exact: true })).toBeVisible();
+  });
+
   test('sidebar toggle is hidden on desktop', async ({ page }) => {
     await boot(page, DESKTOP);
 
