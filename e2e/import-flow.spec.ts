@@ -115,6 +115,75 @@ test.describe('Import Flow', () => {
     await expect(page.getByRole('alert')).toBeVisible({ timeout: 5000 });
   });
 
+  test('shows error when task references a non-existent board', async ({ page }) => {
+    await openImport(page);
+
+    const payload = buildPayload({
+      boards: [],
+      tasks: [
+        {
+          id: 'orphaned-task-1',
+          title: 'Orphaned Task',
+          status: 'todo',
+          boardId: 'missing-board-id',
+          priority: 'medium',
+          tags: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      ],
+    });
+
+    await page.locator('input[type="file"]#import-file-input').setInputFiles({
+      name: 'orphaned-task.json',
+      mimeType: 'application/json',
+      buffer: payloadToBuffer(payload),
+    });
+
+    await expect(page.getByRole('alert')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/non-existent board/i)).toBeVisible();
+    await expect(page.getByRole('button', { name: /Review import/i })).toHaveCount(0);
+  });
+
+  test('imports board description from backup', async ({ page }) => {
+    await openImport(page);
+
+    const boardId = 'described-board-' + Date.now();
+    const payload = buildPayload({
+      boards: [
+        {
+          id: boardId,
+          name: 'Described Import Board',
+          description: 'Imported board description',
+          color: '#6B4A87',
+          isDefault: false,
+          order: 50,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      ],
+      tasks: [],
+    });
+
+    await uploadImportFile(page, payload);
+    await page.getByRole('button', { name: /Start import/i }).click();
+    await expect(page.getByRole('heading', { name: 'Import Complete!' })).toBeVisible({
+      timeout: 10_000,
+    });
+    await page.getByRole('button', { name: /Close import/i }).click();
+
+    const item = page
+      .locator('[role="button"]', { has: page.getByText('Described Import Board', { exact: true }) })
+      .filter({ hasNotText: 'Move ' })
+      .first();
+    await expect(item).toBeVisible();
+    await expect(item).toContainText('Imported board description');
+
+    await page.reload();
+    await expect(item).toBeVisible();
+    await expect(item).toContainText('Imported board description');
+  });
+
   test('preview Back button returns to file select step', async ({ page }) => {
     await openImport(page);
 
@@ -151,8 +220,6 @@ test.describe('Import Flow', () => {
         autoArchiveDays: 30,
         enableNotifications: false,
         enableKeyboardShortcuts: true,
-        enableDebugMode: false,
-        enableDeveloperMode: false,
         searchPreferences: { defaultScope: 'current-board', rememberScope: true },
         accessibility: { highContrast: false, reduceMotion: false, fontSize: 'medium' },
       },
