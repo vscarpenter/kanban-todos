@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Settings, Trash2 } from "@/lib/icons";
@@ -39,6 +40,26 @@ export function ConfirmationDialog({
   const handleCancel = () => {
     onOpenChange(false);
   };
+
+  useEffect(() => {
+    if (!open || loading) {
+      return;
+    }
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      onOpenChange(false);
+    };
+
+    window.addEventListener('keydown', handleEscape, true);
+    return () => window.removeEventListener('keydown', handleEscape, true);
+  }, [loading, onOpenChange, open]);
 
   const getIcon = () => {
     switch (type) {

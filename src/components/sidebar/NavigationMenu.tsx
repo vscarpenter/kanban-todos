@@ -29,7 +29,7 @@ function NavItem({ icon: Icon, label, onClick }: NavItemProps) {
     <button
       type="button"
       onClick={onClick}
-      className="w-full flex items-center gap-2.5 rounded-md px-2.5 py-2 text-left transition-colors hover:bg-[var(--paper-2)]"
+      className="flex min-h-[45px] w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left transition-colors hover:bg-[var(--paper-2)] md:min-h-0"
       style={{
         fontSize: "12.5px",
         fontWeight: 500,

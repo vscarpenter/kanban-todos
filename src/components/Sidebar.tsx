@@ -22,7 +22,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
       <Button
         variant="ghost"
         size="sm"
-        className="fixed top-4 left-4 z-50 md:hidden"
+        className="fixed top-4 left-4 z-50 min-h-[45px] min-w-[45px] md:hidden"
         onClick={onToggle}
         aria-label={isOpen ? "Close sidebar" : "Open sidebar"}
       >

@@ -131,10 +131,11 @@ export function KanbanBoard() {
           <Button
             variant="ghost"
             size="sm"
-            className="fixed top-4 left-4 z-50 bg-background/80 backdrop-blur-sm border border-border shadow-lg"
+            className="fixed top-4 left-4 z-50 min-h-[45px] min-w-[45px] bg-background/80 backdrop-blur-sm border border-border shadow-lg"
             onClick={() => setIsSidebarOpen(true)}
+            aria-label="Open sidebar"
           >
-            <Menu className="h-4 w-4" />
+            <Menu className="h-4 w-4" aria-hidden="true" />
           </Button>
         )}
         

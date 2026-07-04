@@ -132,7 +132,7 @@ export function BoardView() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 px-8 pb-8">
+      <div className="flex-1 px-4 pb-8 sm:px-6 lg:px-8">
         {/* Empty States */}
         {isCrossBoardSearch && displayTasks.length === 0 && (
           <EmptyState
@@ -152,7 +152,7 @@ export function BoardView() {
         )}
 
         {/* Kanban Board */}
-        {displayTasks.length > 0 && (
+        {(displayTasks.length > 0 || (!isCrossBoardSearch && !isSearchActive)) && (
           <KanbanBoard
             tasks={displayTasks}
             onAddTask={handleAddTask}

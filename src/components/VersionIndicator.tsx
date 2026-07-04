@@ -165,7 +165,7 @@ function ThemePillButton({ label, isActive, onClick, icon }: ThemePillButtonProp
       onClick={onClick}
       aria-label={label}
       aria-pressed={isActive}
-      className="inline-flex h-[22px] w-[22px] items-center justify-center rounded-full transition-all"
+      className="inline-flex h-[45px] w-[45px] items-center justify-center rounded-full transition-all md:h-[22px] md:w-[22px]"
       style={{
         background: isActive ? "var(--paper-card)" : "transparent",
         boxShadow: isActive ? "var(--shadow-xs)" : "none",

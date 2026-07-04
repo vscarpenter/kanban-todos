@@ -51,7 +51,7 @@ function KanbanColumn({ title, tasks, status, boards, currentBoardId, highlighte
   return (
     <div
       ref={setNodeRef}
-      className={`kanban-column min-h-0 min-w-full md:min-w-0 transition-colors duration-200 ${className || ''}`}
+      className={`kanban-column min-h-0 min-w-full lg:min-w-0 transition-colors duration-200 ${className || ''}`}
       style={{
         height: "calc(100vh - 280px)",
         ...(isOver
@@ -91,10 +91,10 @@ function KanbanColumn({ title, tasks, status, boards, currentBoardId, highlighte
               e.stopPropagation();
               onAddTask?.(status);
             }}
-            className="inline-flex h-10 w-10 md:h-6 md:w-6 items-center justify-center rounded-md transition-colors hover:bg-[var(--paper-1)]"
+            className="inline-flex h-[45px] w-[45px] lg:h-6 lg:w-6 items-center justify-center rounded-md transition-colors hover:bg-[var(--paper-1)]"
             style={{ color: "var(--ink-4)" }}
           >
-            <Plus className="h-5 w-5 md:h-3.5 md:w-3.5" />
+            <Plus className="h-5 w-5 lg:h-3.5 lg:w-3.5" />
           </button>
         )}
       </div>
@@ -140,7 +140,7 @@ function KanbanColumn({ title, tasks, status, boards, currentBoardId, highlighte
                       e.stopPropagation();
                       onAddTask(status);
                     }}
-                    className="mt-4 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                    className="mt-4 min-h-[45px] px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
                     style={{
                       backgroundColor: "var(--primary)",
                       color: "var(--primary-foreground)",

@@ -584,15 +584,7 @@
   /* Enhanced button hover states */
   button:not(:disabled) {
     transition: background-color 150ms ease, color 150ms ease,
-                transform 100ms ease, box-shadow 150ms ease;
-  }
-
-  button:not(:disabled):hover {
-    transform: translateY(-1px);
-  }
-
-  button:not(:disabled):active {
-    transform: translateY(0);
+                box-shadow 150ms ease;
   }
 
   /* Disable hover effects on touch devices */
@@ -603,9 +595,6 @@
       border-color: var(--gray-300);
     }
 
-    button:not(:disabled):hover {
-      transform: none;
-    }
   }
 }
 

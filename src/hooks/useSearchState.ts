@@ -24,6 +24,7 @@ export function useSearchState() {
   const [isUserTyping, setIsUserTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const prevFiltersRef = useRef(filters);
+  const hasInitializedScopeRef = useRef(false);
 
   // Derive localFilters from store filters - always in sync
   const localFilters = useMemo(() => filters, [filters]);
@@ -39,9 +40,16 @@ export function useSearchState() {
 
   // Initialize cross-board search from settings
   useEffect(() => {
-    if (!settingsLoading && settings.searchPreferences?.rememberScope) {
-      setCrossBoardSearch(settings.searchPreferences.defaultScope === 'all-boards');
+    if (
+      hasInitializedScopeRef.current ||
+      settingsLoading ||
+      !settings.searchPreferences?.rememberScope
+    ) {
+      return;
     }
+
+    setCrossBoardSearch(settings.searchPreferences.defaultScope === 'all-boards');
+    hasInitializedScopeRef.current = true;
   }, [settings.searchPreferences, setCrossBoardSearch, settingsLoading]);
 
   // Cleanup timeout on unmount

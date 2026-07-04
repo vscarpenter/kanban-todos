@@ -59,13 +59,31 @@ export function SearchFilterPopover({
   onClearFilters
 }: SearchFilterPopoverProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const activeFilterCount =
+    (filters.search ? 1 : 0) +
+    (filters.status ? 1 : 0) +
+    (filters.priority ? 1 : 0) +
+    filters.tags.length +
+    (filters.crossBoardSearch ? 1 : 0);
+
+  const handleClearFilters = () => {
+    if (!hasActiveFilters) return;
+    onClearFilters();
+    setIsOpen(false);
+  };
+
+  const handleClearFiltersKeyDown = (event: React.KeyboardEvent<HTMLSpanElement>) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    handleClearFilters();
+  };
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <button
           type="button"
-          aria-label={`Open filters menu${hasActiveFilters ? ` (${Object.values(filters).filter(Boolean).length} active)` : ''}`}
+          aria-label={`Open filters menu${hasActiveFilters ? ` (${activeFilterCount} active)` : ''}`}
           aria-expanded={isOpen}
           aria-haspopup="dialog"
           className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 md:px-3 md:py-2 transition-colors touch-target-mobile"
@@ -79,7 +97,7 @@ export function SearchFilterPopover({
           }}
         >
           <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
-          Filters
+          <span className="hidden sm:inline">Filters</span>
           {hasActiveFilters && (
             <span
               className="font-mono inline-flex items-center justify-center rounded px-1.5"
@@ -91,9 +109,9 @@ export function SearchFilterPopover({
                 minWidth: "18px",
                 fontFeatureSettings: '"tnum"',
               }}
-              aria-label={`${Object.values(filters).filter(Boolean).length} active filters`}
+              aria-label={`${activeFilterCount} active filters`}
             >
-              {Object.values(filters).filter(Boolean).length}
+              {activeFilterCount}
             </span>
           )}
         </button>
@@ -102,20 +120,24 @@ export function SearchFilterPopover({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <span className="label-eyebrow">Filter</span>
-            {hasActiveFilters && (
-              <button
-                type="button"
-                onClick={onClearFilters}
-                className="transition-colors hover:text-[var(--ink-1)] px-2 py-1 touch-target-mobile"
-                style={{
-                  fontSize: "11.5px",
-                  fontWeight: 500,
-                  color: "var(--ink-3)",
-                }}
-              >
-                Clear all
-              </button>
-            )}
+            <span
+              role="button"
+              tabIndex={hasActiveFilters ? 0 : -1}
+              onClick={handleClearFilters}
+              onKeyDown={handleClearFiltersKeyDown}
+              aria-disabled={!hasActiveFilters}
+              aria-hidden={!hasActiveFilters}
+              aria-label="Reset filters"
+              className="inline-flex cursor-pointer items-center rounded px-2 py-1 transition-colors hover:text-[var(--ink-1)] aria-disabled:pointer-events-none aria-disabled:invisible"
+              style={{
+                fontSize: "11.5px",
+                fontWeight: 500,
+                color: "var(--ink-3)",
+                minHeight: "32px",
+              }}
+            >
+              Reset
+            </span>
           </div>
 
           {/* Search Scope Toggle */}

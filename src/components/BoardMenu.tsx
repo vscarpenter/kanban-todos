@@ -49,7 +49,7 @@ export function BoardMenu({ board }: BoardMenuProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="h-[45px] w-[45px] p-0 opacity-100 transition-opacity md:h-6 md:w-6 md:opacity-0 md:group-hover:opacity-100"
             onClick={(e) => e.stopPropagation()} // Prevent board selection when clicking menu
           >
             <MoreHorizontal className="h-3 w-3" />

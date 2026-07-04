@@ -88,7 +88,7 @@ export function KanbanBoard({ tasks, onAddTask }: KanbanBoardProps) {
         />
 
         {/* Column Navigator - Mobile Only */}
-        <div className="md:hidden">
+        <div className="lg:hidden">
           <ColumnTabs
             activeColumn={activeColumn}
             onColumnChange={handleColumnTabChange}
@@ -104,8 +104,8 @@ export function KanbanBoard({ tasks, onAddTask }: KanbanBoardProps) {
             can drop into another column without needing to tab first.
             Desktop: 3-col grid always. */}
         <div
-          className={`flex md:grid md:grid-cols-3 gap-6 min-h-full board-animate-in ${
-            drag.isDragging ? 'md:grid-cols-3 !grid grid-cols-3 !gap-2 scale-[0.85]' : ''
+          className={`flex lg:grid lg:grid-cols-3 gap-6 min-h-full board-animate-in ${
+            drag.isDragging ? 'lg:grid-cols-3 !grid grid-cols-3 !gap-2 scale-[0.85]' : ''
           }`}
           role="region"
           aria-label="Kanban board columns"
@@ -119,7 +119,7 @@ export function KanbanBoard({ tasks, onAddTask }: KanbanBoardProps) {
             highlightedTaskId={highlightedTaskId}
             isCrossBoardSearch={isCrossBoardSearch}
             onAddTask={onAddTask}
-            className={activeColumn === 'todo' ? 'flex' : 'hidden md:flex'}
+            className={activeColumn === 'todo' ? 'flex' : 'hidden lg:flex'}
           />
 
           <KanbanColumn
@@ -131,7 +131,7 @@ export function KanbanBoard({ tasks, onAddTask }: KanbanBoardProps) {
             highlightedTaskId={highlightedTaskId}
             isCrossBoardSearch={isCrossBoardSearch}
             onAddTask={onAddTask}
-            className={activeColumn === 'in-progress' ? 'flex' : 'hidden md:flex'}
+            className={activeColumn === 'in-progress' ? 'flex' : 'hidden lg:flex'}
           />
 
           <KanbanColumn
@@ -143,7 +143,7 @@ export function KanbanBoard({ tasks, onAddTask }: KanbanBoardProps) {
             highlightedTaskId={highlightedTaskId}
             isCrossBoardSearch={isCrossBoardSearch}
             onAddTask={onAddTask}
-            className={activeColumn === 'done' ? 'flex' : 'hidden md:flex'}
+            className={activeColumn === 'done' ? 'flex' : 'hidden lg:flex'}
           />
         </div>
       </div>

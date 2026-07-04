@@ -1,7 +1,7 @@
 import { test as base, expect, type Page, type Locator } from '@playwright/test';
 
 /**
- * Clears IndexedDB and localStorage, then marks the app as "already
+ * Clears localStorage on first page load, then marks the app as "already
  * visited" so the test lands on the board instead of the onboarding page.
  *
  * This runs via `page.addInitScript`, which Playwright re-executes on every
@@ -12,6 +12,11 @@ import { test as base, expect, type Page, type Locator } from '@playwright/test'
  * document), so it's used here as a "have we already reset this test?"
  * marker: the clear only runs the first time the init script fires.
  *
+ * IndexedDB cleanup is intentionally not started here. Playwright creates a
+ * fresh browser context for every test, and an async deleteDatabase() launched
+ * from an init script can race the app's own IndexedDB initialization and
+ * erase settings after a test saves them.
+ *
  * Exported standalone (not just baked into the `page` fixture below) for
  * specs that need isolation but can't use the default auto-navigate
  * behavior — e.g. a test that must call `page.emulateMedia()` before its
@@ -19,6 +24,8 @@ import { test as base, expect, type Page, type Locator } from '@playwright/test'
  */
 export async function resetAppStorage(page: Page): Promise<void> {
   const resetToken = `e2e-reset-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+  await page.context().clearCookies();
 
   await page.addInitScript((token: string) => {
     if (window.name !== token) {
@@ -28,15 +35,6 @@ export async function resetAppStorage(page: Page): Promise<void> {
         localStorage.clear();
       } catch {
         // localStorage unavailable (private browsing) - nothing to clear.
-      }
-
-      if (typeof indexedDB !== 'undefined' && typeof indexedDB.databases === 'function') {
-        indexedDB
-          .databases()
-          .then((dbs) => Promise.all(dbs.map((db) => db.name && indexedDB.deleteDatabase(db.name))))
-          .catch(() => {
-            // Best-effort cleanup; a failure here shouldn't fail the test.
-          });
       }
     }
 

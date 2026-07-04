@@ -33,7 +33,7 @@ export function SearchInput({
   onBlur,
 }: SearchInputProps) {
   return (
-    <div className="flex-1 max-w-[540px] relative">
+    <div className="relative min-w-0 flex-1 max-w-[540px]">
       <div
         className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors"
         style={{
@@ -60,7 +60,7 @@ export function SearchInput({
           aria-describedby={error ? "search-error" : filters.search ? "search-results" : undefined}
           role="searchbox"
           aria-autocomplete="list"
-          className="flex-1 bg-transparent outline-none border-0 disabled:opacity-75"
+          className="min-w-0 flex-1 bg-transparent outline-none border-0 disabled:opacity-75"
           style={{
             fontSize: "13px",
             color: "var(--ink-1)",
@@ -81,7 +81,7 @@ export function SearchInput({
           )}
 
           <kbd
-            className="font-mono inline-flex items-center px-1.5 py-px rounded"
+            className="font-mono hidden items-center px-1.5 py-px rounded sm:inline-flex"
             style={{
               fontSize: "10.5px",
               color: "var(--ink-4)",
