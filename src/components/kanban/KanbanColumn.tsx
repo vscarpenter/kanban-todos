@@ -72,13 +72,10 @@ function KanbanColumn({ title, tasks, status, boards, currentBoardId, highlighte
             style={{ background: STATUS_DOT_COLOR[status] }}
             aria-hidden="true"
           />
-          <span
-            style={{
-              fontSize: "13px",
-              fontWeight: 600,
-              color: "var(--ink-1)",
-            }}
-          >
+          {/* Mono label voice, matching the count pill beside it — these two
+              sat in one row using two different type systems. Keeps ink-1
+              rather than the label default, as the column's primary name. */}
+          <span className="label-eyebrow" style={{ color: "var(--ink-1)" }}>
             {title}
           </span>
           <span className="kanban-column__count">{tasks.length}</span>

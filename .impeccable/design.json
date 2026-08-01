@@ -1,0 +1,265 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-31T00:00:00Z",
+  "title": "Design System: Cascade",
+  "extensions": {
+    "colorMeta": {
+      "ink-indigo": {
+        "role": "primary",
+        "displayName": "Ink Indigo",
+        "canonical": "#3B4A8C",
+        "darkModeValue": "#7A8AD1",
+        "note": "Lifts to periwinkle in dark mode rather than darkening; a saturated indigo goes muddy against near-black.",
+        "tonalRamp": ["oklch(0.15 0.06 273)", "oklch(0.24 0.09 273)", "oklch(0.32 0.11 273)", "oklch(0.40 0.12 273)", "oklch(0.52 0.12 273)", "oklch(0.65 0.10 273)", "oklch(0.80 0.06 273)", "oklch(0.94 0.02 273)"]
+      },
+      "ink-indigo-deep": {
+        "role": "primary",
+        "displayName": "Ink Indigo Deep",
+        "canonical": "#2A3768",
+        "darkModeValue": "#6273C0",
+        "note": "Border and pressed companion to the accent.",
+        "tonalRamp": ["oklch(0.13 0.05 273)", "oklch(0.21 0.08 273)", "oklch(0.29 0.10 273)", "oklch(0.37 0.11 273)", "oklch(0.48 0.11 273)", "oklch(0.62 0.09 273)", "oklch(0.78 0.06 273)", "oklch(0.93 0.02 273)"]
+      },
+      "cool-stone": {
+        "role": "neutral",
+        "displayName": "Cool Stone",
+        "canonical": "#F4F4F0",
+        "darkModeValue": "#0F1018",
+        "note": "The page. Leans cool and faintly green — never a warm cream.",
+        "tonalRamp": ["oklch(0.17 0.005 110)", "oklch(0.28 0.005 110)", "oklch(0.40 0.005 110)", "oklch(0.52 0.005 110)", "oklch(0.64 0.005 110)", "oklch(0.76 0.005 110)", "oklch(0.87 0.005 110)", "oklch(0.96 0.005 110)"]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#FFFFFF",
+        "darkModeValue": "#181A24",
+        "note": "Card and panel surface — the material that sits on the stone.",
+        "tonalRamp": ["oklch(0.18 0.008 280)", "oklch(0.29 0.008 280)", "oklch(0.41 0.006 280)", "oklch(0.53 0.005 280)", "oklch(0.65 0.004 280)", "oklch(0.78 0.003 280)", "oklch(0.90 0.002 280)", "oklch(1.00 0 0)"]
+      },
+      "graphite": {
+        "role": "neutral",
+        "displayName": "Graphite",
+        "canonical": "#13141B",
+        "darkModeValue": "#E8E8EE",
+        "note": "Primary text with a cool undertone; also the hover border color, acting as the darkest rule available.",
+        "tonalRamp": ["oklch(0.17 0.015 280)", "oklch(0.28 0.014 280)", "oklch(0.39 0.012 280)", "oklch(0.50 0.010 280)", "oklch(0.62 0.008 280)", "oklch(0.74 0.006 280)", "oklch(0.86 0.004 280)", "oklch(0.95 0.002 280)"]
+      },
+      "oat": {
+        "role": "neutral",
+        "displayName": "Oat",
+        "canonical": "#DDDCDF",
+        "darkModeValue": "#2B2D38",
+        "note": "Tertiary surface and hover thumbnails.",
+        "tonalRamp": ["oklch(0.18 0.006 290)", "oklch(0.29 0.006 290)", "oklch(0.41 0.006 290)", "oklch(0.53 0.005 290)", "oklch(0.65 0.005 290)", "oklch(0.77 0.005 290)", "oklch(0.88 0.005 290)", "oklch(0.96 0.004 290)"]
+      },
+      "putty-300": {
+        "role": "neutral",
+        "displayName": "Putty 300",
+        "canonical": "#CFCFCC",
+        "darkModeValue": "#34363F",
+        "note": "The default rule color. The 1.5px signature border is this value at rest.",
+        "tonalRamp": ["oklch(0.18 0.004 280)", "oklch(0.29 0.004 280)", "oklch(0.41 0.004 280)", "oklch(0.53 0.004 280)", "oklch(0.65 0.004 280)", "oklch(0.76 0.004 280)", "oklch(0.85 0.004 280)", "oklch(0.94 0.003 280)"]
+      },
+      "putty-500": {
+        "role": "neutral",
+        "displayName": "Putty 500",
+        "canonical": "#6F6F75",
+        "darkModeValue": "#9A9AA0",
+        "note": "Muted text and every mono label.",
+        "tonalRamp": ["oklch(0.18 0.006 285)", "oklch(0.29 0.006 285)", "oklch(0.40 0.006 285)", "oklch(0.51 0.006 285)", "oklch(0.62 0.006 285)", "oklch(0.74 0.005 285)", "oklch(0.86 0.004 285)", "oklch(0.95 0.003 285)"]
+      },
+      "olive": {
+        "role": "tertiary",
+        "displayName": "Olive",
+        "canonical": "#788C5D",
+        "darkModeValue": "#9CB07A",
+        "note": "Success and the done status dot. Vegetal, never a signal green.",
+        "tonalRamp": ["oklch(0.20 0.03 130)", "oklch(0.30 0.045 130)", "oklch(0.40 0.055 130)", "oklch(0.50 0.062 130)", "oklch(0.58 0.062 130)", "oklch(0.70 0.055 130)", "oklch(0.83 0.035 130)", "oklch(0.94 0.015 130)"]
+      },
+      "rust": {
+        "role": "tertiary",
+        "displayName": "Rust",
+        "canonical": "#B04A3F",
+        "darkModeValue": "#D27468",
+        "note": "Destructive actions, errors, overdue. Earthy, not emergency red.",
+        "tonalRamp": ["oklch(0.20 0.05 32)", "oklch(0.30 0.08 32)", "oklch(0.40 0.10 32)", "oklch(0.52 0.12 32)", "oklch(0.62 0.11 32)", "oklch(0.73 0.09 32)", "oklch(0.85 0.05 32)", "oklch(0.95 0.02 32)"]
+      },
+      "ochre": {
+        "role": "tertiary",
+        "displayName": "Ochre",
+        "canonical": "#C78E3F",
+        "darkModeValue": "#D9A55F",
+        "note": "Warnings and the in-progress status dot.",
+        "tonalRamp": ["oklch(0.22 0.04 75)", "oklch(0.32 0.06 75)", "oklch(0.43 0.08 75)", "oklch(0.55 0.09 75)", "oklch(0.67 0.10 75)", "oklch(0.78 0.08 75)", "oklch(0.88 0.05 75)", "oklch(0.96 0.02 75)"]
+      },
+      "blueprint": {
+        "role": "tertiary",
+        "displayName": "Blueprint",
+        "canonical": "#5C7CA3",
+        "darkModeValue": "#7C9FD2",
+        "note": "Informational state and the todo status dot. Close to the accent in hue, far lower in chroma, so it never competes for 'this is the action'.",
+        "tonalRamp": ["oklch(0.20 0.03 250)", "oklch(0.30 0.045 250)", "oklch(0.41 0.06 250)", "oklch(0.53 0.07 250)", "oklch(0.64 0.065 250)", "oklch(0.75 0.05 250)", "oklch(0.86 0.03 250)", "oklch(0.95 0.012 250)"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Page titles, one per view. Serif. Scales to 3.75rem at the lg breakpoint." },
+      "headline": { "displayName": "Headline", "purpose": "Major section headings. Serif. Scales to 3rem at lg." },
+      "title": { "displayName": "Title", "purpose": "Subsection headings. Serif. The serif range ends here." },
+      "subtitle": { "displayName": "Subtitle", "purpose": "h4 and below — where type stops being a title and becomes interface. Sans." },
+      "body": { "displayName": "Body", "purpose": "Default text at 16px/1.55. Paragraphs use text-wrap: pretty." },
+      "card-title": { "displayName": "Card Title", "purpose": "Task card titles at 14px — deliberately smaller than body, because a card is a glanceable unit." },
+      "label": { "displayName": "Eyebrow Label", "purpose": "The single label voice across the entire system: 11px uppercase mono at 0.14em tracking." },
+      "mono": { "displayName": "Mono / Numeric", "purpose": "Counts and metadata. Always tabular-nums with slashed zero." }
+    },
+    "shadows": [
+      { "name": "hairline", "value": "0 1px 0 rgba(20,20,19,0.04)", "purpose": "The barely-there seat. Active sidebar items." },
+      { "name": "resting", "value": "0 1px 2px rgba(20,20,19,0.06)", "purpose": "Default card shadow. Almost subliminal." },
+      { "name": "raised", "value": "0 4px 14px rgba(20,20,19,0.08)", "purpose": "Focus-within and small popovers." },
+      { "name": "card-hover", "value": "0 10px 30px rgba(20,20,19,0.10)", "purpose": "Task card hover, paired with a -2px translate." },
+      { "name": "overlay", "value": "0 12px 28px rgba(20,20,19,0.12)", "purpose": "Dropdowns and popovers." },
+      { "name": "modal", "value": "0 24px 48px rgba(20,20,19,0.18)", "purpose": "Dialogs." },
+      { "name": "lift", "value": "0 32px 60px rgba(20,20,19,0.22)", "purpose": "The dragged card only — highest elevation in the system, reserved for the object literally in the person's hand." },
+      { "name": "focus-ring", "value": "0 0 0 3px rgba(59,74,140,0.18)", "purpose": "Composes with the above; not elevation." }
+    ],
+    "motion": [
+      { "name": "t-fast", "value": "120ms", "purpose": "Button background and shadow transitions." },
+      { "name": "t-base", "value": "150ms", "purpose": "Default state transition — cards, borders, hover lifts." },
+      { "name": "t-slow", "value": "300ms", "purpose": "Card entrance." },
+      { "name": "theme-crossfade", "value": "200ms ease", "purpose": "Light/dark swap on background-color, color, and border-color. Deliberately NOT disabled on theme change." },
+      { "name": "ease-out", "value": "cubic-bezier(0.2, 0.8, 0.2, 1)", "purpose": "Default easing for state transitions." },
+      { "name": "ease-pop", "value": "cubic-bezier(0.34, 1.56, 0.64, 1)", "purpose": "Overshoot easing, used sparingly." },
+      { "name": "ease-dialog", "value": "cubic-bezier(0.2, 0.7, 0.3, 1)", "purpose": "Modal enter (220ms) and iOS drag rotation (200ms)." },
+      { "name": "card-enter", "value": "300ms ease-out — opacity 0→1, translateY 8px→0, scale 0.98→1", "purpose": "Task card entrance." },
+      { "name": "drop-zone-pulse", "value": "1.5s ease-in-out infinite", "purpose": "Valid drop target breathing between 60% and 90% indigo tint." },
+      { "name": "reduce-motion", "value": "all durations forced to 0.01ms", "purpose": "Driven by the user-facing accessibility setting, not only the OS media query." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single primary action in a view. Ink Indigo fill; hover drops to 90% opacity.",
+      "html": "<button class=\"ds-btn-primary\">Add task</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--primary, #3B4A8C); color: var(--primary-foreground, #FFFFFF); font-family: var(--font-sans, system-ui); font-size: 14px; font-weight: 500; border: none; border-radius: 8px; padding: 8px 16px; min-height: 36px; cursor: pointer; transition: background 150ms ease, box-shadow 150ms ease; } .ds-btn-primary:hover { background: color-mix(in oklab, var(--primary, #3B4A8C) 90%, transparent); } .ds-btn-primary:focus-visible { outline: 2px solid var(--ring, #3B4A8C); outline-offset: 2px; } .ds-btn-primary:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action. Putty surface inside a hairline rule; hover deepens the surface.",
+      "html": "<button class=\"ds-btn-outline\">Cancel</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--surface, #EDEDEA); color: var(--foreground, #13141B); font-family: var(--font-sans, system-ui); font-size: 14px; font-weight: 500; border: 1px solid var(--border, #CFCFCC); border-radius: 8px; padding: 8px 16px; min-height: 36px; cursor: pointer; transition: background 150ms ease, border-color 150ms ease; } .ds-btn-outline:hover { background: var(--surface-2, #E1E1DE); border-color: var(--foreground, #13141B); } .ds-btn-outline:focus-visible { outline: 2px solid var(--ring, #3B4A8C); outline-offset: 2px; }"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Text input. On focus the border goes transparent so the ring reads as one clean stroke rather than a doubled edge.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Search tasks\" />",
+      "css": ".ds-input { display: block; width: 100%; background: var(--surface, #EDEDEA); color: var(--foreground, #13141B); font-family: var(--font-sans, system-ui); font-size: 16px; border: 1px solid var(--border, #CFCFCC); border-radius: 8px; padding: 4px 12px; min-height: 36px; outline: none; transition: color 150ms ease, box-shadow 150ms ease; } .ds-input::placeholder { color: var(--muted, #6F6F75); } .ds-input:focus-visible { border-color: transparent; box-shadow: 0 0 0 2px var(--background, #F4F4F0), 0 0 0 4px var(--ring, #3B4A8C); } .ds-input[aria-invalid=\"true\"] { border-color: var(--destructive, #B04A3F); box-shadow: 0 0 0 3px rgba(176,74,63,0.20); } @media (min-width: 768px) { .ds-input { font-size: 14px; } }"
+    },
+    {
+      "name": "Task Card",
+      "kind": "card",
+      "refersTo": "card-task",
+      "description": "Signature component. Paper on a 1.5px rule; hover lifts 2px and darkens the border to Graphite rather than changing the surface.",
+      "html": "<article class=\"ds-task-card\" tabindex=\"0\"><div class=\"ds-task-card__title\">Draft the release notes</div><div class=\"ds-task-card__meta\"><span class=\"ds-dot ds-dot--progress\"></span><span>In progress &middot; 60%</span></div><div class=\"ds-task-card__track\"><div class=\"ds-task-card__fill\"></div></div></article>",
+      "css": ".ds-task-card { background: var(--card, #FFFFFF); border: 1.5px solid var(--border, #CFCFCC); border-radius: 12px; padding: 14px 14px 12px; box-shadow: 0 1px 2px rgba(20,20,19,0.06); transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease; cursor: grab; } .ds-task-card:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(20,20,19,0.10); border-color: var(--foreground, #13141B); } .ds-task-card:active { transform: translateY(0); box-shadow: 0 1px 2px rgba(20,20,19,0.06); } .ds-task-card:focus-visible { outline: none; box-shadow: 0 4px 14px rgba(20,20,19,0.08), 0 0 0 3px rgba(59,74,140,0.18); } .ds-task-card__title { font-family: var(--font-sans, system-ui); font-size: 14px; font-weight: 600; line-height: 1.35; letter-spacing: -0.005em; color: var(--foreground, #13141B); } .ds-task-card__meta { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-family: var(--font-mono, ui-monospace); font-size: 11px; font-variant-numeric: tabular-nums slashed-zero; color: var(--muted, #6F6F75); } .ds-dot { width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0; } .ds-dot--progress { background: var(--warning, #C78E3F); } .ds-task-card__track { margin-top: 10px; height: 4px; border-radius: 999px; background: var(--surface-2, #E1E1DE); overflow: hidden; } .ds-task-card__fill { width: 60%; height: 100%; background: var(--primary, #3B4A8C); } @media (hover: none) { .ds-task-card:hover { transform: none; box-shadow: 0 1px 2px rgba(20,20,19,0.06); border-color: var(--border, #CFCFCC); } }"
+    },
+    {
+      "name": "Kanban Column Header",
+      "kind": "custom",
+      "refersTo": "column-kanban",
+      "description": "Signature component. The count pill is the system in miniature — mono, tabular, hairline-ruled, full pill radius.",
+      "html": "<div class=\"ds-column\"><div class=\"ds-column__header\"><div class=\"ds-column__label\"><span class=\"ds-dot ds-dot--todo\"></span><span class=\"ds-eyebrow\">To do</span></div><span class=\"ds-count\">12</span></div></div>",
+      "css": ".ds-column { background: var(--surface, #EDEDEA); border: 1.5px solid var(--border, #CFCFCC); border-radius: 14px; padding: 16px 14px; } .ds-column__header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; } .ds-column__label { display: flex; align-items: center; gap: 8px; } .ds-dot { width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0; } .ds-dot--todo { background: var(--chart-1, #5C7CA3); } .ds-eyebrow { font-family: var(--font-mono, ui-monospace); font-size: 11px; line-height: 15px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted, #6F6F75); } .ds-count { font-family: var(--font-mono, ui-monospace); font-size: 11px; font-weight: 500; color: var(--muted, #6F6F75); background: var(--card, #FFFFFF); border: 1px solid var(--border, #CFCFCC); border-radius: 999px; padding: 1px 6px; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Sidebar Active Item",
+      "kind": "nav",
+      "refersTo": null,
+      "description": "The signature selection gesture: a 3px Ink Indigo bar down the left edge of a paper surface, radiused on its outer corners.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav__item ds-nav__item--active\" href=\"#\"><span class=\"ds-nav__dot\"></span>Work Tasks</a><a class=\"ds-nav__item\" href=\"#\"><span class=\"ds-nav__dot ds-nav__dot--moss\"></span>Personal</a></nav>",
+      "css": ".ds-nav { display: flex; flex-direction: column; gap: 4px; background: var(--sidebar, #EDEDEA); padding: 8px; border-radius: 12px; } .ds-nav__item { position: relative; display: flex; align-items: center; gap: 10px; font-family: var(--font-sans, system-ui); font-size: 14px; color: var(--foreground, #13141B); text-decoration: none; padding: 8px 12px; border-radius: 8px; border: 1.5px solid transparent; transition: background 150ms ease; } .ds-nav__item:hover { background: var(--surface-2, #E1E1DE); } .ds-nav__item--active { background: var(--card, #FFFFFF); border-color: var(--border, #CFCFCC); box-shadow: 0 1px 0 rgba(20,20,19,0.04); } .ds-nav__item--active::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--primary, #3B4A8C); border-radius: 0 2px 2px 0; } .ds-nav__item:focus-visible { outline: 2px solid var(--ring, #3B4A8C); outline-offset: 2px; } .ds-nav__dot { width: 8px; height: 8px; border-radius: 999px; background: var(--dot-blue, #3F627A); flex-shrink: 0; } .ds-nav__dot--moss { background: var(--dot-moss, #5C6B3C); }"
+    },
+    {
+      "name": "Eyebrow Label",
+      "kind": "chip",
+      "refersTo": null,
+      "description": "The universal label voice — 11px uppercase mono at 0.14em tracking. There is no second label style in this system.",
+      "html": "<span class=\"ds-eyebrow-standalone\">Privacy first</span>",
+      "css": ".ds-eyebrow-standalone { display: inline-block; font-family: var(--font-mono, ui-monospace); font-size: 11px; line-height: 15px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted, #6F6F75); }"
+    },
+    {
+      "name": "Badge",
+      "kind": "chip",
+      "refersTo": "badge-default",
+      "description": "Compact status or tag marker. Default carries the accent; destructive carries Rust.",
+      "html": "<span class=\"ds-badge\">High</span> <span class=\"ds-badge ds-badge--outline\">design</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 4px; background: var(--primary, #3B4A8C); color: var(--primary-foreground, #FFFFFF); font-family: var(--font-sans, system-ui); font-size: 12px; font-weight: 500; border: 1px solid transparent; border-radius: 8px; padding: 2px 8px; white-space: nowrap; } .ds-badge--outline { background: transparent; color: var(--foreground, #13141B); border-color: var(--border, #CFCFCC); }"
+    },
+    {
+      "name": "Drag Ghost",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "The one dashed form in the system — a reserved but unfilled space during drag.",
+      "html": "<div class=\"ds-drag-ghost\"></div>",
+      "css": ".ds-drag-ghost { height: 96px; border: 1.5px dashed var(--primary, #3B4A8C); background: color-mix(in oklab, rgba(59,74,140,0.14) 30%, transparent); border-radius: 14px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Field Notebook",
+    "overview": "Cascade looks like a good notebook feels. Indigo ink on cool stone stock, ruled hairlines that actually mean something, mono labels stamped small and wide. A notebook is yours, works without power, and nobody else reads it — which is the same thing the product is, expressed in surfaces instead of architecture. Nothing here is trying to be impressive on first sight; it is trying to still be pleasant on the four-hundredth open.\n\nThe register is quiet, precise, and warm at once. Quiet: color is rationed, decoration is effectively zero, and the interface recedes behind the task. Precise: hairline rules, tabular numerals, and an unbroken 8px rhythm mean nothing sits at an accidental measurement. Warm: surfaces read as paper rather than glass, shadows are low-spread and soft rather than crisp, and a card lifts two pixels under the cursor because objects you handle should acknowledge being handled.\n\nSerif headings are part of the warmth, not a claim to being editorial. They soften a dense utilitarian tool the way a hand-written title softens a ruled page — this is a notebook, not a magazine, and the type should never start performing. The whole system is built from platform fonts only: no webfont ever loads, which is both a performance position and a privacy one, since a font request is a request to somebody else's server.",
+    "keyCharacteristics": [
+      "Signature 1.5px borders — the defining gesture, present on every meaningful surface",
+      "Cool stone page, white paper cards, deep indigo ink; a three-value world before any accent",
+      "Platform fonts only (system sans, ui-serif, ui-monospace) — zero webfont requests",
+      "Serif for h1–h3, sans for h4–h6 and body, mono for every label and every number",
+      "11px uppercase mono eyebrows at 0.14em tracking as the universal label voice",
+      "Borders define depth at rest; shadows are reserved for state changes",
+      "Light and dark are equal citizens, crossfading over 200ms rather than snapping"
+    ],
+    "rules": [
+      { "name": "The Rationed Ink Rule", "body": "Ink Indigo carries one primary action per view, the active-board rule, and focus. Its scarcity is what makes it legible as 'the important thing,' so it is never used decoratively, never for a surface fill, and never for a second competing button. The semantic pigments are exempt: olive, rust, ochre, and blueprint are information, and may appear as often as the data requires. Rationing applies to brand voice, not to meaning.", "section": "colors" },
+      { "name": "The Locked Dot Rule", "body": "The seven board dot hexes are user data, not theme. Someone chose 'Rose' for a board and that choice is persisted in their IndexedDB record. Never remap, restyle, or re-theme them across a design change; a redesign that shifts these values silently relabels every board the person already made.", "section": "colors" },
+      { "name": "The Cool Undertone Rule", "body": "Every neutral in this system leans cool. No warm greys, no cream, no sepia. A warm neutral introduced anywhere will read as a mistake next to the stone.", "section": "colors" },
+      { "name": "The Platform Font Rule", "body": "No webfont, ever. Not Google Fonts, not a self-hosted @font-face, not an icon font. Every face resolves from the visitor's own machine. This is a hard invariant with two justifications — a font request is a request to a third-party server, and a system with no font payload cannot have a flash of unstyled text.", "section": "typography" },
+      { "name": "The Mono Label Rule", "body": "Every label, eyebrow, count, and metadata string is 11px uppercase mono at 0.14em tracking. There is no second label style. If a new label appears and it isn't this, it's wrong.", "section": "typography" },
+      { "name": "The Tabular Numeral Rule", "body": "Any number a person might scan a column of — counts, progress, dates — gets font-variant-numeric: tabular-nums slashed-zero. Numbers that shift horizontally as they change are a defect, not a detail.", "section": "typography" },
+      { "name": "The Serif Ceiling Rule", "body": "Serif stops at h3. Below that, sans. A serif h5 makes the system look like a blog, which it isn't.", "section": "typography" },
+      { "name": "The Frame-First Rule", "body": "Reach for a border before a shadow. If a new surface needs separation, it gets a 1.5px Putty 300 rule; a shadow is added only if the surface must also read as above the thing behind it.", "section": "elevation" },
+      { "name": "The Lift-Is-Earned Rule", "body": "Elevation maps to interaction, not importance. The heaviest shadow in the system belongs to the card being dragged, not to the most important card.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use the 1.5px border as the first tool for separating any new surface (Putty 300 at rest, Graphite on hover).",
+      "Do keep Ink Indigo to one primary action per view, plus focus and the active-board rule.",
+      "Do set every label, count, and metadata string in 11px uppercase mono at 0.14em tracking.",
+      "Do apply tabular-nums slashed-zero to any number that appears in a scannable column.",
+      "Do resolve type from the platform stacks (--font-serif, --font-sans, --font-mono).",
+      "Do land spacing on the 8px grid, using 4px only for micro-adjustments.",
+      "Do raise shadow alpha substantially in dark mode; the light-mode values vanish on near-black.",
+      "Do honor .reduce-motion and @media (hover: none) — both are already wired, and new motion must pass through them.",
+      "Do keep the tonal stack in order: Cool Stone page → Putty 100 column → Paper card.",
+      "Do preserve the 44px mobile touch minimum (48px on coarse-pointer iPad)."
+    ],
+    "donts": [
+      "Don't load a webfont. Not Google Fonts, not self-hosted, not an icon font. This is absolute.",
+      "Don't introduce a second brand color. Semantic pigments are the only additional hues, and only where they carry meaning.",
+      "Don't remap, restyle, or re-theme the seven board dot hexes — they are persisted user data.",
+      "Don't put a serif below h3, or a second label style anywhere.",
+      "Don't give a resting surface a heavy shadow. Elevation is a response to interaction.",
+      "Don't introduce a warm neutral, a cream, or a sepia; every neutral in this system leans cool.",
+      "Don't use pure black or pure white for text — Graphite (#13141B) and Paper are the endpoints.",
+      "Don't remove a focus outline. Every interactive element gets the 2px Ink Indigo ring at 2px offset.",
+      "Don't lock the viewport or disable pinch-zoom to solve an iOS input-zoom problem; the 16px input font-size already solves it.",
+      "Don't use a hard 0px corner, or an organic/blob shape."
+    ]
+  }
+}

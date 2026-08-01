@@ -1,6 +1,8 @@
+import { Check } from "@/lib/icons";
+
 function MockTaskCard({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-lg border border-border bg-white p-3 shadow-sm dark:bg-surface">
+    <div className="rounded-lg border border-border bg-card p-3 shadow-sm">
       {children}
     </div>
   );
@@ -18,10 +20,8 @@ function MockColumn({
   return (
     <div className="flex-1 min-w-[140px] rounded-xl bg-muted/30 p-3">
       <div className="mb-3 flex items-center gap-2">
-        <span className={`size-2 rounded-full ${dotClass}`} />
-        <span className="text-xs font-semibold text-muted-foreground">
-          {title}
-        </span>
+        <span className={`status-dot ${dotClass}`} aria-hidden="true" />
+        <span className="label-eyebrow">{title}</span>
       </div>
       <div className="space-y-2">{children}</div>
     </div>
@@ -36,7 +36,10 @@ function MockProgressBar({ percent }: { percent: string }) {
         <span>{percent}</span>
       </div>
       <div className="h-1.5 w-full rounded-full bg-surface-2">
-        <div className={`h-1.5 w-[60%] rounded-full bg-primary`} />
+        <div
+          className="h-1.5 rounded-full bg-primary"
+          style={{ width: percent }}
+        />
       </div>
     </div>
   );
@@ -45,7 +48,7 @@ function MockProgressBar({ percent }: { percent: string }) {
 function KanbanMock() {
   return (
     <div className="flex gap-3 overflow-x-auto rounded-xl border border-border bg-surface p-4 shadow-sm">
-      <MockColumn title="To Do" dotClass="bg-muted-2">
+      <MockColumn title="To Do" dotClass="status-dot--todo">
         <MockTaskCard>
           <p className="text-sm font-medium text-foreground">Plan Q3 report</p>
           <p className="mt-1 text-xs text-muted-foreground">Due: Mon</p>
@@ -55,17 +58,21 @@ function KanbanMock() {
         </MockTaskCard>
       </MockColumn>
 
-      <MockColumn title="In Progress" dotClass="bg-warning">
+      <MockColumn title="In Progress" dotClass="status-dot--in-progress">
         <MockTaskCard>
           <p className="text-sm font-medium text-foreground">Design hero section</p>
           <MockProgressBar percent="60%" />
         </MockTaskCard>
       </MockColumn>
 
-      <MockColumn title="Done" dotClass="bg-success">
+      <MockColumn title="Done" dotClass="status-dot--done">
         <MockTaskCard>
           <div className="flex items-center gap-1.5">
-            <span className="text-sm text-success">&#10003;</span>
+            <Check
+              className="size-4 shrink-0 text-success"
+              aria-hidden="true"
+              strokeWidth={2.5}
+            />
             <p className="text-sm font-medium text-foreground line-through opacity-70">
               Write copy
             </p>

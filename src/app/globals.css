@@ -37,7 +37,10 @@
   --gray-100: #EDEDEA;
   --gray-200: #E1E1DE;
   --gray-300: #CFCFCC;
-  --gray-500: #6F6F75;
+  /* Darkened from #6F6F75: as muted/label text it failed WCAG AA (4.5:1) on
+     every tinted surface — 4.26 on --gray-100, the kanban column and sidebar
+     background. #646469 clears 4.5:1 on ivory, gray-100, and paper alike. */
+  --gray-500: #646469;
   --gray-700: #3A3B41;
 
   /* ---------- Typography (platform fonts only — Inkwell rule #5) ---------- */

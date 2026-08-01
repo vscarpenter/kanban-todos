@@ -48,7 +48,7 @@ export default function InstallPage() {
 
             <div className="space-y-4">
               <div>
-                <h3 className="mb-2 font-semibold">Chrome, Edge, or Brave</h3>
+                <h3 className="mb-2 text-lg font-semibold">Chrome, Edge, or Brave</h3>
                 <ol className="ml-5 space-y-2 text-muted-foreground list-decimal">
                   <li>Open Cascade in Chrome, Edge, or Brave browser</li>
                   <li>Look for the <strong>install icon</strong> in the address bar (looks like a computer monitor with a download arrow)</li>
@@ -63,12 +63,12 @@ export default function InstallPage() {
                 </ol>
               </div>
 
-              <div className="rounded-md bg-muted p-3 text-sm">
+              <div className="rounded-md bg-surface border border-border p-3 text-sm">
                 <strong>Quick tip:</strong> Press <kbd className="rounded border bg-background px-2 py-0.5 font-mono text-xs">Ctrl+Shift+A</kbd> (Windows/Linux) or <kbd className="rounded border bg-background px-2 py-0.5 font-mono text-xs">Cmd+Shift+A</kbd> (macOS) to open the install dialog
               </div>
 
               <div>
-                <h3 className="mb-2 font-semibold">Firefox</h3>
+                <h3 className="mb-2 text-lg font-semibold">Firefox</h3>
                 <p className="text-sm text-muted-foreground">
                   Firefox doesn&apos;t support automatic PWA installation. For the best experience, use Chrome or Edge.
                 </p>
@@ -85,7 +85,7 @@ export default function InstallPage() {
 
             <div className="space-y-4">
               <div>
-                <h3 className="mb-2 font-semibold">Safari (Required)</h3>
+                <h3 className="mb-2 text-lg font-semibold">Safari (Required)</h3>
                 <ol className="ml-5 space-y-2 text-muted-foreground list-decimal">
                   <li>Open Cascade in <strong>Safari</strong> browser (must be Safari, not Chrome)</li>
                   <li>Tap the <strong>Share button</strong> (square with arrow pointing up) at the bottom of the screen</li>
@@ -96,7 +96,7 @@ export default function InstallPage() {
                 </ol>
               </div>
 
-              <div className="rounded-md bg-muted p-3 text-sm">
+              <div className="rounded-md bg-surface border border-border p-3 text-sm">
                 <strong>Note:</strong> iOS requires Safari for PWA installation. Once installed, the app opens in its own window without browser UI.
               </div>
             </div>
@@ -111,7 +111,7 @@ export default function InstallPage() {
 
             <div className="space-y-4">
               <div>
-                <h3 className="mb-2 font-semibold">Chrome (Recommended)</h3>
+                <h3 className="mb-2 text-lg font-semibold">Chrome (Recommended)</h3>
                 <div className="space-y-3">
                   <div>
                     <p className="mb-2 text-sm font-medium">Method 1: Install Banner</p>
@@ -137,7 +137,7 @@ export default function InstallPage() {
                 </div>
               </div>
 
-              <div className="rounded-md bg-muted p-3 text-sm">
+              <div className="rounded-md bg-surface border border-border p-3 text-sm">
                 <strong>Tip:</strong> The installed app appears in your app drawer just like any other app and can be uninstalled from Settings.
               </div>
             </div>
@@ -148,25 +148,25 @@ export default function InstallPage() {
             <h2 className="text-2xl font-semibold">Why Install?</h2>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-1">
-                <h3 className="font-semibold">Quick Access</h3>
+                <h3 className="text-lg font-semibold">Quick Access</h3>
                 <p className="text-sm text-muted-foreground">
                   Launch from your home screen, dock, or start menu
                 </p>
               </div>
               <div className="space-y-1">
-                <h3 className="font-semibold">Offline Support</h3>
+                <h3 className="text-lg font-semibold">Offline Support</h3>
                 <p className="text-sm text-muted-foreground">
                   Access your tasks without an internet connection
                 </p>
               </div>
               <div className="space-y-1">
-                <h3 className="font-semibold">Native Experience</h3>
+                <h3 className="text-lg font-semibold">Native Experience</h3>
                 <p className="text-sm text-muted-foreground">
                   Runs in its own window without browser UI
                 </p>
               </div>
               <div className="space-y-1">
-                <h3 className="font-semibold">Better Performance</h3>
+                <h3 className="text-lg font-semibold">Better Performance</h3>
                 <p className="text-sm text-muted-foreground">
                   Optimized startup and faster load times
                 </p>
