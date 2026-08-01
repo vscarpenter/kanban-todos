@@ -12,7 +12,9 @@ export function FeatureCard({ icon: Icon, title, description }: FeatureCardProps
       className="transition-shadow duration-200"
       style={{
         background: "var(--paper-card)",
-        border: "1px solid var(--hairline)",
+        // 1.5px --hairline-strong is the system's card rule; this was 1px
+        // --hairline, a lighter divider token used for a bounded surface.
+        border: "1.5px solid var(--hairline-strong)",
         borderRadius: "12px",
         boxShadow: "var(--shadow-xs)",
         padding: "20px 18px 18px",

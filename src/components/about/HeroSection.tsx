@@ -7,7 +7,7 @@ export function HeroSection() {
   return (
     <section className="py-24 lg:py-32">
       <div className="mx-auto max-w-4xl px-6 text-center">
-        <p className="text-xs uppercase tracking-widest text-muted-foreground mb-6">
+        <p className="label-eyebrow mb-6">
           Privacy-First Task Management
         </p>
 

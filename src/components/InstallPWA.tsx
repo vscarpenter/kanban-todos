@@ -126,13 +126,16 @@ export default function InstallPWA() {
     return null;
   }
 
+  // Anchored to the bottom: at top-3 with z-50 this sat on top of the sticky
+  // /about nav and the board header, hiding the page title and primary
+  // controls on every first visit.
   return (
     <div
       role="dialog"
       aria-labelledby="install-pwa-title"
       aria-describedby="install-pwa-description"
-      className="fixed inset-x-3 top-3 z-50 rounded-lg border bg-background/95 p-4 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-background/80"
-      style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.75rem)" }}
+      className="fixed inset-x-3 bottom-3 z-50 rounded-lg border bg-background/95 p-4 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:left-auto sm:right-3 sm:max-w-sm"
+      style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
     >
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0">
