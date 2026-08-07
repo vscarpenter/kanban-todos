@@ -89,6 +89,7 @@
     "@types/react-dom": "19.2.3",
     "flatted": "^3.4.2",
     "picomatch": "^4.0.4",
+    "brace-expansion": "^1.1.18",
     "postcss": "^8.5.12",
     "vite": "^8.0.16",
     "undici": "^7.29.0",
