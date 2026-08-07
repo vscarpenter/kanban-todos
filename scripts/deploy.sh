@@ -57,15 +57,35 @@ check_prerequisites() {
     info "✓ Prerequisites check passed"
 }
 
+# Install dependencies if they're missing. Split out from build_app so the
+# quality gate below can run before we build.
+ensure_dependencies() {
+    if [ ! -d "node_modules" ]; then
+        log "Installing dependencies..."
+        bun install
+    fi
+}
+
+# Run the same checks CI runs, before anything reaches S3.
+# Mirrors the `quality` job in .github/workflows/ci.yml — keep the two in sync.
+run_quality_gate() {
+    log "Running quality gate..."
+
+    info "Linting..."
+    bun run lint || error "Lint failed. Fix it before deploying."
+
+    info "Type checking..."
+    bun run tsc --noEmit || error "Type check failed. Fix it before deploying."
+
+    info "Running tests..."
+    bun run test || error "Tests failed. Fix them before deploying."
+
+    info "✓ Quality gate passed"
+}
+
 # Build the application
 build_app() {
     log "Building application..."
-    
-    # Install dependencies if node_modules doesn't exist
-    if [ ! -d "node_modules" ]; then
-        info "Installing dependencies..."
-        bun install
-    fi
 
     # Run build
     bun run build
@@ -194,6 +214,8 @@ main() {
     echo
     
     check_prerequisites
+    ensure_dependencies
+    run_quality_gate
     build_app
     deploy_to_s3
     invalidate_cloudfront
