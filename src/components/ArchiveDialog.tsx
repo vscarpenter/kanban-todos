@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,7 +23,6 @@ export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const suppressArchiveCloseRef = useRef(false);
   const { tasks, unarchiveTask, deleteTask } = useTaskStore();
   const { boards } = useBoardStore();
 
@@ -35,10 +34,6 @@ export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
 
   // Reset search when dialog closes and reopens
   const handleOpenChange = useCallback((newOpen: boolean) => {
-    if (!newOpen && suppressArchiveCloseRef.current) {
-      suppressArchiveCloseRef.current = false;
-      return;
-    }
     if (!newOpen && showDeleteDialog) return;
     if (newOpen && !open) {
       setSearchQuery("");
@@ -86,9 +81,6 @@ export function ArchiveDialog({ open, onOpenChange }: ArchiveDialogProps) {
   };
 
   const handleDeleteDialogOpenChange = (newOpen: boolean) => {
-    if (!newOpen) {
-      suppressArchiveCloseRef.current = true;
-    }
     setShowDeleteDialog(newOpen);
     if (!newOpen) {
       setTaskToDelete(null);

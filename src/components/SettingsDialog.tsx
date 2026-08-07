@@ -53,7 +53,6 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   // Store initial settings when dialog opens
   const initialSettingsRef = useRef<Settings | null>(null);
   const localSettingsRef = useRef<Settings>(settings);
-  const suppressSettingsCloseRef = useRef(false);
 
   // Seed localSettings from the store only on the closed->open transition.
   // Previously this ran on every `settings`/`theme` change while open too,
@@ -87,11 +86,6 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
   // Handle dialog close with unsaved changes check
   const handleOpenChange = useCallback((newOpen: boolean) => {
-    if (!newOpen && suppressSettingsCloseRef.current) {
-      suppressSettingsCloseRef.current = false;
-      return;
-    }
-
     if (!newOpen && (showResetConfirm || showAppResetDialog || showUnsavedChangesDialog)) {
       return;
     }
@@ -193,9 +187,6 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   };
 
   const handleUnsavedDialogOpenChange = useCallback((newOpen: boolean) => {
-    if (!newOpen) {
-      suppressSettingsCloseRef.current = true;
-    }
     setShowUnsavedChangesDialog(newOpen);
   }, []);
 
