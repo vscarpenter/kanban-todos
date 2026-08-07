@@ -160,7 +160,7 @@ describe('taskValidation utility', () => {
         validateTaskIntegrity(task);
 
         expect(logger.warn).toHaveBeenCalled();
-        for (const call of logger.warn.mock.calls) {
+        for (const call of vi.mocked(logger.warn).mock.calls) {
           const serialized = JSON.stringify(call);
           expect(serialized).not.toContain('Confidential');
           expect(serialized).not.toContain('layoff');
@@ -179,7 +179,7 @@ describe('taskValidation utility', () => {
         validateTaskIntegrity(task);
 
         expect(logger.warn).toHaveBeenCalled();
-        for (const call of logger.warn.mock.calls) {
+        for (const call of vi.mocked(logger.warn).mock.calls) {
           const serialized = JSON.stringify(call);
           expect(serialized).not.toContain('Firebird');
         }
@@ -195,7 +195,7 @@ describe('taskValidation utility', () => {
         validateTaskIntegrity(task);
 
         expect(logger.warn).toHaveBeenCalled();
-        for (const call of logger.warn.mock.calls) {
+        for (const call of vi.mocked(logger.warn).mock.calls) {
           const serialized = JSON.stringify(call);
           expect(serialized).not.toContain('Confidential');
           expect(serialized).not.toContain('acquisition');

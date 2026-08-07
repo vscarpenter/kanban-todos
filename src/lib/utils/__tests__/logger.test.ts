@@ -6,7 +6,6 @@ describe('logger utilities', () => {
   let consoleWarnSpy: any;
   let consoleInfoSpy: any;
   let consoleDebugSpy: any;
-  let originalEnv: string | undefined;
 
   beforeEach(() => {
     // Spy on console methods
@@ -14,10 +13,7 @@ describe('logger utilities', () => {
     consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => {});
     consoleDebugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
-    
-    // Store original NODE_ENV
-    originalEnv = process.env.NODE_ENV;
-    
+
     // Set window to undefined to simulate SSR
     delete (global as any).window;
   });
@@ -29,13 +25,9 @@ describe('logger utilities', () => {
     consoleInfoSpy.mockRestore();
     consoleDebugSpy.mockRestore();
     
-    // Restore NODE_ENV
-    if (originalEnv !== undefined) {
-      process.env.NODE_ENV = originalEnv;
-    } else {
-      delete process.env.NODE_ENV;
-    }
-    
+    // Restore any NODE_ENV stubbed via vi.stubEnv
+    vi.unstubAllEnvs();
+
     // Restore window
     (global as any).window = {};
   });
@@ -56,7 +48,7 @@ describe('logger utilities', () => {
 
   describe('development mode', () => {
     beforeEach(() => {
-      process.env.NODE_ENV = 'development';
+      vi.stubEnv('NODE_ENV', 'development');
       (global as any).window = {};
     });
 
@@ -161,7 +153,7 @@ describe('logger utilities', () => {
     // and note that production JSON logging would need integration testing.
     
     beforeEach(() => {
-      process.env.NODE_ENV = 'development';
+      vi.stubEnv('NODE_ENV', 'development');
       (global as any).window = {};
     });
 
@@ -228,7 +220,7 @@ describe('logger utilities', () => {
 
   describe('log level routing', () => {
     beforeEach(() => {
-      process.env.NODE_ENV = 'development';
+      vi.stubEnv('NODE_ENV', 'development');
       (global as any).window = {};
     });
 
@@ -267,7 +259,7 @@ describe('logger utilities', () => {
 
   describe('context transformation', () => {
     beforeEach(() => {
-      process.env.NODE_ENV = 'development';
+      vi.stubEnv('NODE_ENV', 'development');
       (global as any).window = {};
     });
 
