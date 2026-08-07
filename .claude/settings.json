@@ -1,0 +1,59 @@
+{
+  "$comment": "Goes in <project>/.claude/settings.json. Team baseline. Check this in. Personal allowances belong in settings.local.json (gitignored).",
+  "permissions": {
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(**/.env.local)",
+      "Edit(.env)",
+      "Edit(.env.*)",
+      "Edit(package-lock.json)",
+      "Edit(yarn.lock)",
+      "Edit(bun.lock)",
+      "Edit(bun.lockb)",
+      "Edit(pnpm-lock.yaml)",
+      "Edit(Cargo.lock)",
+      "Edit(Gemfile.lock)",
+      "Edit(poetry.lock)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/protect-files.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/format-edits.sh",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "$comment": "Fast last-line typecheck. Matches the Type check step in .github/workflows/ci.yml — keep the two in sync. There is no `typecheck` script in package.json.",
+            "type": "command",
+            "command": "bun run tsc --noEmit 2>&1 | tail -10",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}
