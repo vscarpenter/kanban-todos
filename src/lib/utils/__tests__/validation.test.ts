@@ -7,7 +7,40 @@ import {
   validateDataRelationships,
 } from '../validation';
 import { taskSchema, boardSchema, settingsSchema, exportDataSchema } from '../validationSchemas';
+import type { SanitizationOptions } from '../validationSchemas';
+import type { Settings } from '@/lib/types';
 import type { ExportData } from '../exportImport';
+
+// sanitizeData requires every flag to be set. These tests each care about one
+// or two, so default the rest to off and override only what's under test.
+const sanitizationOptions = (
+  overrides: Partial<SanitizationOptions> = {}
+): SanitizationOptions => ({
+  removeInvalidFields: false,
+  fixDateFormats: false,
+  normalizeStrings: false,
+  validateRelationships: false,
+  generateMissingIds: false,
+  setDefaultValues: false,
+  ...overrides,
+});
+
+// Valid settings for fixtures where settings is scaffolding, not the subject.
+const validSettings: Settings = {
+  theme: 'light',
+  autoArchiveDays: 30,
+  enableNotifications: true,
+  enableKeyboardShortcuts: true,
+  searchPreferences: {
+    defaultScope: 'current-board',
+    rememberScope: true,
+  },
+  accessibility: {
+    highContrast: false,
+    reduceMotion: false,
+    fontSize: 'medium',
+  },
+};
 
 describe('validation utilities', () => {
   describe('validateSchema', () => {
@@ -174,7 +207,7 @@ describe('validation utilities', () => {
         type: 'string' as const,
       };
       
-      const result = sanitizeData('  test  ', schema, { normalizeStrings: true });
+      const result = sanitizeData('  test  ', schema, sanitizationOptions({ normalizeStrings: true }));
       expect(result.sanitized).toBe('test');
       expect(result.changes).toContain('Trimmed whitespace');
     });
@@ -185,7 +218,7 @@ describe('validation utilities', () => {
         maxLength: 5,
       };
       
-      const result = sanitizeData('abcdefghij', schema, { normalizeStrings: false });
+      const result = sanitizeData('abcdefghij', schema, sanitizationOptions({ normalizeStrings: false }));
       expect(result.sanitized).toBe('abcde');
       expect(result.changes).toContain('Truncated to 5 chars');
     });
@@ -202,7 +235,7 @@ describe('validation utilities', () => {
       const result = sanitizeData(
         { name: 'test', extra: 'field' },
         schema,
-        { removeInvalidFields: true, normalizeStrings: false }
+        sanitizationOptions({ removeInvalidFields: true, normalizeStrings: false })
       );
       expect(result.sanitized).toEqual({ name: 'test' });
       expect(result.changes).toContain('Removed invalid property: extra');
@@ -221,7 +254,7 @@ describe('validation utilities', () => {
       const result = sanitizeData(
         { name: 'test' },
         schema,
-        { setDefaultValues: true, normalizeStrings: false }
+        sanitizationOptions({ setDefaultValues: true, normalizeStrings: false })
       );
       expect(result.sanitized).toEqual({ name: 'test', count: 0 });
       expect(result.changes).toContain('Set default value for: count');
@@ -233,7 +266,7 @@ describe('validation utilities', () => {
         maxItems: 2,
       };
       
-      const result = sanitizeData([1, 2, 3, 4], schema, { normalizeStrings: false });
+      const result = sanitizeData([1, 2, 3, 4], schema, sanitizationOptions({ normalizeStrings: false }));
       expect(result.sanitized).toEqual([1, 2]);
       expect(result.changes).toContain('Truncated to 2 items');
     });
@@ -247,7 +280,7 @@ describe('validation utilities', () => {
         },
       };
       
-      const result = sanitizeData(['abcd', 'efgh'], schema, { normalizeStrings: false });
+      const result = sanitizeData(['abcd', 'efgh'], schema, sanitizationOptions({ normalizeStrings: false }));
       expect(result.sanitized).toEqual(['abc', 'efg']);
     });
 
@@ -267,7 +300,7 @@ describe('validation utilities', () => {
       const result = sanitizeData(
         { name: 'longname', items: ['a', 'b', 'c'] },
         schema,
-        { normalizeStrings: false }
+        sanitizationOptions({ normalizeStrings: false })
       );
       expect(result.sanitized).toEqual({ name: 'longn', items: ['a', 'b'] });
     });
@@ -368,7 +401,7 @@ describe('validation utilities', () => {
         exportedAt: new Date().toISOString(),
         boards: [{ name: 'Invalid Board' }] as any, // Missing required fields
         tasks: [],
-        settings: {},
+        settings: validSettings,
       };
       
       const result = validateExportData(data);
@@ -381,7 +414,7 @@ describe('validation utilities', () => {
         exportedAt: new Date().toISOString(),
         boards: [],
         tasks: [{ title: 'Invalid Task' }] as any, // Missing required fields
-        settings: {},
+        settings: validSettings,
       };
       
       const result = validateExportData(data);
@@ -410,7 +443,7 @@ describe('validation utilities', () => {
           boardId: 'non-existent-board', // Invalid reference
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          priority: 'Medium',
+          priority: 'medium',
           tags: [],
         }],
         settings: {
@@ -456,7 +489,7 @@ describe('validation utilities', () => {
           progress: 50, // Should be 100 for done tasks
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          priority: 'Medium',
+          priority: 'medium',
           tags: [],
         }],
         settings: {
@@ -501,7 +534,7 @@ describe('validation utilities', () => {
           progress: 25, // Should not have progress
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          priority: 'Medium',
+          priority: 'medium',
           tags: [],
         }],
         settings: {
@@ -545,7 +578,7 @@ describe('validation utilities', () => {
           boardId: 'board-1',
           createdAt: '2024-01-02T00:00:00.000Z',
           updatedAt: '2024-01-01T00:00:00.000Z', // Before created
-          priority: 'Medium',
+          priority: 'medium',
           tags: [],
         }],
         settings: {
@@ -682,7 +715,7 @@ describe('validation utilities', () => {
           boardId: 'board-1',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          priority: 'Medium',
+          priority: 'medium',
           tags: [],
         }],
         settings: {

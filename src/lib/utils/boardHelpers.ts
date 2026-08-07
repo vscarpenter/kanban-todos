@@ -40,7 +40,7 @@ export function calculateNextOrder(boards: Board[]): number {
  * Creates a new board object with sanitized data
  */
 export function createBoardObject(
-  boardData: Omit<Board, 'id' | 'createdAt' | 'updatedAt'>,
+  boardData: Omit<Board, 'id' | 'createdAt' | 'updatedAt' | 'order'> & { order?: number },
   order: number
 ): Board {
   const sanitizedData = sanitizeBoardData({
