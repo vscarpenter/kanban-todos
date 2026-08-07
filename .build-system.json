@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "systemVersion": "2.0.0",
+  "tier": 1,
+  "config": {
+    "verifyCommands": [
+      "bun run lint",
+      "bun run tsc --noEmit",
+      "bun run test"
+    ],
+    "protectedPaths": [
+      "scripts/**",
+      ".github/workflows/**"
+    ],
+    "branchPrefix": "claude"
+  },
+  "files": [
+    {
+      "sha256": "65287b76db974458a6296b93e2ce0e5ef6e279c0133272a865fa79f5b6566d12",
+      "path": ".claude/agents/a11y-reviewer.md"
+    },
+    {
+      "sha256": "c654baee8ae671b12828fcb9ce9a5749362d3648c18729e282ef8f67ee858590",
+      "path": ".claude/commands/qcheck.md"
+    },
+    {
+      "sha256": "3e40c45dd99a45f46e2df5660fc5f1458ca11a7e2003529bf2c199f6b516b79e",
+      "path": ".claude/commands/qspec.md"
+    },
+    {
+      "sha256": "8c971c89604c1ffc1392da2cae4006b43b8e3e7970557e1b7693f4a343aa8485",
+      "path": ".claude/commands/tdd.md"
+    },
+    {
+      "sha256": "93bb70d81447504fd05704ca882aa177a0f9f8653977b66ade861c761a10cf93",
+      "path": ".claude/hooks/format-edits.sh"
+    },
+    {
+      "sha256": "b571edd363ff660c31a37412cd68aec8f0fff5857eaa53754bd42579da07b24f",
+      "path": ".claude/hooks/protect-files.sh"
+    },
+    {
+      "sha256": "43dc2a6cee32942a5b2f6f3bfb4b526a1b9ad29b31319a59277ae80b84fa3a75",
+      "path": ".claude/settings.json"
+    }
+  ]
+}
