@@ -69,6 +69,7 @@ src/
     │   ├── iosDetection.ts     # iOS device detection utilities
     │   ├── security.ts         # Input sanitization and XSS prevention
     │   └── deploymentValidator.ts # Production deployment validation
+    ├── webmcp/        # WebMCP tools for browser agents (see docs/webmcp.md)
     ├── utils.ts       # Common utilities (cn function)
     └── icons.ts       # Centralized icon exports
 ```
@@ -114,6 +115,16 @@ Three main Zustand stores with IndexedDB persistence:
 - **`Ctrl/Cmd + ,`** - Settings
 
 Implementation: `src/lib/utils/keyboard.ts` with cross-platform support.
+
+## WebMCP (Browser Agents)
+
+Cascade registers eight `cascade_` tools on `document.modelContext` so agents such as Claude Code can read the board, create tasks, move them between columns, update details, and delete them. The tools live in `src/lib/webmcp/` and call the same store actions the UI uses, so agent writes re-render the board through the normal path.
+
+- **Registration**: `KanbanBoard` calls `registerCascadeTools()` after the three stores initialize and aborts on unmount. One `AbortController` owns every tool.
+- **Detection**: `document.modelContext`, then `navigator.modelContext`, then nothing. Without the API the app logs one info line and behaves as before.
+- **Tools**: list/get boards, list/get tasks, create/update/move/delete task. Reads carry `readOnlyHint` and `untrustedContentHint`; delete carries `consequentialHint`.
+- **Tests**: `src/lib/webmcp/__tests__/` (fake-indexeddb) and the opt-in `e2e/webmcp.spec.ts` (`WEBMCP_E2E=1 bunx playwright test --project=webmcp`).
+- **Setup and bridge**: `docs/webmcp.md`. Decision record: `docs/adr/0006-webmcp-tool-layer.md`.
 
 ## iOS Support & Touch Optimization
 
