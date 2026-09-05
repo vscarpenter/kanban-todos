@@ -6,6 +6,13 @@ export const TASK_PRIORITIES = ['low', 'medium', 'high'] as const;
 export type TaskStatus = (typeof TASK_STATUSES)[number];
 export type TaskPriority = (typeof TASK_PRIORITIES)[number];
 
+// Column names as the board shows them, keyed by status.
+export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
+  todo: 'To Do',
+  'in-progress': 'In Progress',
+  done: 'Done',
+};
+
 export interface Task {
   id: string;
   title: string;
