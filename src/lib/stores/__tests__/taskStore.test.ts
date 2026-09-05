@@ -158,6 +158,21 @@ describe('taskStore', () => {
       expect(tasks[0].createdAt.getTime()).toBeGreaterThanOrEqual(beforeAdd.getTime());
     });
 
+    it('resolves to the created task so callers can use its id', async () => {
+      const { addTask } = useTaskStore.getState();
+
+      const created = await addTask({
+        title: 'Returned Task',
+        status: 'todo',
+        boardId: 'board-1',
+        priority: 'low',
+        tags: [],
+      });
+
+      expect(created.id).toBe(useTaskStore.getState().tasks[0].id);
+      expect(created.title).toBe('Returned Task');
+    });
+
     it('sets error when title is empty', async () => {
       const { addTask } = useTaskStore.getState();
 
@@ -215,6 +230,18 @@ describe('taskStore', () => {
 
       const { tasks } = useTaskStore.getState();
       expect(tasks[0].title).toBe('Updated Title');
+    });
+
+    it('resolves to the updated task', async () => {
+      const task = makeTask({ title: 'Before' });
+      useTaskStore.setState({ tasks: [task], filteredTasks: [task] });
+      const { updateTask } = useTaskStore.getState();
+
+      const updated = await updateTask('task-1', { title: 'After' });
+
+      expect(updated.id).toBe('task-1');
+      expect(updated.title).toBe('After');
+      expect(updated).toEqual(useTaskStore.getState().tasks[0]);
     });
 
     it('updates the updatedAt timestamp', async () => {

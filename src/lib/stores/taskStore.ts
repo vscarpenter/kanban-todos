@@ -73,8 +73,8 @@ interface TaskActions {
   clearSearchCache: () => void;
 
   // Task operations
-  addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
-  updateTask: (taskId: string, updates: Partial<Task>) => Promise<void>;
+  addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Task>;
+  updateTask: (taskId: string, updates: Partial<Task>) => Promise<Task>;
   deleteTask: (taskId: string) => Promise<void>;
   moveTask: (taskId: string, newStatus: Task['status']) => Promise<boolean>;
   moveTaskToBoard: (taskId: string, targetBoardId: string) => Promise<void>;

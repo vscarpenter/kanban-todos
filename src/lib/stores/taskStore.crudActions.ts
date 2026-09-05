@@ -11,7 +11,7 @@ import { applyFiltersToTasks, type TaskStoreState, type StoreSetter } from './ta
 type GetState = () => TaskStoreState;
 
 export function createAddTask(_get: GetState, set: StoreSetter) {
-  return async (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
+  return async (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>): Promise<Task> => {
     try {
       set({ isLoading: true, error: null });
 
@@ -45,6 +45,8 @@ export function createAddTask(_get: GetState, set: StoreSetter) {
           searchCache: new Map(),
         };
       });
+
+      return newTask;
     } catch (error: unknown) {
       set({
         error: error instanceof Error ? error.message : 'Failed to add task',
@@ -56,7 +58,7 @@ export function createAddTask(_get: GetState, set: StoreSetter) {
 }
 
 export function createUpdateTask(get: GetState, set: StoreSetter) {
-  return async (taskId: string, updates: Partial<Task>) => {
+  return async (taskId: string, updates: Partial<Task>): Promise<Task> => {
     try {
       set({ isLoading: true, error: null });
 
@@ -89,6 +91,8 @@ export function createUpdateTask(get: GetState, set: StoreSetter) {
           searchCache: new Map(),
         };
       });
+
+      return updatedTask;
     } catch (error: unknown) {
       set({
         error: error instanceof Error ? error.message : 'Failed to update task',
