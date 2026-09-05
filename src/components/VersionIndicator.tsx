@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Info, ExternalLink, Sun, Moon, Monitor } from "@/lib/icons";
 import { useSettingsStore } from "@/lib/stores/settingsStore";
+import { WebMcpIndicator } from "@/components/WebMcpIndicator";
 
 interface VersionInfo {
   version: string;
@@ -122,6 +123,7 @@ export function VersionFooter() {
         >
           {formattedDate} · {formattedYear}
         </span>
+        <WebMcpIndicator />
       </div>
 
       <div
