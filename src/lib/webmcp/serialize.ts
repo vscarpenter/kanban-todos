@@ -80,7 +80,7 @@ export function toTaskDetail(task: Task, boardName: string | null) {
   return {
     id: task.id,
     title: task.title,
-    description: task.description ?? null,
+    description: task.description ? task.description : null,
     status: task.status,
     priority: task.priority,
     tags: task.tags,

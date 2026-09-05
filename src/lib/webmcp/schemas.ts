@@ -79,3 +79,67 @@ export const GET_TASK_SCHEMA: JsonSchema = {
   },
   required: ['taskId'],
 };
+
+const TITLE = { type: 'string', maxLength: 200, description: 'Task title. Plain text, up to 200 characters.' } as const;
+const TAGS = {
+  type: 'array',
+  items: { type: 'string' },
+  maxItems: 10,
+  description: 'Tags as plain strings, up to 10. On update this replaces the whole list.',
+} as const;
+const DUE_DATE_DESCRIPTION = 'Due date as ISO 8601, for example "2026-09-30" or "2026-09-30T17:00:00Z".';
+
+export const CREATE_TASK_SCHEMA: JsonSchema = {
+  type: 'object',
+  properties: {
+    title: TITLE,
+    description: { type: 'string', maxLength: 1000, description: 'Longer detail for the task. Plain text, up to 1000 characters.' },
+    boardId: { ...BOARD_ID, description: 'Board to add the task to. Omit for the board the user has on screen.' },
+    status: { ...STATUS, description: `Column to create the task in. Default "todo". ${STATUS.description}` },
+    priority: { ...PRIORITY, description: `${PRIORITY.description} Default "medium".` },
+    tags: TAGS,
+    dueDate: { type: 'string', description: DUE_DATE_DESCRIPTION },
+  },
+  required: ['title'],
+};
+
+export const UPDATE_TASK_SCHEMA: JsonSchema = {
+  type: 'object',
+  properties: {
+    taskId: TASK_ID,
+    title: TITLE,
+    description: {
+      type: ['string', 'null'],
+      maxLength: 1000,
+      description: 'New description, or null to clear it.',
+    },
+    priority: PRIORITY,
+    tags: TAGS,
+    dueDate: { type: ['string', 'null'], description: `${DUE_DATE_DESCRIPTION} Pass null to clear it.` },
+    progress: {
+      type: 'integer',
+      minimum: 0,
+      maximum: 100,
+      description: 'Percent complete, 0 to 100. Only for tasks in the in-progress column; move the task first.',
+    },
+  },
+  required: ['taskId'],
+};
+
+export const MOVE_TASK_SCHEMA: JsonSchema = {
+  type: 'object',
+  properties: {
+    taskId: TASK_ID,
+    status: { ...STATUS, description: `Column to move the task to. ${STATUS.description}` },
+    boardId: { ...BOARD_ID, description: 'Move the task to this board as well. Omit to stay on its current board.' },
+  },
+  required: ['taskId', 'status'],
+};
+
+export const DELETE_TASK_SCHEMA: JsonSchema = {
+  type: 'object',
+  properties: {
+    taskId: TASK_ID,
+  },
+  required: ['taskId'],
+};
