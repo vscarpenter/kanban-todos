@@ -58,3 +58,40 @@ export function toColumns(boardTasks: Task[]) {
     count: counts[COUNT_KEY[status]],
   }));
 }
+
+/** The compact shape cascade_list_tasks returns. */
+export function toTaskSummary(task: Task) {
+  return {
+    id: task.id,
+    title: task.title,
+    status: task.status,
+    priority: task.priority,
+    tags: task.tags,
+    dueDate: toIso(task.dueDate),
+    progress: task.progress ?? null,
+    archived: Boolean(task.archivedAt),
+    boardId: task.boardId,
+    updatedAt: toIso(task.updatedAt),
+  };
+}
+
+/** The full shape cascade_get_task and every mutating tool return. */
+export function toTaskDetail(task: Task, boardName: string | null) {
+  return {
+    id: task.id,
+    title: task.title,
+    description: task.description ?? null,
+    status: task.status,
+    priority: task.priority,
+    tags: task.tags,
+    boardId: task.boardId,
+    boardName,
+    dueDate: toIso(task.dueDate),
+    progress: task.progress ?? null,
+    archived: Boolean(task.archivedAt),
+    createdAt: toIso(task.createdAt),
+    updatedAt: toIso(task.updatedAt),
+    completedAt: toIso(task.completedAt),
+    archivedAt: toIso(task.archivedAt),
+  };
+}

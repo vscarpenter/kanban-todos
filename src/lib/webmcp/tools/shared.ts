@@ -24,3 +24,14 @@ export function resolveBoard(boardId: string | undefined): Board {
 export function tasksOnBoard(boardId: string): Task[] {
   return useTaskStore.getState().tasks.filter((task) => task.boardId === boardId);
 }
+
+/** Finds a task by id or throws a message that names the id. */
+export function findTask(taskId: string): Task {
+  const task = useTaskStore.getState().tasks.find((candidate) => candidate.id === taskId);
+  if (!task) throw new Error(`Task not found: ${taskId}`);
+  return task;
+}
+
+export function boardNameFor(boardId: string): string | null {
+  return useBoardStore.getState().boards.find((board) => board.id === boardId)?.name ?? null;
+}
