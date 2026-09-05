@@ -1,4 +1,5 @@
-import { test, expect, taskCard, column, type Page } from './fixtures';
+import type { Page } from '@playwright/test';
+import { test, expect, taskCard, column } from './fixtures';
 
 /**
  * Real-browser smoke test for the WebMCP tool layer. Opt in with
@@ -32,7 +33,7 @@ interface ToolResult {
 // with a JSON string, which is what Chrome 152 accepts.
 async function callTool(page: Page, name: string, args: Record<string, unknown>): Promise<ToolResult> {
   return page.evaluate(
-    async ({ name, args }) => {
+    async ({ name, args }: { name: string; args: Record<string, unknown> }) => {
       const modelContext = document.modelContext;
       if (!modelContext) throw new Error('document.modelContext is undefined; enable WebMCP in this browser');
       const tool = (await modelContext.getTools()).find((candidate) => candidate.name === name);
