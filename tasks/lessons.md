@@ -34,11 +34,14 @@
 
 ## WebMCP tool layer, 2026-09-05
 
-### Observation: npx-based MCP servers fail from this repository
-- Claude Code starts stdio servers with the project directory as cwd, and npm rejects the nested
-  `overrides` keys in package.json ("Override without name: eslint-plugin-import/minimatch")
-- Affects context7, ui-craft, and the WebMCP bridge alike; a global install by absolute path works
-- **Rule:** Register machine-level MCP servers by absolute binary path, or fix the overrides format.
+### Observation: npx-based MCP servers failed from this repository
+- Claude Code starts stdio servers with the project directory as cwd, and npm rejected the
+  yarn-style `parent/child` keys in `overrides` ("Override without name"), then the `^` specs on
+  `@types/react` that disagreed with their pinned overrides (EOVERRIDE)
+- Fixed by writing overrides in npm's nested object form and pinning those two direct specs;
+  bun reads both forms the same way (the lockfile was already in the nested form)
+- **Rule:** Keep `overrides` in npm's nested form, and keep a direct dependency's spec identical to
+  its override. Test with `npx` from the repo root, not from home.
 
 ### Observation: the WebMCP Bridge extension forgets "Until reload" activations
 - Tab activations live in the service worker's memory; Chrome stops the worker about 30 seconds

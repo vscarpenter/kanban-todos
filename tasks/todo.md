@@ -38,11 +38,10 @@
 
 ## Resuming From Here
 
-All three phases are complete. v5.3.0 is deployed to cascade.vinny.dev and the bridge checklist
-passed there and on localhost. PR #108 is open from `feat/webmcp-tools`. Follow-ups worth a
-separate issue: reformat package.json `overrides` so npx-based MCP servers work from this repo,
-decide whether `removeConsole` should keep the WebMCP info line in production, and consider an
-origin trial token so production needs no flag.
+PR #108 merged and v5.3.0 is live. Overrides rewritten in npm's nested form on
+`chore/npm-compatible-overrides` so npx-based MCP servers start from this repo (verified with
+webmcp-server and context7). Open decisions: whether `removeConsole` should keep the WebMCP
+info line in production, and an origin trial token so production needs no flag.
 
 ---
 
