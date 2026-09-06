@@ -78,9 +78,20 @@ user event (component)
 Errors are captured per-store in an `error` field and surfaced as toasts by
 `useStoreErrorToasts` (`src/lib/hooks/`).
 
+## Browser agents (WebMCP)
+
+`src/lib/webmcp/` registers eight `cascade_` tools on `document.modelContext` once the stores
+have initialized (`KanbanBoard` calls `registerCascadeTools()` and aborts on unmount). Each
+tool validates its input, calls a store action (`addTask`, `updateTask`, `moveTask`,
+`moveTaskToBoard`, `deleteTask`), and returns serialized JSON, so an agent's write follows the
+same data flow as a click. Registration state drives the "Agent tools" line in the sidebar
+footer. Setup, bridge, and smoke test: `docs/webmcp.md`. Decision: `docs/adr/0006-webmcp-tool-layer.md`.
+
 ## Where to start when changing this area
 
 - Adding a provider or global behavior → `src/app/layout.tsx`.
+- Adding or changing an agent tool → `src/lib/webmcp/tools/` plus its schema in `schemas.ts`
+  and a test in `src/lib/webmcp/__tests__/`.
 - Changing board layout / initialization order → `src/components/KanbanBoard.tsx`.
 - Changing drag behavior → `src/hooks/useDragLifecycle.ts` (logic) and
   `src/components/DragDropProvider.tsx` (sensors/overlay).

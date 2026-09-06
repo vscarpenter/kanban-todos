@@ -27,7 +27,7 @@ export type TaskStoreState = {
   validateBoardAccess: (boardId: string) => Promise<boolean>;
   recoverFromSearchError: () => void;
   applyFilters: () => Promise<void>;
-  updateTask: (taskId: string, updates: Partial<Task>) => Promise<void>;
+  updateTask: (taskId: string, updates: Partial<Task>) => Promise<Task>;
   saveSearchScope: (scope: SearchScope) => Promise<void>;
 };
 

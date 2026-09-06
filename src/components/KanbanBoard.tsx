@@ -15,6 +15,7 @@ import { notificationManager } from "@/lib/utils/notifications";
 import { detectTouchCapabilities } from "@/lib/utils/iosDetection";
 import { logger } from "@/lib/utils/logger";
 import { useStoreErrorToasts } from "@/lib/hooks/useStoreErrorToasts";
+import { registerCascadeTools, unregisterCascadeTools } from "@/lib/webmcp";
 
 // Lazy load keyboard components
 const GlobalHotkeys = dynamic(() => import("./GlobalHotkeys").then(mod => ({ default: mod.GlobalHotkeys })), {
@@ -50,7 +51,7 @@ export function KanbanBoard() {
   };
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(getInitialSidebarState);
-  const [, setIsInitialized] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
   const { initializeStore, setBoardFilter, tasks } = useTaskStore();
   const { initializeBoards, currentBoardId } = useBoardStore();
@@ -71,6 +72,15 @@ export function KanbanBoard() {
 
     initializeStores();
   }, [initializeStore, initializeBoards, initializeSettings]);
+
+  // Expose the board to browser agents (WebMCP) once the data layer is
+  // ready. The cleanup aborts the registration, which is what keeps strict
+  // mode remounts and hot reloads clear of the duplicate-name rejection.
+  useEffect(() => {
+    if (!isInitialized) return;
+    void registerCascadeTools();
+    return () => unregisterCascadeTools();
+  }, [isInitialized]);
 
   // Cross-store sync: task store's filter follows the selected board from board store.
   // Not derived state — it's a side effect into an external store.

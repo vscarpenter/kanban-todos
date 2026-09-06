@@ -8,6 +8,8 @@ const mocks = vi.hoisted(() => ({
   initializeStore: vi.fn().mockResolvedValue(undefined),
   initializeBoards: vi.fn().mockResolvedValue(undefined),
   initializeSettings: vi.fn().mockResolvedValue(undefined),
+  registerCascadeTools: vi.fn().mockResolvedValue('registered'),
+  unregisterCascadeTools: vi.fn(),
 }))
 
 // Mock all the dependencies
@@ -75,6 +77,11 @@ vi.mock('@/lib/stores/settingsStore', () => ({
   },
 }))
 
+vi.mock('@/lib/webmcp', () => ({
+  registerCascadeTools: mocks.registerCascadeTools,
+  unregisterCascadeTools: mocks.unregisterCascadeTools,
+}))
+
 vi.mock('@/lib/utils/notifications', () => ({
   notificationManager: {
     requestPermission: vi.fn().mockResolvedValue(false),
@@ -116,6 +123,27 @@ describe('KanbanBoard', () => {
   it('shows sidebar when open', () => {
     render(<KanbanBoard />)
     expect(screen.getByTestId('sidebar')).toBeInTheDocument()
+  })
+
+  it('registers WebMCP tools only after the stores are ready', async () => {
+    render(<KanbanBoard />)
+
+    expect(mocks.registerCascadeTools).not.toHaveBeenCalled()
+    await waitFor(() => {
+      expect(mocks.registerCascadeTools).toHaveBeenCalledTimes(1)
+    })
+    expect(mocks.initializeStore).toHaveBeenCalledTimes(1)
+  })
+
+  it('unregisters WebMCP tools when it unmounts', async () => {
+    const { unmount } = render(<KanbanBoard />)
+    await waitFor(() => {
+      expect(mocks.registerCascadeTools).toHaveBeenCalledTimes(1)
+    })
+
+    unmount()
+
+    expect(mocks.unregisterCascadeTools).toHaveBeenCalledTimes(1)
   })
 
   it('initializes stores on mount', async () => {

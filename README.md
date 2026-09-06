@@ -32,6 +32,7 @@ A modern, privacy-first kanban board task management system built with Next.js, 
 - **Type Safety**: Full TypeScript implementation
 - **Component Library**: Built with shadcn/ui components
 - **State Management**: Zustand for efficient state handling
+- **Agent Tools (WebMCP)**: Exposes the board to browser agents such as Claude Code through `document.modelContext`. See [docs/webmcp.md](docs/webmcp.md)
 
 ## 🚀 Getting Started
 
@@ -158,6 +159,7 @@ src/
     │   ├── boardStore.ts           # Board management
     │   └── settingsStore.ts        # Application settings
     ├── types/            # TypeScript type definitions
+    ├── webmcp/           # WebMCP tools for browser agents (docs/webmcp.md)
     ├── utils/            # Utility modules
     │   ├── database.ts            # IndexedDB wrapper
     │   ├── exportImport.ts        # Export/import logic

@@ -15,6 +15,18 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      testIgnore: /webmcp\.spec\.ts/,
+    },
+    {
+      // Opt-in WebMCP smoke test against the installed Chrome with the
+      // feature switched on. Run: WEBMCP_E2E=1 bunx playwright test --project=webmcp
+      name: 'webmcp',
+      testMatch: /webmcp\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: 'chrome',
+        launchOptions: { args: ['--enable-features=WebMCP'] },
+      },
     },
   ],
   webServer: {
