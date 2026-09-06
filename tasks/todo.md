@@ -40,8 +40,9 @@
 
 PR #108 merged and v5.3.0 is live. Overrides rewritten in npm's nested form on
 `chore/npm-compatible-overrides` so npx-based MCP servers start from this repo (verified with
-webmcp-server and context7). Open decisions: whether `removeConsole` should keep the WebMCP
-info line in production, and an origin trial token so production needs no flag.
+webmcp-server and context7). Decided 2026-09-05: `removeConsole` stays as is; the sidebar indicator is
+the production signal for WebMCP, and the console line is development-only by design. Still
+open: an origin trial token so production needs no flag.
 
 ---
 
