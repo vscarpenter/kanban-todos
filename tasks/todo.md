@@ -19,15 +19,15 @@
 ## Phase 2: bridge to Claude Code
 
 - [x] Verify tools in Chrome 152 at localhost:3000 (8 tools, create/move/delete reflected on the board); cascade.vinny.dev pending deploy
-- [ ] `claude mcp add --transport stdio webmcp-server -- npx webmcp-server`, smoke test from Claude Code
-- [ ] docs/webmcp.md with verified versions, flag name, extension, commands, fallback bridge
+- [x] Bridge registered at user scope by absolute path (global bun install); stdio smoke test against localhost passed: list, create, move, delete, error path
+- [x] docs/webmcp.md with verified versions, flag name, extension, commands, fallback bridge
 
 ## Phase 3: tests
 
 - [x] Unit tests per tool against fake-indexeddb (written first, per tool group)
 - [x] Opt-in Playwright smoke test (`WEBMCP_E2E=1`, chrome channel, `--enable-features=WebMCP`): 3 passed
-- [ ] Manual checklist in docs/webmcp.md
-- [ ] Version bump, final suite run, summary
+- [x] Manual checklist in docs/webmcp.md (run once on localhost, 2026-09-05)
+- [x] Version bump to 5.3.0, final suite run (754 unit, 3 e2e), summary
 
 ## Assumptions
 
@@ -38,11 +38,11 @@
 
 ## Resuming From Here
 
-Phase 1 is complete and committed on `feat/webmcp-tools`. Phase 2 blocker found and fixed:
-npx-based MCP servers fail from this project because npm rejects the nested `overrides` keys in
-package.json (Claude Code runs servers with the project as cwd). The bridge is installed
-globally with bun instead. Next: docs/webmcp.md, local bridge test once the extension is
-activated on the localhost tab, then the cascade.vinny.dev pass after deploy.
+All three phases are complete and committed on `feat/webmcp-tools`. Awaiting Vinny's call on
+two outward-facing steps: deploy to cascade.vinny.dev (then rerun the checklist there with the
+extension set to "Always on" for that origin), and push plus PR. Follow-ups worth a separate
+issue: reformat package.json `overrides` so npx-based MCP servers work from this repo, and
+decide whether `removeConsole` should keep the WebMCP info line in production.
 
 ---
 

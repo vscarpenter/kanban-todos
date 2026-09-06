@@ -82,9 +82,16 @@ are cited so you can tell which one you have.
 
 1. Install **WebMCP Bridge** from the Chrome Web Store
    (`https://chromewebstore.google.com/detail/webmcp-bridge/chgjbookknohehmaocfijekhaocaanaf`).
-2. Open the Cascade tab, click the extension icon, and pick a mode: **Until reload** (this tab
-   only) or **Always on** (every tab on this origin). Off exposes nothing.
+2. Open the Cascade tab, click the extension icon, and pick **Always on**. Chrome asks to allow
+   the extension on that site; accept. Off exposes nothing.
 3. The popup's dot turns yellow (active, no client) or green (connected to `webmcp-server`).
+
+Pick **Always on**, not **Until reload**. Version 0.2.1 keeps "Until reload" activations in the
+service worker's memory, and Chrome stops that worker after about 30 seconds without a bridge
+connection. The activation is then gone, with no visible sign, and the tool list stays empty.
+"Always on" is stored and registers the content scripts for the origin, so it survives worker
+restarts and page reloads. Verified 2026-09-05: with "Until reload" the bridge listed no tools;
+with "Always on" the eight tools appeared within a second.
 
 Activation is per origin. Turning it on for `cascade.vinny.dev` does not cover
 `localhost:3000`; do each one you use.
@@ -125,19 +132,29 @@ The server listens for the extension on `ws://127.0.0.1:12315` (override with
 1. Start a new Claude Code session anywhere (`claude`). The bridge connects on startup.
 2. In Chrome, open Cascade with the extension active for that origin.
 3. Ask Claude Code: "List the tools from webmcp-server." Expect the eight `cascade_` tools.
-   The extension namespaces them by tab, so the names carry a tab prefix (unverified until
-   the first live run; see the checklist below).
+   The extension namespaces them by tab and prefixes each description with the tab title, so
+   they look like `tab-1482422103:cascade_create_task` with a description starting
+   `[Cascade — Kanban tasks, fully local] [Cascade — Kanban tasks, fully local: localhost]`.
+   With two Cascade tabs open you get two sets; close one or ask for the tab you mean.
 4. Ask: "Create a task in Cascade called 'Hello from Claude Code'." Watch it appear in To Do.
 5. Ask: "Move that task to done." Watch it land in Done with a completion time.
 6. Ask: "Delete that task." Watch it disappear.
+
+Verified 2026-09-05 against `localhost:3000` with a stdio client driving `webmcp-server`
+the way Claude Code does: the eight tools listed, `cascade_create_task` put a card in To Do,
+`cascade_move_task` moved it to Done with a completion time, and `cascade_delete_task`
+removed it, each change visible on the board without a reload. A call with a bad task id came
+back as an MCP error with `isError: true` and Chrome's generic text, "Tool was executed but the
+invocation failed"; the field-naming message did not reach the client.
 
 Without the browser, you can talk to the server directly. It answers `initialize` and
 `tools/list` over stdio; with no activated tab the tool list is empty.
 
 ### Known gaps in this bridge
 
-- It drops tool annotations before they reach Claude Code, so `consequentialHint` on
-  `cascade_delete_task` produces no confirmation prompt on the client side.
+- It drops tool annotations before they reach Claude Code (verified: `tools/list` carries no
+  `annotations` field), so `consequentialHint` on `cascade_delete_task` produces no
+  confirmation prompt on the client side.
 - Handler error messages arrive as Chrome's generic `UnknownError` (see Part 1).
 - It reads tools from every activated tab. With two Cascade tabs open you get two sets.
 
@@ -177,7 +194,7 @@ Run this after any change to the tool layer or the bridge.
 
 - [ ] Chrome flag on, footer reads "Agent tools on", hover shows "8 WebMCP tools".
 - [ ] DevTools: `getTools()` lists the eight `cascade_` names.
-- [ ] Extension active for the origin (yellow or green dot in its popup).
+- [ ] Extension set to "Always on" for the origin (yellow or green dot in its popup).
 - [ ] `claude mcp get webmcp-server` reports connected.
 - [ ] From Claude Code: create a task. It appears in To Do without a reload.
 - [ ] From Claude Code: move it to done. It moves to Done and shows a completion time.
