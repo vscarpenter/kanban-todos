@@ -57,3 +57,20 @@
 - `src/test/setup.ts` mocks the database module and pins `crypto.randomUUID` to one value
 - **Rule:** Tests against the real TaskDatabase call `vi.unmock('@/lib/utils/database')`, import
   `fake-indexeddb/auto`, and restore real UUIDs (see `src/lib/webmcp/__tests__/realStores.ts`).
+
+## Frozen page after "Update Task", 2026-09-05
+
+### Observation: `bun install` leaves orphaned nested copies behind after version bumps
+- v5.3.0 shipped four copies of `@radix-ui/react-dismissable-layer` (plus nested focus-scope,
+  presence and portal) even though `bun.lock` resolves each to one version. Incremental installs
+  during the dependency bump nested them, later bumps hoisted the final version, and
+  `bun install` then reported "no changes" without removing the leftovers
+- Radix keeps its layer and focus stacks in module scope, so the card menu and the Edit Task
+  dialog used different stacks: the dialog's copy recorded `pointer-events: none` as the value
+  to restore, and closing it froze the page until reload
+- A fresh install (`bun install --frozen-lockfile --force`, or into an empty directory) yields one
+  copy; `scripts/deploy.sh` now does that on every deploy
+- **Rule:** After any dependency bump, check for nested copies before building or deploying:
+  `find node_modules -maxdepth 6 -path "*/node_modules/@radix-ui/*/node_modules/@radix-ui/*"`.
+  `src/components/__tests__/RadixLayerStack.test.tsx` fails when the menu and dialog stop sharing
+  a stack, so keep it in the suite.

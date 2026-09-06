@@ -38,11 +38,13 @@
 
 ## Resuming From Here
 
-PR #108 merged and v5.3.0 is live. Overrides rewritten in npm's nested form on
-`chore/npm-compatible-overrides` so npx-based MCP servers start from this repo (verified with
-webmcp-server and context7). Decided 2026-09-05: `removeConsole` stays as is; the sidebar indicator is
-the production signal for WebMCP, and the console line is development-only by design. Still
-open: an origin trial token so production needs no flag.
+Fixed 2026-09-05: prod v5.3.0 froze the page after "Update Task" because the local
+`node_modules` (which `scripts/deploy.sh` builds from) held four orphaned copies of Radix's
+dismissable layer; see `tasks/lessons.md`. Done: regression test
+(`src/components/__tests__/RadixLayerStack.test.tsx`), deploy.sh reinstalls from the lockfile
+with `--force` on every deploy, local tree rebuilt, version 5.3.1. Next: deploy 5.3.1 to
+cascade.vinny.dev (`bun run deploy`) and re-check the edit flow there. Still open from the WebMCP
+work: an origin trial token so production needs no flag.
 
 ---
 
