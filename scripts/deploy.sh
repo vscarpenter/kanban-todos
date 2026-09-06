@@ -57,13 +57,17 @@ check_prerequisites() {
     info "✓ Prerequisites check passed"
 }
 
-# Install dependencies if they're missing. Split out from build_app so the
-# quality gate below can run before we build.
+# Reinstall dependencies from the lockfile on every deploy. Split out from
+# build_app so the quality gate below can run before we build.
+#
+# A plain `bun install` reports "no changes" after version bumps yet leaves
+# orphaned nested copies behind: v5.3.0 shipped four copies of Radix's
+# dismissable layer, which split its module-level layer stack and froze the
+# page after "Update Task". --force rewrites node_modules to match bun.lock
+# exactly and takes a few seconds from the local cache.
 ensure_dependencies() {
-    if [ ! -d "node_modules" ]; then
-        log "Installing dependencies..."
-        bun install
-    fi
+    log "Installing dependencies from the lockfile..."
+    bun install --frozen-lockfile --force || error "Dependency install failed. Fix it before deploying."
 }
 
 # Run the same checks CI runs, before anything reaches S3.
