@@ -63,8 +63,8 @@
     "@testing-library/react": "^16.3.3",
     "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^26.4.1",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.1.1",
     "@vitest/coverage-v8": "^4.1.11",
     "baseline-browser-mapping": "^2.11.21",
@@ -81,10 +81,18 @@
   },
   "overrides": {
     "rollup": "4.59.0",
-    "eslint-plugin-import/minimatch": "3.1.5",
-    "eslint-plugin-jsx-a11y/minimatch": "3.1.5",
-    "eslint-plugin-react/minimatch": "3.1.5",
-    "@typescript-eslint/typescript-estree/minimatch": "9.0.9",
+    "eslint-plugin-import": {
+      "minimatch": "3.1.5"
+    },
+    "eslint-plugin-jsx-a11y": {
+      "minimatch": "3.1.5"
+    },
+    "eslint-plugin-react": {
+      "minimatch": "3.1.5"
+    },
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "9.0.9"
+    },
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "flatted": "^3.4.2",

@@ -105,12 +105,13 @@ bun install -g webmcp-server@0.2.0
 ls ~/.bun/bin/webmcp-server
 ```
 
-Why not `npx webmcp-server`, as the upstream README suggests? Claude Code starts MCP servers
-with the project directory as their working directory. npm reads the project's `package.json`
-there and rejects this repository's nested `overrides` keys with
-`npm error Override without name: eslint-plugin-import/minimatch`, so npx exits before the
-server starts. The global binary has no such dependency on the working directory. The same
-failure hits any other npx-based MCP server launched from this repository.
+The upstream README suggests `npx webmcp-server`, and that works too. The global binary is
+recommended because it does not depend on the working directory and starts without an npm
+resolution step. Until 2026-09-05 npx could not start any MCP server from this repository:
+Claude Code runs servers with the project as cwd, npm read `package.json` there, and it rejected
+the yarn-style `parent/child` keys in `overrides`. The overrides now use npm's nested object
+form, and the two direct type dependencies are pinned to their override versions, which npm
+also requires.
 
 ### 2c. Tell Claude Code about it
 
