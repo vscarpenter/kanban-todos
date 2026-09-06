@@ -18,7 +18,7 @@
 
 ## Phase 2: bridge to Claude Code
 
-- [x] Verify tools in Chrome 152 at localhost:3000 (8 tools, create/move/delete reflected on the board); cascade.vinny.dev pending deploy
+- [x] Verify tools in Chrome 152 at localhost:3000 and at cascade.vinny.dev (v5.3.0 deployed 2026-09-05): 8 tools, create/move/delete reflected on the board, through the bridge on both
 - [x] Bridge registered at user scope by absolute path (global bun install); stdio smoke test against localhost passed: list, create, move, delete, error path
 - [x] docs/webmcp.md with verified versions, flag name, extension, commands, fallback bridge
 
@@ -38,11 +38,11 @@
 
 ## Resuming From Here
 
-All three phases are complete and committed on `feat/webmcp-tools`. Awaiting Vinny's call on
-two outward-facing steps: deploy to cascade.vinny.dev (then rerun the checklist there with the
-extension set to "Always on" for that origin), and push plus PR. Follow-ups worth a separate
-issue: reformat package.json `overrides` so npx-based MCP servers work from this repo, and
-decide whether `removeConsole` should keep the WebMCP info line in production.
+All three phases are complete. v5.3.0 is deployed to cascade.vinny.dev and the bridge checklist
+passed there and on localhost. PR #108 is open from `feat/webmcp-tools`. Follow-ups worth a
+separate issue: reformat package.json `overrides` so npx-based MCP servers work from this repo,
+decide whether `removeConsole` should keep the WebMCP info line in production, and consider an
+origin trial token so production needs no flag.
 
 ---
 

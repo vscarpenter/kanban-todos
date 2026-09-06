@@ -147,6 +147,10 @@ removed it, each change visible on the board without a reload. A call with a bad
 back as an MCP error with `isError: true` and Chrome's generic text, "Tool was executed but the
 invocation failed"; the field-naming message did not reach the client.
 
+The same run against `https://cascade.vinny.dev/` (v5.3.0, extension set to "Always on" for
+that origin) passed the same way: create, move to Done, delete, each visible on the live board
+without a reload.
+
 Without the browser, you can talk to the server directly. It answers `initialize` and
 `tools/list` over stdio; with no activated tab the tool list is empty.
 
