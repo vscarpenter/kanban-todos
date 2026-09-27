@@ -1,4 +1,6 @@
-import '@testing-library/jest-dom'
+// The /vitest entry augments vitest's Assertion type; the bare entry only
+// augments jest's namespace, which Vitest 5 no longer maps onto Assertion.
+import '@testing-library/jest-dom/vitest'
 import { vi } from 'vitest'
 import React from 'react'
 
