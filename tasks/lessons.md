@@ -74,3 +74,12 @@
   `find node_modules -maxdepth 6 -path "*/node_modules/@radix-ui/*/node_modules/@radix-ui/*"`.
   `src/components/__tests__/RadixLayerStack.test.tsx` fails when the menu and dialog stop sharing
   a stack, so keep it in the suite.
+
+## Auto-archive fix and STE guide, 2026-10-02
+
+### Observation: a setting shipped with no code that read it
+- `autoArchiveDays` was saved, validated, exported, and merged on import, but nothing archived
+  tasks; CLAUDE.md and docs still claimed "automatic archiving"
+- Found only because documenting the app forced a check of each claim against the code
+- **Rule:** When a setting is added, add the test that proves its consumer runs. When documenting
+  a feature, grep for the code that reads the value, not just where it is stored.
