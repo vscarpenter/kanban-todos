@@ -3,10 +3,12 @@ import { taskDB } from '@/lib/utils/database';
 import type { Task } from '@/lib/types';
 import { useTaskStore } from '../taskStore';
 
+// Which tasks qualify is decided inside the database transaction; those cases
+// live in database.test.ts. These tests cover the store's side of the contract.
 vi.mock('@/lib/utils/database', () => ({
   taskDB: {
     init: vi.fn().mockResolvedValue(undefined),
-    upsertTasks: vi.fn().mockResolvedValue(undefined),
+    archiveDoneTasksCompletedBefore: vi.fn().mockResolvedValue([]),
     getTasks: vi.fn().mockResolvedValue([]),
     getBoards: vi.fn().mockResolvedValue([]),
     getSettings: vi.fn().mockResolvedValue(null),
@@ -20,7 +22,6 @@ vi.mock('../boardStore', () => ({
 
 const NOW = new Date('2026-03-01T12:00:00.000Z');
 const THIRTY_DAYS_BEFORE_NOW = new Date('2026-01-30T12:00:00.000Z');
-const TWENTY_NINE_DAYS_BEFORE_NOW = new Date('2026-01-31T12:00:00.000Z');
 const LONG_AGO = new Date('2025-12-01T12:00:00.000Z');
 
 const makeTask = (overrides: Partial<Task>): Task => ({
@@ -32,16 +33,19 @@ const makeTask = (overrides: Partial<Task>): Task => ({
   tags: [],
   createdAt: LONG_AGO,
   updatedAt: LONG_AGO,
+  completedAt: LONG_AGO,
   ...overrides,
 });
 
 const taskById = (id: string) => useTaskStore.getState().tasks.find(t => t.id === id);
+const archiveInDb = vi.mocked(taskDB.archiveDoneTasksCompletedBefore);
 
 describe('taskStore autoArchiveCompletedTasks', () => {
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(NOW);
     vi.clearAllMocks();
+    archiveInDb.mockResolvedValue([]);
     useTaskStore.setState({ tasks: [], filteredTasks: [], error: null, searchCache: new Map() });
   });
 
@@ -49,103 +53,59 @@ describe('taskStore autoArchiveCompletedTasks', () => {
     vi.useRealTimers();
   });
 
-  it('archives a done task completed exactly the configured number of days ago', async () => {
-    useTaskStore.setState({ tasks: [makeTask({ id: 'old-done', completedAt: THIRTY_DAYS_BEFORE_NOW })] });
-
+  it('asks the database to archive tasks finished the configured number of days ago or earlier', async () => {
     await useTaskStore.getState().autoArchiveCompletedTasks(30);
 
-    expect(taskById('old-done')?.archivedAt).toEqual(NOW);
+    expect(archiveInDb).toHaveBeenCalledWith(THIRTY_DAYS_BEFORE_NOW, NOW);
   });
 
-  it('keeps a done task that is one day short of the threshold', async () => {
-    useTaskStore.setState({ tasks: [makeTask({ id: 'recent-done', completedAt: TWENTY_NINE_DAYS_BEFORE_NOW })] });
-
-    await useTaskStore.getState().autoArchiveCompletedTasks(30);
-
-    expect(taskById('recent-done')?.archivedAt).toBeUndefined();
-  });
-
-  it('keeps unfinished tasks no matter how old they are', async () => {
-    useTaskStore.setState({
-      tasks: [
-        makeTask({ id: 'old-todo', status: 'todo' }),
-        makeTask({ id: 'old-in-progress', status: 'in-progress' }),
-      ],
-    });
-
-    await useTaskStore.getState().autoArchiveCompletedTasks(30);
-
-    expect(taskById('old-todo')?.archivedAt).toBeUndefined();
-    expect(taskById('old-in-progress')?.archivedAt).toBeUndefined();
-  });
-
-  it('leaves the original archive date on a task that is already archived', async () => {
-    const firstArchived = new Date('2026-02-01T08:00:00.000Z');
-    useTaskStore.setState({
-      tasks: [makeTask({ id: 'archived', completedAt: LONG_AGO, archivedAt: firstArchived })],
-    });
-
-    await useTaskStore.getState().autoArchiveCompletedTasks(30);
-
-    expect(taskById('archived')?.archivedAt).toEqual(firstArchived);
-  });
-
-  it('uses updatedAt when a done task has no completedAt (older or imported data)', async () => {
-    useTaskStore.setState({
-      tasks: [makeTask({ id: 'legacy-done', completedAt: undefined, updatedAt: THIRTY_DAYS_BEFORE_NOW })],
-    });
-
-    await useTaskStore.getState().autoArchiveCompletedTasks(30);
-
-    expect(taskById('legacy-done')?.archivedAt).toEqual(NOW);
-  });
-
-  it('writes only the newly archived tasks to the database in one call and returns their count', async () => {
-    useTaskStore.setState({
-      tasks: [
-        makeTask({ id: 'old-done-1', completedAt: THIRTY_DAYS_BEFORE_NOW }),
-        makeTask({ id: 'old-done-2', completedAt: LONG_AGO }),
-        makeTask({ id: 'recent-done', completedAt: TWENTY_NINE_DAYS_BEFORE_NOW }),
-        makeTask({ id: 'old-todo', status: 'todo' }),
-      ],
-    });
+  it('marks the archived tasks in state and returns how many there were', async () => {
+    useTaskStore.setState({ tasks: [makeTask({ id: 'old-1' }), makeTask({ id: 'old-2' }), makeTask({ id: 'kept' })] });
+    archiveInDb.mockResolvedValue(['old-1', 'old-2']);
 
     const archivedCount = await useTaskStore.getState().autoArchiveCompletedTasks(30);
 
     expect(archivedCount).toBe(2);
-    expect(taskDB.upsertTasks).toHaveBeenCalledTimes(1);
-    const written = vi.mocked(taskDB.upsertTasks).mock.calls[0][0];
-    expect(written.map(t => t.id)).toEqual(['old-done-1', 'old-done-2']);
-    expect(written.every(t => t.archivedAt?.getTime() === NOW.getTime())).toBe(true);
-    expect(written.every(t => t.updatedAt.getTime() === NOW.getTime())).toBe(true);
+    expect(taskById('old-1')?.archivedAt).toEqual(NOW);
+    expect(taskById('old-2')?.archivedAt).toEqual(NOW);
+    expect(taskById('kept')?.archivedAt).toBeUndefined();
   });
 
-  it('returns 0 and skips the database when nothing is old enough', async () => {
-    useTaskStore.setState({ tasks: [makeTask({ id: 'recent-done', completedAt: TWENTY_NINE_DAYS_BEFORE_NOW })] });
+  it('keeps the other fields of the in-memory task when it marks it archived', async () => {
+    useTaskStore.setState({ tasks: [makeTask({ id: 'old', title: 'Edited title' })] });
+    archiveInDb.mockResolvedValue(['old']);
 
-    const archivedCount = await useTaskStore.getState().autoArchiveCompletedTasks(30);
+    await useTaskStore.getState().autoArchiveCompletedTasks(30);
 
-    expect(archivedCount).toBe(0);
-    expect(taskDB.upsertTasks).not.toHaveBeenCalled();
+    expect(taskById('old')?.title).toBe('Edited title');
   });
 
-  it('archives nothing when the setting is 0 (Never)', async () => {
-    useTaskStore.setState({ tasks: [makeTask({ id: 'old-done', completedAt: LONG_AGO })] });
+  it('does not add a task to state that is no longer there', async () => {
+    useTaskStore.setState({ tasks: [makeTask({ id: 'still-here' })] });
+    archiveInDb.mockResolvedValue(['already-deleted']);
+
+    await useTaskStore.getState().autoArchiveCompletedTasks(30);
+
+    expect(useTaskStore.getState().tasks.map(t => t.id)).toEqual(['still-here']);
+  });
+
+  it('archives nothing and skips the database when the setting is 0 (Never)', async () => {
+    useTaskStore.setState({ tasks: [makeTask({ id: 'old' })] });
 
     const archivedCount = await useTaskStore.getState().autoArchiveCompletedTasks(0);
 
     expect(archivedCount).toBe(0);
-    expect(taskById('old-done')?.archivedAt).toBeUndefined();
-    expect(taskDB.upsertTasks).not.toHaveBeenCalled();
+    expect(archiveInDb).not.toHaveBeenCalled();
+    expect(taskById('old')?.archivedAt).toBeUndefined();
   });
 
   it('re-throws and leaves tasks unarchived when the database write fails', async () => {
-    useTaskStore.setState({ tasks: [makeTask({ id: 'old-done', completedAt: LONG_AGO })] });
-    vi.mocked(taskDB.upsertTasks).mockRejectedValueOnce(new Error('IndexedDB write failed'));
+    useTaskStore.setState({ tasks: [makeTask({ id: 'old' })] });
+    archiveInDb.mockRejectedValueOnce(new Error('IndexedDB write failed'));
 
     await expect(useTaskStore.getState().autoArchiveCompletedTasks(30)).rejects.toThrow('IndexedDB write failed');
 
-    expect(taskById('old-done')?.archivedAt).toBeUndefined();
+    expect(taskById('old')?.archivedAt).toBeUndefined();
     expect(useTaskStore.getState().error).toBe('IndexedDB write failed');
   });
 });

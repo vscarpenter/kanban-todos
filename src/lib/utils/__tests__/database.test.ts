@@ -386,6 +386,76 @@ describe('TaskDatabase', () => {
     });
   });
 
+  describe('archiveDoneTasksCompletedBefore', () => {
+    const CUTOFF = new Date('2026-01-30T12:00:00.000Z');
+    const ARCHIVED_AT = new Date('2026-03-01T12:00:00.000Z');
+    const AT_CUTOFF = new Date('2026-01-30T12:00:00.000Z');
+    const AFTER_CUTOFF = new Date('2026-01-31T12:00:00.000Z');
+    const LONG_AGO = new Date('2025-12-01T12:00:00.000Z');
+
+    const storedTask = async (id: string) => (await db.getTasks()).find(t => t.id === id);
+
+    it('archives a done task completed at the cutoff and returns its id', async () => {
+      await db.addTask(createTestTask({ id: 'old-done', status: 'done', completedAt: AT_CUTOFF }));
+
+      const archivedIds = await db.archiveDoneTasksCompletedBefore(CUTOFF, ARCHIVED_AT);
+
+      expect(archivedIds).toEqual(['old-done']);
+      const stored = await storedTask('old-done');
+      expect(stored?.archivedAt?.getTime()).toBe(ARCHIVED_AT.getTime());
+      expect(stored?.updatedAt.getTime()).toBe(ARCHIVED_AT.getTime());
+    });
+
+    it('leaves recent, unfinished, and already archived tasks alone', async () => {
+      const firstArchived = new Date('2026-02-01T08:00:00.000Z');
+      await db.upsertTasks([
+        createTestTask({ id: 'recent-done', status: 'done', completedAt: AFTER_CUTOFF }),
+        createTestTask({ id: 'old-todo', status: 'todo', updatedAt: LONG_AGO }),
+        createTestTask({ id: 'archived', status: 'done', completedAt: LONG_AGO, archivedAt: firstArchived }),
+      ]);
+
+      const archivedIds = await db.archiveDoneTasksCompletedBefore(CUTOFF, ARCHIVED_AT);
+
+      expect(archivedIds).toEqual([]);
+      expect((await storedTask('recent-done'))?.archivedAt).toBeUndefined();
+      expect((await storedTask('old-todo'))?.archivedAt).toBeUndefined();
+      expect((await storedTask('archived'))?.archivedAt?.getTime()).toBe(firstArchived.getTime());
+    });
+
+    it('uses updatedAt for a done task with no completedAt', async () => {
+      await db.addTask(createTestTask({ id: 'legacy-done', status: 'done', completedAt: undefined, updatedAt: LONG_AGO }));
+
+      const archivedIds = await db.archiveDoneTasksCompletedBefore(CUTOFF, ARCHIVED_AT);
+
+      expect(archivedIds).toEqual(['legacy-done']);
+    });
+
+    it('sees an in-flight edit that moved the task out of Done', async () => {
+      const task = createTestTask({ id: 'reopened', status: 'done', completedAt: LONG_AGO });
+      await db.addTask(task);
+
+      const pendingEdit = db.updateTask({ ...task, status: 'todo', completedAt: undefined });
+      const archivedIds = await db.archiveDoneTasksCompletedBefore(CUTOFF, ARCHIVED_AT);
+      await pendingEdit;
+
+      expect(archivedIds).toEqual([]);
+      const stored = await storedTask('reopened');
+      expect(stored?.status).toBe('todo');
+      expect(stored?.archivedAt).toBeUndefined();
+    });
+
+    it('does not bring back a task whose delete was in flight', async () => {
+      await db.addTask(createTestTask({ id: 'deleted', status: 'done', completedAt: LONG_AGO }));
+
+      const pendingDelete = db.deleteTask('deleted');
+      const archivedIds = await db.archiveDoneTasksCompletedBefore(CUTOFF, ARCHIVED_AT);
+      await pendingDelete;
+
+      expect(archivedIds).toEqual([]);
+      expect(await storedTask('deleted')).toBeUndefined();
+    });
+  });
+
   describe('upsertBoards', () => {
     it('adds new boards in a single batch', async () => {
       const boards = [
