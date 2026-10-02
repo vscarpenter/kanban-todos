@@ -1,3 +1,20 @@
+# Auto-archive fix
+
+**Started:** 2026-10-02
+**Branch:** `fix/auto-archive`
+**Tier:** Standard (task store action, board wiring, tests; no new public contract)
+
+The `autoArchiveDays` setting (default 30, range 1 to 365) was saved and validated, but no code read it.
+
+- [x] Failing tests: `autoArchiveCompletedTasks(days)` archives done tasks whose `completedAt` (or `updatedAt` when `completedAt` is missing) is at least `days` old; leaves newer, unfinished, and already-archived tasks alone; one bulk DB write; returns the count; re-throws on DB failure
+- [x] Store action in `taskStore.crudActions.ts`, wired in `taskStore.ts`
+- [x] `KanbanBoard` runs it after the stores initialize and when the setting changes; toast with the count
+- [x] Full suite (768 passed), lint, typecheck; commit
+
+Assumption (parked on the dashboard): no "Never" option. Existing done tasks older than the setting move to the Archive at the next load; Restore brings them back.
+
+---
+
 # WebMCP tool layer
 
 **Started:** 2026-09-05

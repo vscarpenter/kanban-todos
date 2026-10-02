@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
+import { toast } from "sonner";
 import { Sidebar } from "./Sidebar";
 import { BoardView } from "./BoardView";
 import { SearchBar } from "./SearchBar";
@@ -53,7 +54,7 @@ export function KanbanBoard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(getInitialSidebarState);
   const [isInitialized, setIsInitialized] = useState(false);
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
-  const { initializeStore, setBoardFilter, tasks } = useTaskStore();
+  const { initializeStore, setBoardFilter, tasks, autoArchiveCompletedTasks } = useTaskStore();
   const { initializeBoards, currentBoardId } = useBoardStore();
   const { initializeSettings, settings } = useSettingsStore();
 
@@ -81,6 +82,21 @@ export function KanbanBoard() {
     void registerCascadeTools();
     return () => unregisterCascadeTools();
   }, [isInitialized]);
+
+  // Archive done tasks older than the setting. Runs once the data layer is
+  // ready and again whenever the user changes the number of days.
+  const autoArchiveDays = settings.autoArchiveDays;
+  useEffect(() => {
+    if (!isInitialized) return;
+    autoArchiveCompletedTasks(autoArchiveDays)
+      .then((archivedCount) => {
+        if (archivedCount === 0) return;
+        const noun = archivedCount === 1 ? 'task' : 'tasks';
+        toast.info(`Archived ${archivedCount} completed ${noun} older than ${autoArchiveDays} days.`);
+      })
+      // The store records the error and BoardView shows it; log it here too.
+      .catch((error: unknown) => logger.error('Auto-archive failed', error));
+  }, [isInitialized, autoArchiveDays, autoArchiveCompletedTasks]);
 
   // Cross-store sync: task store's filter follows the selected board from board store.
   // Not derived state — it's a side effect into an external store.

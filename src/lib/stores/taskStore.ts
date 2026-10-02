@@ -22,6 +22,7 @@ import {
   createMoveTaskToBoard,
   createArchiveTask,
   createUnarchiveTask,
+  createAutoArchiveCompletedTasks,
 } from './taskStore.crudActions';
 
 // Import from consolidated filter module
@@ -80,6 +81,7 @@ interface TaskActions {
   moveTaskToBoard: (taskId: string, targetBoardId: string) => Promise<void>;
   archiveTask: (taskId: string) => Promise<void>;
   unarchiveTask: (taskId: string) => Promise<void>;
+  autoArchiveCompletedTasks: (days: number) => Promise<number>;
 
   // Filtering and search
   applyFilters: () => Promise<void>;
@@ -245,6 +247,7 @@ export const useTaskStore = create<TaskState & TaskActions>()(
       moveTaskToBoard: createMoveTaskToBoard(get, set),
       archiveTask: createArchiveTask(get, set),
       unarchiveTask: createUnarchiveTask(get, set),
+      autoArchiveCompletedTasks: createAutoArchiveCompletedTasks(get, set),
 
       // Filter operations (from taskStore.filters.ts)
       setFilters: createSetFilters(get, set),

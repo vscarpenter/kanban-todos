@@ -193,6 +193,41 @@ export function createArchiveTask(get: GetState, set: StoreSetter) {
   };
 }
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+// Archives done tasks finished at least `days` ago in one bulk write.
+// Done tasks from older data may lack completedAt, so updatedAt stands in.
+export function createAutoArchiveCompletedTasks(get: GetState, set: StoreSetter) {
+  return async (days: number): Promise<number> => {
+    const now = new Date();
+    const cutoff = now.getTime() - days * MS_PER_DAY;
+    const toArchive = get().tasks
+      .filter(task => task.status === 'done' && !task.archivedAt)
+      .filter(task => (task.completedAt ?? task.updatedAt).getTime() <= cutoff)
+      .map(task => ({ ...task, archivedAt: now, updatedAt: now }));
+
+    if (toArchive.length === 0) return 0;
+
+    try {
+      await taskDB.upsertTasks(toArchive);
+    } catch (error: unknown) {
+      set({ error: error instanceof Error ? error.message : 'Failed to auto-archive tasks' });
+      throw error;
+    }
+
+    const archivedById = new Map(toArchive.map(task => [task.id, task]));
+    set((state) => {
+      const updatedTasks = state.tasks.map(task => archivedById.get(task.id) ?? task);
+      return {
+        tasks: updatedTasks,
+        filteredTasks: applyFiltersToTasks(updatedTasks, state.filters),
+        searchCache: new Map(),
+      };
+    });
+    return toArchive.length;
+  };
+}
+
 export function createUnarchiveTask(get: GetState, set: StoreSetter) {
   return async (taskId: string) => {
     try {
