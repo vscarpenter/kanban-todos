@@ -151,6 +151,38 @@ export class TaskDatabase {
     });
   }
 
+  /**
+   * Archives every done task finished on or before `cutoff`, in one readwrite
+   * transaction. Selecting inside the transaction (not from a store snapshot)
+   * matters: IndexedDB runs it after any edit or delete already in flight, so
+   * it never writes a stale copy over an edit or brings back a deleted task.
+   * Done tasks from older data may lack completedAt, so updatedAt stands in.
+   */
+  async archiveDoneTasksCompletedBefore(cutoff: Date, archivedAt: Date): Promise<string[]> {
+    const db = this.db;
+    if (!db) throw new Error('Database not initialized');
+
+    return new Promise((resolve, reject) => {
+      const archivedIds: string[] = [];
+      const transaction = db.transaction(['tasks'], 'readwrite');
+      transaction.onerror = () => reject(transaction.error);
+      transaction.oncomplete = () => resolve(archivedIds);
+
+      const request = transaction.objectStore('tasks').openCursor();
+      request.onsuccess = () => {
+        const cursor = request.result;
+        if (!cursor) return;
+        const task = cursor.value as Task;
+        const finishedAt = new Date(task.completedAt ?? task.updatedAt).getTime();
+        if (task.status === 'done' && !task.archivedAt && finishedAt <= cutoff.getTime()) {
+          cursor.update({ ...task, archivedAt, updatedAt: archivedAt });
+          archivedIds.push(task.id);
+        }
+        cursor.continue();
+      };
+    });
+  }
+
   async getBoards(): Promise<Board[]> {
     const db = this.db;
     if (!db) throw new Error('Database not initialized');
