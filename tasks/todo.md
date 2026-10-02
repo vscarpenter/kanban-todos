@@ -1,17 +1,16 @@
 # Resuming From Here (2026-10-02)
 
 **Done**
-- `fix/auto-archive` (fa2bdfa): `autoArchiveCompletedTasks(days)` in the task store, run by `KanbanBoard` after the stores load and when the setting changes. 12 new tests; suite 768 passed.
-- `docs/ste-guide` (stacked on the fix branch): `docs/cascade-ste-guide.html`, the Cascade System Manual in ASD-STE100. Mechanical check: 526 sentences, longest 16 words (procedural) and 21 (descriptive), no flagged words. Published as a private Artifact: https://claude.ai/artifact/9rJSSdZ7bzoccv47s188B1
+- PR #112 `fix/auto-archive`: `autoArchiveCompletedTasks(days)` in the task store, run by `KanbanBoard` after the stores load and when the setting changes (fa2bdfa). Never option stored as `autoArchiveDays = 0`, schema range 0 to 365, version 5.4.0 (53a3458). Suite 771 passed.
+- PR #113 `docs/ste-guide` (base `fix/auto-archive`): `docs/cascade-ste-guide.html`, the Cascade System Manual in ASD-STE100, updated for Never and 5.4.0. Mechanical check: 528 sentences, longest 16 words (procedural) and 21 (descriptive), no flagged words. Private Artifact: https://claude.ai/artifact/9rJSSdZ7bzoccv47s188B1
 
 **Next**
-- Push both branches and open PRs (waiting for approval). Merge the fix first; the guide describes its behavior.
-- Version bump when the fix ships.
-
-**Open question**
-- Should Settings get a "Never" option for auto-archive? Today the range is 1 to 365 days, so it cannot be turned off. Current default: no new option.
+- Merge #112 first, then retarget #113 to `main` (rebase it if #112 is squash-merged).
+- Manually check Settings > Never > Save > reload; the Radix Select has no automated test.
+- Deploy 5.4.0 after merge.
 
 **Assumptions**
+- Default stays at 30 days, so the first load after deploy archives done tasks older than 30 days (restorable).
 - Auto-archive measures from `completedAt`, falling back to `updatedAt` for older data.
 - It runs at load and on setting change only; a tab left open for days does not re-run it.
 
