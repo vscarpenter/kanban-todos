@@ -197,8 +197,10 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 // Archives done tasks finished at least `days` ago in one bulk write.
 // Done tasks from older data may lack completedAt, so updatedAt stands in.
+// A value of 0 is the "Never" setting; without this guard it would archive every done task.
 export function createAutoArchiveCompletedTasks(get: GetState, set: StoreSetter) {
   return async (days: number): Promise<number> => {
+    if (days <= 0) return 0;
     const now = new Date();
     const cutoff = now.getTime() - days * MS_PER_DAY;
     const toArchive = get().tasks

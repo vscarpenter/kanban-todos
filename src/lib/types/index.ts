@@ -45,7 +45,7 @@ export interface Board {
 
 export interface Settings {
   theme: 'light' | 'dark' | 'system';
-  autoArchiveDays: number;
+  autoArchiveDays: number; // 0 means Never
   enableNotifications: boolean;
   enableKeyboardShortcuts: boolean;
   currentBoardId?: string; // Persist current board selection

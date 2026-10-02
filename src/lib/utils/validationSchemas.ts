@@ -107,7 +107,8 @@ export const settingsSchema: ValidationSchema = {
   properties: {
     id: { type: ['string', 'undefined'] },
     theme: { type: 'string', enum: ['light', 'dark', 'system'] },
-    autoArchiveDays: { type: 'number', minimum: 1, maximum: 365 },
+    // 0 means Never (auto-archive off)
+    autoArchiveDays: { type: 'number', minimum: 0, maximum: 365 },
     enableNotifications: { type: 'boolean' },
     enableKeyboardShortcuts: { type: 'boolean' },
     currentBoardId: { type: ['string', 'undefined'] },

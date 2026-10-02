@@ -77,6 +77,7 @@ export function TaskManagementSection({ localSettings, updateLocalSetting }: Set
               <SelectItem value="30">1 month</SelectItem>
               <SelectItem value="90">3 months</SelectItem>
               <SelectItem value="365">1 year</SelectItem>
+              <SelectItem value="0">Never</SelectItem>
             </SelectContent>
           </Select>
           <p className="text-xs text-muted-foreground">

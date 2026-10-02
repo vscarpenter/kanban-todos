@@ -129,6 +129,16 @@ describe('taskStore autoArchiveCompletedTasks', () => {
     expect(taskDB.upsertTasks).not.toHaveBeenCalled();
   });
 
+  it('archives nothing when the setting is 0 (Never)', async () => {
+    useTaskStore.setState({ tasks: [makeTask({ id: 'old-done', completedAt: LONG_AGO })] });
+
+    const archivedCount = await useTaskStore.getState().autoArchiveCompletedTasks(0);
+
+    expect(archivedCount).toBe(0);
+    expect(taskById('old-done')?.archivedAt).toBeUndefined();
+    expect(taskDB.upsertTasks).not.toHaveBeenCalled();
+  });
+
   it('re-throws and leaves tasks unarchived when the database write fails', async () => {
     useTaskStore.setState({ tasks: [makeTask({ id: 'old-done', completedAt: LONG_AGO })] });
     vi.mocked(taskDB.upsertTasks).mockRejectedValueOnce(new Error('IndexedDB write failed'));

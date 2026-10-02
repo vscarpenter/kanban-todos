@@ -44,6 +44,16 @@ const validSettings: Settings = {
 
 describe('validation utilities', () => {
   describe('validateSchema', () => {
+    it('accepts 0 auto-archive days, which means Never', () => {
+      const result = validateSchema({ ...validSettings, autoArchiveDays: 0 }, settingsSchema, 'settings');
+      expect(result.isValid).toBe(true);
+    });
+
+    it('rejects negative auto-archive days', () => {
+      const result = validateSchema({ ...validSettings, autoArchiveDays: -1 }, settingsSchema, 'settings');
+      expect(result.isValid).toBe(false);
+    });
+
     it('accepts valid data matching schema', () => {
       const data = { 
         id: 'board-1',
