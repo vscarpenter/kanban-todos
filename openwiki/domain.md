@@ -47,7 +47,7 @@ integrity checks (`src/lib/utils/taskValidation.ts`), and JSON schemas
 - Task: title 1–500 chars, description ≤ 2000, tags ≤ 50 chars / ≤ 20 items, progress 0–100,
   status/priority enums.
 - Board: name 1–100, color must match `#RRGGBB`.
-- Settings: `autoArchiveDays` **1–365**, theme enum.
+- Settings: `autoArchiveDays` **0 to 365** (0 means Never), theme enum.
 - Export: `version` must match `\d+.\d+.\d+`.
 
 ### Relationship rules (`src/lib/utils/validation.ts` → `validateDataRelationships`)
@@ -78,8 +78,10 @@ are called from the CRUD action creators and board helpers.
 
 ### Auto-archive
 
-Default `autoArchiveDays = 30` (range 1–365). Completed tasks older than the threshold are eligible
-for automatic archiving; archiving sets `archivedAt` and removes the item from the active view.
+Default `autoArchiveDays = 30` (range 0 to 365; 0 means Never). `autoArchiveCompletedTasks(days)` in
+`taskStore.crudActions.ts` archives done tasks whose `completedAt` (or `updatedAt` when missing) is at
+least that many days old, in one bulk write. `KanbanBoard` runs it after the stores load and whenever the
+setting changes, and toasts the count. Archiving sets `archivedAt` and removes the item from the active view.
 
 ### Notifications (`src/lib/utils/notifications.ts`)
 

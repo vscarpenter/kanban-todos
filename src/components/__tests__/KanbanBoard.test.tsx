@@ -10,6 +10,8 @@ const mocks = vi.hoisted(() => ({
   initializeSettings: vi.fn().mockResolvedValue(undefined),
   registerCascadeTools: vi.fn().mockResolvedValue('registered'),
   unregisterCascadeTools: vi.fn(),
+  autoArchiveCompletedTasks: vi.fn().mockResolvedValue(0),
+  toastInfo: vi.fn(),
 }))
 
 // Mock all the dependencies
@@ -50,6 +52,7 @@ vi.mock('@/lib/icons', () => ({
 vi.mock('@/lib/stores/taskStore', () => ({
   useTaskStore: () => ({
     initializeStore: mocks.initializeStore,
+    autoArchiveCompletedTasks: mocks.autoArchiveCompletedTasks,
     setBoardFilter: vi.fn(),
     tasks: [],
   }),
@@ -70,11 +73,15 @@ vi.mock('@/lib/stores/settingsStore', () => ({
   useSettingsStore: (selector?: (state: Record<string, unknown>) => unknown) => {
     const state = {
       initializeSettings: mocks.initializeSettings,
-      settings: { enableNotifications: false },
+      settings: { enableNotifications: false, autoArchiveDays: 30 },
       error: null,
     }
     return selector ? selector(state) : state
   },
+}))
+
+vi.mock('sonner', () => ({
+  toast: { info: mocks.toastInfo, error: vi.fn(), success: vi.fn() },
 }))
 
 vi.mock('@/lib/webmcp', () => ({
@@ -154,5 +161,45 @@ describe('KanbanBoard', () => {
       expect(mocks.initializeBoards).toHaveBeenCalledTimes(1)
       expect(mocks.initializeStore).toHaveBeenCalledTimes(1)
     })
+  })
+
+  it('auto-archives with the configured number of days once the stores are ready', async () => {
+    render(<KanbanBoard />)
+
+    expect(mocks.autoArchiveCompletedTasks).not.toHaveBeenCalled()
+    await waitFor(() => {
+      expect(mocks.autoArchiveCompletedTasks).toHaveBeenCalledWith(30)
+    })
+  })
+
+  it('tells the user how many tasks moved to the archive', async () => {
+    mocks.autoArchiveCompletedTasks.mockResolvedValueOnce(2)
+
+    render(<KanbanBoard />)
+
+    await waitFor(() => {
+      expect(mocks.toastInfo).toHaveBeenCalledWith(expect.stringContaining('2'))
+    })
+  })
+
+  it('stays quiet when no task was old enough to archive', async () => {
+    render(<KanbanBoard />)
+
+    await waitFor(() => {
+      expect(mocks.autoArchiveCompletedTasks).toHaveBeenCalled()
+    })
+    expect(mocks.toastInfo).not.toHaveBeenCalled()
+  })
+
+  it('keeps the board running when the auto-archive write fails', async () => {
+    mocks.autoArchiveCompletedTasks.mockRejectedValueOnce(new Error('IndexedDB write failed'))
+
+    render(<KanbanBoard />)
+
+    await waitFor(() => {
+      expect(mocks.autoArchiveCompletedTasks).toHaveBeenCalled()
+    })
+    expect(screen.getByTestId('board-view')).toBeInTheDocument()
+    expect(mocks.toastInfo).not.toHaveBeenCalled()
   })
 })
