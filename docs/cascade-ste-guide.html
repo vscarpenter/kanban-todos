@@ -376,13 +376,24 @@ footer.end { margin-top: 32px; font: 400 0.8rem/1.5 var(--font-mono); color: var
   </ol>
 
   <h3 id="p37"><span class="tn">3.7</span>Share a task</h3>
+  <p>To copy the text of a task:</p>
   <ol class="steps">
     <li>Click the task options button on the card.</li>
     <li>Select <span class="ui">Share Task</span>.</li>
-    <li>Select <span class="ui">Markdown</span> or <span class="ui">Plain Text</span>.</li>
-    <li>Click <span class="ui">Copy Details</span>. Cascade puts the task text on the clipboard.</li>
+    <li>Click the <span class="ui">Copy Details</span> tab.</li>
+    <li>Find the <span class="ui">Plain Text</span> box or the <span class="ui">Markdown</span> box.</li>
+    <li>Click the copy button in the upper right corner of that box.</li>
   </ol>
-  <div class="note" data-ste="desc"><b>Note</b><p>You can also type an email address and click <span class="ui">Email</span>. Cascade then opens your email application with the task text in a new message.</p></div>
+  <div class="result" data-ste="desc"><b>Result</b><p>Cascade puts the task text on the clipboard. The icon on the copy button changes for a short time.</p></div>
+  <p>To send a task in an email:</p>
+  <ol class="steps">
+    <li>Click the task options button on the card.</li>
+    <li>Select <span class="ui">Share Task</span>.</li>
+    <li>Click the <span class="ui">Email</span> tab.</li>
+    <li>If necessary, type an email address in the <span class="ui">Recipient Email (optional)</span> field.</li>
+    <li>Click <span class="ui">Open Email Client</span>.</li>
+  </ol>
+  <div class="result" data-ste="desc"><b>Result</b><p>Cascade opens your email application with the task text in a new message.</p></div>
 
   <h3 id="p38"><span class="tn">3.8</span>Search for tasks</h3>
   <ol class="steps">
@@ -551,14 +562,15 @@ footer.end { margin-top: 32px; font: 400 0.8rem/1.5 var(--font-mono); color: var
   </ul>
   <p>If the setting is Never, auto-archive does not operate. Cascade keeps this value as 0 days.</p>
   <p>Some tasks from older data have no completion date. For these tasks, Cascade uses the date of the last change.</p>
-  <p>Cascade writes all selected tasks to the database in one transaction. Then a message shows the number of archived tasks. If the write fails, Cascade does not change the tasks, and the board shows an error message.</p>
+  <p>Cascade selects and archives the tasks in one database transaction. This transaction starts after all earlier database writes. Because of this, auto-archive does not write old data over a change that you made at the same time.</p>
+  <p>A message shows the number of archived tasks. If the write fails, Cascade does not change the tasks, and the board shows an error message.</p>
 
   <h3><span class="tn">4.7</span>Drag and drop</h3>
   <p>The drag and drop function uses the @dnd-kit library. A mouse drag starts after the pointer moves 8 pixels. A touch drag starts after a delay of approximately 0.1 seconds. This delay lets you scroll the page with your finger.</p>
 
   <h3><span class="tn">4.8</span>Notifications</h3>
   <p>The notification manager examines the tasks each 5 minutes. It sends a browser notification for each task that is due in one hour or less. It also sends a notification for each task that is late.</p>
-  <p>The manager does not send notifications for tasks in the Done column or for archived tasks. It sends only one notification for each task. You must turn on the Notifications setting and give the browser permission.</p>
+  <p>The manager does not send notifications for tasks in the Done column or for archived tasks. It sends a maximum of two notifications for each task: one when the task is due soon, and one when the task is late. You must turn on the Notifications setting and give the browser permission.</p>
 
   <h3><span class="tn">4.9</span>Security</h3>
   <ul class="plain">
