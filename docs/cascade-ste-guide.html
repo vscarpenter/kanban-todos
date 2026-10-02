@@ -201,7 +201,7 @@ footer.end { margin-top: 32px; font: 400 0.8rem/1.5 var(--font-mono); color: var
   </div>
   <dl>
     <div><dt>Application</dt><dd>Cascade, a kanban task manager (package <code>kanban-todos</code>)</dd></div>
-    <div><dt>Applies to</dt><dd>Version 5.3.1 with the auto-archive fix (commit <code>fa2bdfa</code>)</dd></div>
+    <div><dt>Applies to</dt><dd>Version 5.4.0</dd></div>
     <div><dt>Writing standard</dt><dd>ASD-STE100 Simplified Technical English</dd></div>
     <div><dt>Date</dt><dd>2026-10-02</dd></div>
   </dl>
@@ -254,7 +254,7 @@ footer.end { margin-top: 32px; font: 400 0.8rem/1.5 var(--font-mono); color: var
     <li>You can give each task a priority, a due date, tags, and a progress value.</li>
     <li>You can search the tasks on one board or on all boards.</li>
     <li>You can archive a task and restore it later.</li>
-    <li>Cascade archives tasks in the Done column after a number of days that you set.</li>
+    <li>Cascade archives tasks in the Done column after a number of days that you set. You can also set this function to Never.</li>
     <li>You can export your data to a JSON file and import the file again.</li>
     <li>You can install Cascade as an application on your device.</li>
     <li>Browser agents can read and change your tasks through WebMCP.</li>
@@ -297,7 +297,7 @@ footer.end { margin-top: 32px; font: 400 0.8rem/1.5 var(--font-mono); color: var
     <thead><tr><th scope="col">Setting</th><th scope="col">Values</th><th scope="col">Default</th></tr></thead>
     <tbody>
       <tr><td>Theme</td><td>Light, Dark, or System</td><td>System</td></tr>
-      <tr><td>Auto-archive</td><td>1 day, 1 week, 1 month, 3 months, or 1 year</td><td>1 month (30 days)</td></tr>
+      <tr><td>Auto-archive</td><td>1 day, 1 week, 1 month, 3 months, 1 year, or Never</td><td>1 month (30 days)</td></tr>
       <tr><td>Notifications</td><td>On or off</td><td>On</td></tr>
       <tr><td>Keyboard shortcuts</td><td>On or off</td><td>On</td></tr>
       <tr><td>Search scope</td><td>The current board or all boards</td><td>The current board</td></tr>
@@ -424,10 +424,10 @@ footer.end { margin-top: 32px; font: 400 0.8rem/1.5 var(--font-mono); color: var
   <ol class="steps">
     <li>In the sidebar, click <span class="ui">Settings</span>.</li>
     <li>Find <span class="ui">Auto-archive completed tasks after</span>.</li>
-    <li>Select a time: 1 day, 1 week, 1 month, 3 months, or 1 year.</li>
+    <li>Select a time: 1 day, 1 week, 1 month, 3 months, 1 year, or Never.</li>
     <li>Click <span class="ui">Save</span>.</li>
   </ol>
-  <div class="result" data-ste="desc"><b>Result</b><p>Cascade archives each task that stayed in the Done column for that time or longer. A message shows the number of tasks that Cascade archived. Section 4.6 gives more information.</p></div>
+  <div class="result" data-ste="desc"><b>Result</b><p>Cascade archives each task that stayed in the Done column for that time or longer. A message shows the number of tasks that Cascade archived. If you select Never, auto-archive does not operate. Section 4.6 gives more information.</p></div>
 
   <h3 id="p312"><span class="tn">3.12</span>Export your data</h3>
   <ol class="steps">
@@ -549,6 +549,7 @@ footer.end { margin-top: 32px; font: 400 0.8rem/1.5 var(--font-mono); color: var
     <li>The task has no archive date.</li>
     <li>The completion date is the same as the auto-archive time or older.</li>
   </ul>
+  <p>If the setting is Never, auto-archive does not operate. Cascade keeps this value as 0 days.</p>
   <p>Some tasks from older data have no completion date. For these tasks, Cascade uses the date of the last change.</p>
   <p>Cascade writes all selected tasks to the database in one transaction. Then a message shows the number of archived tasks. If the write fails, Cascade does not change the tasks, and the board shows an error message.</p>
 
@@ -615,7 +616,6 @@ footer.end { margin-top: 32px; font: 400 0.8rem/1.5 var(--font-mono); color: var
   </div>
   <ul class="plain">
     <li>Your data is in one browser only. Cascade does not copy it to other devices.</li>
-    <li>The auto-archive setting has no value that stops auto-archive. The shortest time is 1 day, and the longest time is 1 year.</li>
     <li>Auto-archive operates when Cascade starts and when you change the setting. If Cascade stays open for many days, reload the page to start auto-archive again.</li>
     <li>Cascade shows the confetti only when you drag a card into the Done column. The <span class="ui">Move to Column</span> menu does not show it.</li>
     <li>The code has a rate limit function for the search. No part of the application uses this function at this time.</li>
@@ -702,7 +702,7 @@ footer.end { margin-top: 32px; font: 400 0.8rem/1.5 var(--font-mono); color: var
 </main>
 </div>
 
-<footer class="end">Cascade System Manual &middot; Cascade 5.3.1 with auto-archive fix &middot; 2026-10-02</footer>
+<footer class="end">Cascade System Manual &middot; Cascade 5.4.0 &middot; 2026-10-02</footer>
 </div>
 
 <script>
