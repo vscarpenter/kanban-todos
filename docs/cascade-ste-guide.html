@@ -142,8 +142,9 @@ kbd { border: 1px solid var(--rule); border-bottom-width: 2px; padding: 1px 5px;
 a { color: var(--accent); }
 
 ol.steps { counter-reset: step; list-style: none; padding: 0; margin: 8px 0 14px; display: grid; gap: 8px; }
-ol.steps > li { counter-increment: step; display: grid; grid-template-columns: 2.2em minmax(0, 1fr); gap: 8px; }
-ol.steps > li::before { content: counter(step) "."; font: 600 0.9rem/1.6 var(--font-mono); color: var(--accent); }
+/* Block layout, not grid: a grid would make each text run and inline element its own cell. */
+ol.steps > li { counter-increment: step; position: relative; padding-left: 2.6em; }
+ol.steps > li::before { content: counter(step) "."; position: absolute; left: 0; top: 0.05em; font: 600 0.9rem/1.6 var(--font-mono); color: var(--accent); }
 ul.plain { margin: 8px 0 14px; padding-left: 1.2em; display: grid; gap: 6px; }
 
 .note, .result { border-left: 3px solid var(--rule); padding: 4px 0 4px 14px; margin: 10px 0 14px; }
