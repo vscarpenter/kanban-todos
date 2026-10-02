@@ -1,13 +1,15 @@
 # Resuming From Here (2026-10-02)
 
 **Done**
-- PR #112 `fix/auto-archive`: `autoArchiveCompletedTasks(days)` in the task store, run by `KanbanBoard` after the stores load and when the setting changes (fa2bdfa). Never option stored as `autoArchiveDays = 0`, schema range 0 to 365, version 5.4.0 (53a3458). Suite 771 passed.
-- PR #113 `docs/ste-guide` (base `fix/auto-archive`): `docs/cascade-ste-guide.html`, the Cascade System Manual in ASD-STE100, updated for Never and 5.4.0. Mechanical check: 528 sentences, longest 16 words (procedural) and 21 (descriptive), no flagged words. Private Artifact: https://claude.ai/artifact/9rJSSdZ7bzoccv47s188B1
+- PR #112 (merged as 4790ce3): auto-archive works, Never option stored as `autoArchiveDays = 0`, schema range 0 to 365, version 5.4.0.
+- PR #115 `fix/auto-archive-race` (open): the database picks and archives tasks in one readwrite transaction (`archiveDoneTasksCompletedBefore`), so an in-flight edit or delete is never overwritten; `void` on two start-up promises for SonarCloud. Suite 773 passed.
+- PR #113 `docs/ste-guide` (base `main`): `docs/cascade-ste-guide.html`, the Cascade System Manual in ASD-STE100, with the review fixes to 3.7, 4.6, and 4.8. Mechanical check: 538 sentences, longest 16 words (procedural) and 24 (descriptive), no flagged words. Private Artifact: https://claude.ai/artifact/9rJSSdZ7bzoccv47s188B1
 
 **Next**
-- Merge #112 first, then retarget #113 to `main` (rebase it if #112 is squash-merged).
+- Merge #115 before #113; section 4.6 of the manual describes the #115 behavior.
 - Manually check Settings > Never > Save > reload; the Radix Select has no automated test.
-- Deploy 5.4.0 after merge.
+- Deploy 5.4.0 after #115 merges.
+- Share dialog copy buttons are icon-only with no accessible label (not fixed; outside these PRs).
 
 **Assumptions**
 - Default stays at 30 days, so the first load after deploy archives done tasks older than 30 days (restorable).
