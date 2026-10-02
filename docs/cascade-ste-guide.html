@@ -1,0 +1,743 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cascade System Manual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..800&family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Layout: a maintenance-manual page. Identification block on top, a sticky
+   section index on the left, numbered sections on the right. */
+:root {
+  --paper: #eef1f0;
+  --sheet: #fbfcfc;
+  --ink: #17211e;
+  --muted: #55625d;
+  --rule: #c7d0cc;
+  --accent: #2547b8;
+  --accent-soft: #e3e9fb;
+  --caution: #8a5200;
+  --caution-bg: #fff2d4;
+  --over: #b42318;
+  --font-display: "Archivo", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --font-body: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", Verdana, sans-serif;
+  --font-mono: "Atkinson Hyperlegible Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --step: 1.25;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0e1412; --sheet: #151d1a; --ink: #dce4e0; --muted: #94a39d; --rule: #2b3632;
+    --accent: #93a9ff; --accent-soft: #1d2747; --caution: #f1b44c; --caution-bg: #2a2111; --over: #ff8a7a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0e1412; --sheet: #151d1a; --ink: #dce4e0; --muted: #94a39d; --rule: #2b3632;
+  --accent: #93a9ff; --accent-soft: #1d2747; --caution: #f1b44c; --caution-bg: #2a2111; --over: #ff8a7a;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 1rem/1.6 var(--font-body);
+  padding-inline: 16px;
+  padding-block: 24px 64px;
+}
+.wrap { max-width: 1120px; margin-inline: auto; }
+
+/* Identification block */
+.ident {
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-top: 6px solid var(--accent);
+  padding: 20px 24px 22px;
+  display: grid;
+  gap: 18px;
+}
+.ident .eyebrow {
+  font: 600 0.75rem/1 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+h1 {
+  font-family: var(--font-display);
+  font-stretch: 72%;
+  font-weight: 800;
+  font-size: clamp(2.2rem, 6vw, 3.6rem);
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  margin: 6px 0 0;
+  text-wrap: balance;
+}
+.ident dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0;
+  margin: 0;
+  border-top: 1px solid var(--rule);
+}
+.ident dl div { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--rule); min-width: 0; }
+.ident dt { font: 600 0.7rem/1.2 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.ident dd { margin: 4px 0 0; font-size: 0.95rem; overflow-wrap: anywhere; }
+.ident .tools { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.toggle {
+  font: 600 0.8rem/1 var(--font-mono);
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  padding: 9px 12px;
+  cursor: pointer;
+}
+.toggle[aria-pressed="true"] { background: var(--accent); color: var(--sheet); }
+.toggle:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.tools small { color: var(--muted); font-size: 0.85rem; }
+
+/* Body grid */
+.layout { display: grid; gap: 32px; margin-top: 32px; }
+@media (min-width: 960px) { .layout { grid-template-columns: 220px minmax(0, 1fr); } }
+nav.index { font: 400 0.85rem/1.45 var(--font-mono); }
+@media (min-width: 960px) {
+  nav.index { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); align-self: start; max-height: calc(100vh - 32px); overflow-y: auto; }
+}
+nav.index h2 { font: 600 0.7rem/1 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+nav.index ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+nav.index a { display: grid; grid-template-columns: 2.6em 1fr; color: var(--ink); text-decoration: none; padding: 4px 6px; border-left: 2px solid transparent; }
+nav.index a:hover { border-left-color: var(--accent); background: var(--accent-soft); }
+nav.index a span:first-child { color: var(--muted); }
+
+main { min-width: 0; display: grid; gap: 28px; }
+section.sec { background: var(--sheet); border: 1px solid var(--rule); padding: 22px 24px 26px; min-width: 0; }
+@media (max-width: 520px) { section.sec, .ident { padding-inline: 16px; } }
+.sec-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; border-bottom: 2px solid var(--ink); padding-bottom: 8px; margin-bottom: 14px; }
+.sec-head .num { font: 600 0.85rem/1 var(--font-mono); color: var(--accent); }
+.sec-head h2 {
+  font-family: var(--font-display); font-stretch: 78%; font-weight: 750;
+  font-size: calc(1rem * var(--step) * var(--step) * var(--step));
+  line-height: 1.05; text-transform: uppercase; margin: 0; flex: 1 1 auto; text-wrap: balance;
+}
+.kind { font: 600 0.68rem/1 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; border: 1px solid currentColor; padding: 4px 6px; color: var(--muted); }
+.kind.proc { color: var(--accent); }
+h3 {
+  font-family: var(--font-display); font-stretch: 85%; font-weight: 700;
+  font-size: calc(1rem * var(--step)); line-height: 1.2; margin: 26px 0 8px; text-wrap: balance;
+}
+h3 .tn { font: 600 0.8rem/1 var(--font-mono); color: var(--muted); margin-right: 8px; letter-spacing: 0.02em; }
+p, li { max-width: 68ch; }
+p { margin: 0 0 12px; }
+code, kbd { font-family: var(--font-mono); font-size: 0.88em; }
+code { background: var(--accent-soft); padding: 1px 4px; overflow-wrap: anywhere; }
+kbd { border: 1px solid var(--rule); border-bottom-width: 2px; padding: 1px 5px; background: var(--paper); white-space: nowrap; }
+.ui { font-weight: 700; }
+a { color: var(--accent); }
+
+ol.steps { counter-reset: step; list-style: none; padding: 0; margin: 8px 0 14px; display: grid; gap: 8px; }
+ol.steps > li { counter-increment: step; display: grid; grid-template-columns: 2.2em minmax(0, 1fr); gap: 8px; }
+ol.steps > li::before { content: counter(step) "."; font: 600 0.9rem/1.6 var(--font-mono); color: var(--accent); }
+ul.plain { margin: 8px 0 14px; padding-left: 1.2em; display: grid; gap: 6px; }
+
+.note, .result { border-left: 3px solid var(--rule); padding: 4px 0 4px 14px; margin: 10px 0 14px; }
+.result { border-left-color: var(--accent); }
+.note > b, .result > b { font: 600 0.72rem/1 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; display: block; margin-bottom: 6px; color: var(--muted); }
+.note p:last-child, .result p:last-child { margin-bottom: 0; }
+
+.caution { border: 2px solid var(--caution); background: var(--caution-bg); padding: 12px 16px; margin: 12px 0 16px; max-width: 72ch; }
+.caution > b { display: block; text-align: center; font: 800 0.95rem/1 var(--font-display); font-stretch: 90%; letter-spacing: 0.18em; color: var(--caution); margin-bottom: 8px; }
+.caution p { margin: 0 0 6px; font-weight: 700; }
+.caution p:last-child { margin: 0; }
+
+.table-wrap { overflow-x: auto; margin: 10px 0 16px; border: 1px solid var(--rule); }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+caption { text-align: left; font: 600 0.75rem/1.3 var(--font-mono); letter-spacing: 0.06em; color: var(--muted); padding: 8px 10px; caption-side: top; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-top: 1px solid var(--rule); }
+th { font: 600 0.72rem/1.3 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); background: var(--paper); }
+td:first-child { white-space: nowrap; font-weight: 700; }
+td.mono, td .mono { font-family: var(--font-mono); font-size: 0.85rem; }
+.num-cell { font-variant-numeric: tabular-nums; }
+
+/* Data flow: each stage is a row, joined by a vertical line */
+ol.flow { list-style: none; margin: 12px 0 16px; padding: 0; display: grid; gap: 0; max-width: 72ch; }
+ol.flow li { display: grid; grid-template-columns: minmax(0, 9.5rem) minmax(0, 1fr); gap: 14px; position: relative; padding: 10px 0 10px; }
+ol.flow li + li { border-top: 1px dashed var(--rule); }
+ol.flow .who { font: 600 0.78rem/1.3 var(--font-mono); color: var(--accent); background: var(--accent-soft); border: 1px solid var(--accent); padding: 6px 8px; align-self: start; overflow-wrap: anywhere; }
+ol.flow p { margin: 4px 0 0; }
+@media (max-width: 480px) { ol.flow li { grid-template-columns: minmax(0, 1fr); gap: 6px; } }
+
+/* Sentence-length check, off by default */
+.ste-on [data-wc]::after {
+  content: attr(data-wc);
+  display: inline-block;
+  margin-left: 8px;
+  font: 600 0.68rem/1 var(--font-mono);
+  color: var(--muted);
+  border: 1px solid var(--rule);
+  padding: 3px 5px;
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+.ste-on [data-over]::after { color: var(--over); border-color: var(--over); }
+
+footer.end { margin-top: 32px; font: 400 0.8rem/1.5 var(--font-mono); color: var(--muted); text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="ident">
+  <div>
+    <div class="eyebrow">System manual &middot; Simplified Technical English</div>
+    <h1>Cascade System Manual</h1>
+  </div>
+  <dl>
+    <div><dt>Application</dt><dd>Cascade, a kanban task manager (package <code>kanban-todos</code>)</dd></div>
+    <div><dt>Applies to</dt><dd>Version 5.3.1 with the auto-archive fix (commit <code>fa2bdfa</code>)</dd></div>
+    <div><dt>Writing standard</dt><dd>ASD-STE100 Simplified Technical English</dd></div>
+    <div><dt>Date</dt><dd>2026-10-02</dd></div>
+  </dl>
+  <div class="tools">
+    <button class="toggle" id="ste-toggle" type="button" aria-pressed="false">Show sentence lengths</button>
+    <small>Each paragraph shows the word count of its longest sentence and the limit for that type of text.</small>
+  </div>
+</header>
+
+<div class="layout">
+<nav class="index" aria-label="Sections">
+  <h2>Index</h2>
+  <ol>
+    <li><a href="#s0"><span>0</span><span>About this manual</span></a></li>
+    <li><a href="#s1"><span>1</span><span>General description</span></a></li>
+    <li><a href="#s2"><span>2</span><span>Data that Cascade keeps</span></a></li>
+    <li><a href="#s3"><span>3</span><span>Procedures</span></a></li>
+    <li><a href="#s4"><span>4</span><span>How Cascade operates</span></a></li>
+    <li><a href="#s5"><span>5</span><span>Known limits</span></a></li>
+    <li><a href="#sa"><span>A</span><span>Technical words</span></a></li>
+    <li><a href="#sb"><span>B</span><span>STE rules</span></a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section class="sec" id="s0" data-ste="desc">
+  <div class="sec-head"><span class="num">SECTION 0</span><h2>About this manual</h2><span class="kind">Descriptive</span></div>
+  <p>This manual tells you what Cascade does and how it operates.</p>
+  <p>Section 1 gives a general description of the application. Section 2 gives the data that the application keeps. Section 3 gives the procedures that you use to operate the application. Section 4 describes the parts of the application and how they operate together. Section 5 gives the known limits.</p>
+  <p>The text of this manual follows the rules of ASD-STE100 Simplified Technical English (STE). STE is a controlled language for technical text. It has a dictionary of approved words and a set of rules for writers. Each approved word has only one meaning. The rules keep sentences short and clear.</p>
+  <p>Some words in this manual are not in the STE dictionary. These words are technical names and technical verbs for software. Appendix A gives these words. Appendix B gives the rules and how this manual uses them.</p>
+</section>
+
+<section class="sec" id="s1" data-ste="desc">
+  <div class="sec-head"><span class="num">SECTION 1</span><h2>General description</h2><span class="kind">Descriptive</span></div>
+
+  <h3><span class="tn">1.1</span>Purpose</h3>
+  <p>Cascade is a kanban task manager. It operates in a web browser. You use it to record tasks and to see the status of each task.</p>
+  <p>A board shows your tasks in three columns: To Do, In Progress, and Done. Each task is a card in one of these columns. When the status of a task changes, you move its card to a different column.</p>
+
+  <h3><span class="tn">1.2</span>Location of your data</h3>
+  <p>Cascade keeps all of your data in your browser, on your device. It does not send your tasks, boards, or settings to a server. It does not use accounts.</p>
+  <p>A different browser or a different device does not show your data. To move your data, make an export file and import it in the other browser. Refer to procedures 3.12 and 3.13.</p>
+
+  <h3><span class="tn">1.3</span>Main functions</h3>
+  <ul class="plain">
+    <li>You can make more than one board. Each board has a name, a color, and an icon.</li>
+    <li>You can create, edit, move, share, and delete tasks.</li>
+    <li>You can give each task a priority, a due date, tags, and a progress value.</li>
+    <li>You can search the tasks on one board or on all boards.</li>
+    <li>You can archive a task and restore it later.</li>
+    <li>Cascade archives tasks in the Done column after a number of days that you set.</li>
+    <li>You can export your data to a JSON file and import the file again.</li>
+    <li>You can install Cascade as an application on your device.</li>
+    <li>Browser agents can read and change your tasks through WebMCP.</li>
+  </ul>
+</section>
+
+<section class="sec" id="s2" data-ste="desc">
+  <div class="sec-head"><span class="num">SECTION 2</span><h2>Data that Cascade keeps</h2><span class="kind">Descriptive</span></div>
+  <p>Cascade keeps three types of records: tasks, boards, and settings. The tables that follow give the fields of each record and their limits. When a text is longer than its limit, Cascade cuts the text to the limit.</p>
+
+  <div class="table-wrap"><table>
+    <caption>TABLE 2-1. Fields of a task</caption>
+    <thead><tr><th scope="col">Field</th><th scope="col">Values and limits</th></tr></thead>
+    <tbody>
+      <tr><td>Title</td><td>Necessary. Maximum 200 characters.</td></tr>
+      <tr><td>Description</td><td>Not necessary. Maximum 1000 characters.</td></tr>
+      <tr><td>Status</td><td>To Do, In Progress, or Done. The status sets the column of the card.</td></tr>
+      <tr><td>Priority</td><td>Low, Medium, or High.</td></tr>
+      <tr><td>Due date</td><td>Not necessary. A date and a time.</td></tr>
+      <tr><td>Tags</td><td>Maximum 10 tags. Maximum 50 characters for each tag.</td></tr>
+      <tr><td>Progress</td><td>0 to 100 percent. Cascade uses this value only for tasks in the In Progress column.</td></tr>
+      <tr><td>Completion date</td><td>Cascade records this date when the task goes into the Done column.</td></tr>
+      <tr><td>Archive date</td><td>Cascade records this date when the task goes into the archive.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="table-wrap"><table>
+    <caption>TABLE 2-2. Fields of a board</caption>
+    <thead><tr><th scope="col">Field</th><th scope="col">Values and limits</th></tr></thead>
+    <tbody>
+      <tr><td>Name</td><td>Necessary. Maximum 100 characters.</td></tr>
+      <tr><td>Description</td><td>Not necessary. Maximum 500 characters.</td></tr>
+      <tr><td>Color and icon</td><td>The color dot and the icon in the list of boards.</td></tr>
+      <tr><td>Order</td><td>The position of the board in the list of boards.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="table-wrap"><table>
+    <caption>TABLE 2-3. Settings</caption>
+    <thead><tr><th scope="col">Setting</th><th scope="col">Values</th><th scope="col">Default</th></tr></thead>
+    <tbody>
+      <tr><td>Theme</td><td>Light, Dark, or System</td><td>System</td></tr>
+      <tr><td>Auto-archive</td><td>1 day, 1 week, 1 month, 3 months, or 1 year</td><td>1 month (30 days)</td></tr>
+      <tr><td>Notifications</td><td>On or off</td><td>On</td></tr>
+      <tr><td>Keyboard shortcuts</td><td>On or off</td><td>On</td></tr>
+      <tr><td>Search scope</td><td>The current board or all boards</td><td>The current board</td></tr>
+      <tr><td>Accessibility</td><td>High contrast, reduce motion, and font size</td><td>Off, off, medium</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>If no board exists, Cascade makes a board with the name Work Tasks. This board has a blue color and a briefcase icon.</p>
+</section>
+
+<section class="sec" id="s3" data-ste="proc">
+  <div class="sec-head"><span class="num">SECTION 3</span><h2>Procedures</h2><span class="kind proc">Procedural</span></div>
+  <div class="note" data-ste="desc"><b>Note</b><p>In these procedures, the sidebar is the panel on the left side of the board. The task options button is the button with three dots on a card.</p></div>
+
+  <h3 id="p31"><span class="tn">3.1</span>Open Cascade for the first time</h3>
+  <ol class="steps">
+    <li>Open <code>https://cascade.vinny.dev</code> in your web browser.</li>
+    <li>Read the About page. Cascade shows this page only on your first visit.</li>
+    <li>Click <span class="ui">Open Cascade</span>.</li>
+  </ol>
+  <div class="result" data-ste="desc"><b>Result</b><p>Cascade shows the board. On the first visit, Cascade makes the Work Tasks board.</p></div>
+
+  <h3 id="p32"><span class="tn">3.2</span>Make a board</h3>
+  <ol class="steps">
+    <li>In the sidebar, click <span class="ui">Add board</span> (+) next to <span class="ui">Boards</span>.</li>
+    <li>Type a name in the <span class="ui">Board Name</span> field.</li>
+    <li>If necessary, type a description.</li>
+    <li>Select an icon and a color.</li>
+    <li>Click <span class="ui">Create Board</span>.</li>
+  </ol>
+
+  <h3 id="p33"><span class="tn">3.3</span>Create a task</h3>
+  <ol class="steps">
+    <li>Push the <kbd>N</kbd> key. As an alternative, push <kbd>Ctrl</kbd>+<kbd>K</kbd> (Windows and Linux) or <kbd>Cmd</kbd>+<kbd>K</kbd> (macOS).</li>
+    <li>Type a title in the first field.</li>
+    <li>If necessary, type a description.</li>
+    <li>If necessary, select a priority.</li>
+    <li>If necessary, set a due date.</li>
+    <li>If necessary, type tags. Put a comma between two tags.</li>
+    <li>Click <span class="ui">Create Task</span>.</li>
+  </ol>
+  <div class="note" data-ste="desc"><b>Note</b><p>You can also click <span class="ui">Add task</span> (+) at the top of a column. Then the new task goes into that column.</p></div>
+
+  <h3 id="p34"><span class="tn">3.4</span>Move a task to a different column</h3>
+  <p>To move a card with a mouse:</p>
+  <ol class="steps">
+    <li>Drag the card to the new column.</li>
+  </ol>
+  <p>To move a card on a touch screen:</p>
+  <ol class="steps">
+    <li>Touch and hold the card for a short time.</li>
+    <li>Move your finger to the new column.</li>
+  </ol>
+  <p>To move a card with the menu:</p>
+  <ol class="steps">
+    <li>Click the task options button on the card.</li>
+    <li>Select <span class="ui">Move to Column</span>.</li>
+    <li>Select <span class="ui">To Do</span>, <span class="ui">In Progress</span>, or <span class="ui">Done</span>.</li>
+  </ol>
+  <div class="note" data-ste="desc"><b>Note</b><p>When you drag a card into the Done column, Cascade shows confetti and a message. If Reduce motion is on, Cascade does not show the confetti.</p></div>
+
+  <h3 id="p35"><span class="tn">3.5</span>Edit a task</h3>
+  <ol class="steps">
+    <li>Click the task options button on the card.</li>
+    <li>Select <span class="ui">Edit Task</span>.</li>
+    <li>Change the fields.</li>
+    <li>Click <span class="ui">Update Task</span>.</li>
+  </ol>
+
+  <h3 id="p36"><span class="tn">3.6</span>Move a task to a different board</h3>
+  <ol class="steps">
+    <li>Click the task options button on the card.</li>
+    <li>Select <span class="ui">Move to Board</span>.</li>
+    <li>Select the destination board.</li>
+    <li>Click <span class="ui">Confirm Move</span>.</li>
+  </ol>
+
+  <h3 id="p37"><span class="tn">3.7</span>Share a task</h3>
+  <ol class="steps">
+    <li>Click the task options button on the card.</li>
+    <li>Select <span class="ui">Share Task</span>.</li>
+    <li>Select <span class="ui">Markdown</span> or <span class="ui">Plain Text</span>.</li>
+    <li>Click <span class="ui">Copy Details</span>. Cascade puts the task text on the clipboard.</li>
+  </ol>
+  <div class="note" data-ste="desc"><b>Note</b><p>You can also type an email address and click <span class="ui">Email</span>. Cascade then opens your email application with the task text in a new message.</p></div>
+
+  <h3 id="p38"><span class="tn">3.8</span>Search for tasks</h3>
+  <ol class="steps">
+    <li>Type one or more words in the search field at the top of the board.</li>
+    <li>To search all boards, click <span class="ui">Filter</span>.</li>
+    <li>Set <span class="ui">Search all boards</span> to on.</li>
+    <li>To show only one status or one priority, select it in the <span class="ui">Filter</span> panel.</li>
+  </ol>
+  <div class="result" data-ste="desc"><b>Result</b><p>Cascade shows the tasks that contain all of the words. It searches the title, the description, and the tags. Upper case and lower case letters are the same for the search.</p></div>
+
+  <h3 id="p39"><span class="tn">3.9</span>Archive a task and restore it</h3>
+  <p>To archive a task:</p>
+  <ol class="steps">
+    <li>Click the task options button on the card.</li>
+    <li>Select <span class="ui">Archive</span>.</li>
+  </ol>
+  <p>To restore an archived task:</p>
+  <ol class="steps">
+    <li>In the sidebar, click <span class="ui">Archive</span>.</li>
+    <li>Find the task. If necessary, type a word from its title in the search field.</li>
+    <li>Click <span class="ui">Restore task</span> next to the task.</li>
+  </ol>
+  <div class="result" data-ste="desc"><b>Result</b><p>The task goes back to its board and its column.</p></div>
+
+  <h3 id="p310"><span class="tn">3.10</span>Delete a task</h3>
+  <div class="caution" role="note">
+    <b>CAUTION</b>
+    <p>Make sure that you select the correct task.</p>
+    <p>You cannot restore a task after you delete it.</p>
+  </div>
+  <ol class="steps">
+    <li>Click the task options button on the card.</li>
+    <li>Select <span class="ui">Delete</span>.</li>
+    <li>Click <span class="ui">Delete Task</span>.</li>
+  </ol>
+  <div class="note" data-ste="desc"><b>Note</b><p>To delete an archived task, open the Archive dialog. Then click <span class="ui">Delete permanently</span> next to the task.</p></div>
+
+  <h3 id="p311"><span class="tn">3.11</span>Set the auto-archive time</h3>
+  <ol class="steps">
+    <li>In the sidebar, click <span class="ui">Settings</span>.</li>
+    <li>Find <span class="ui">Auto-archive completed tasks after</span>.</li>
+    <li>Select a time: 1 day, 1 week, 1 month, 3 months, or 1 year.</li>
+    <li>Click <span class="ui">Save</span>.</li>
+  </ol>
+  <div class="result" data-ste="desc"><b>Result</b><p>Cascade archives each task that stayed in the Done column for that time or longer. A message shows the number of tasks that Cascade archived. Section 4.6 gives more information.</p></div>
+
+  <h3 id="p312"><span class="tn">3.12</span>Export your data</h3>
+  <ol class="steps">
+    <li>In the sidebar, click <span class="ui">Export Data</span>.</li>
+    <li>Select the data to export: <span class="ui">Tasks</span>, <span class="ui">Boards</span>, and <span class="ui">Settings</span>.</li>
+    <li>If necessary, select <span class="ui">Include archived tasks</span> and <span class="ui">Include archived boards</span>.</li>
+    <li>Click <span class="ui">Export Data</span>.</li>
+  </ol>
+  <div class="result" data-ste="desc"><b>Result</b><p>Your browser downloads a JSON file. Keep this file in a safe location. It is your backup copy.</p></div>
+
+  <h3 id="p313"><span class="tn">3.13</span>Import data</h3>
+  <ol class="steps">
+    <li>In the sidebar, click <span class="ui">Import Data</span>.</li>
+    <li>Select a JSON file that Cascade exported. The maximum file size is 10 MB.</li>
+    <li>Examine the data in the preview.</li>
+    <li>If Cascade shows conflicts, select an option for each type of conflict.</li>
+    <li>Click <span class="ui">Start Import</span>.</li>
+  </ol>
+  <div class="note" data-ste="desc"><b>Note</b><p>A conflict occurs when the file has a task or a board that is already in Cascade. Section 4.10 gives the conflict options.</p></div>
+
+  <h3 id="p314"><span class="tn">3.14</span>Reset the application</h3>
+  <div class="caution" role="note">
+    <b>CAUTION</b>
+    <p>Export your data before you reset the application.</p>
+    <p>The reset deletes all boards, tasks, and settings in this browser. You cannot undo the reset.</p>
+  </div>
+  <ol class="steps">
+    <li>In the sidebar, click <span class="ui">Settings</span>.</li>
+    <li>Click <span class="ui">Advanced</span>.</li>
+    <li>In the <span class="ui">Danger Zone</span> area, click <span class="ui">Reset Application</span>.</li>
+    <li>Click <span class="ui">Continue to reset</span>.</li>
+    <li>Click <span class="ui">Reset Everything</span>.</li>
+  </ol>
+  <div class="result" data-ste="desc"><b>Result</b><p>Cascade deletes its database, local storage, session storage, and cookies. Then it loads the page again.</p></div>
+
+  <h3 id="p315"><span class="tn">3.15</span>Use the keyboard shortcuts</h3>
+  <div class="table-wrap"><table>
+    <caption>TABLE 3-1. Keyboard shortcuts (on macOS, use Cmd in place of Ctrl)</caption>
+    <thead><tr><th scope="col">Keys</th><th scope="col">Function</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>N</kbd></td><td>Create a task.</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>K</kbd></td><td>Create a task.</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>1</kbd> to <kbd>9</kbd></td><td>Go to board 1 to board 9.</td></tr>
+      <tr><td><kbd>H</kbd></td><td>Show the list of keyboard shortcuts.</td></tr>
+      <tr><td><kbd>F1</kbd></td><td>Show the user guide.</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>,</kbd></td><td>Open the settings.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note" data-ste="desc"><b>Note</b><p>The shortcuts do not operate when the cursor is in a text field.</p></div>
+</section>
+
+<section class="sec" id="s4" data-ste="desc">
+  <div class="sec-head"><span class="num">SECTION 4</span><h2>How Cascade operates</h2><span class="kind">Descriptive</span></div>
+
+  <h3><span class="tn">4.1</span>Main parts</h3>
+  <p>Cascade has no server code. All parts of the application operate in the browser.</p>
+  <div class="table-wrap"><table>
+    <caption>TABLE 4-1. Main parts of the application</caption>
+    <thead><tr><th scope="col">Part</th><th scope="col">Function</th></tr></thead>
+    <tbody>
+      <tr><td>Static files</td><td>Next.js makes HTML, JavaScript, and CSS files. A host sends these files to the browser.</td></tr>
+      <tr><td>React components</td><td>Show the board, the sidebar, and the dialogs.</td></tr>
+      <tr><td>Task store</td><td>Keeps the tasks, the filters, and the search cache in memory.</td></tr>
+      <tr><td>Board store</td><td>Keeps the boards and the selected board in memory.</td></tr>
+      <tr><td>Settings store</td><td>Keeps the settings. Only this store writes the settings.</td></tr>
+      <tr><td>TaskDatabase</td><td>Reads and writes the records in IndexedDB.</td></tr>
+      <tr><td>Service worker</td><td>Keeps copies of the pages. If the device has no network connection, it gives the copy.</td></tr>
+      <tr><td>WebMCP tools</td><td>Give eight tools to browser agents.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3><span class="tn">4.2</span>Start sequence</h3>
+  <ol class="steps">
+    <li>The browser gets the static files from the host.</li>
+    <li>The root layout starts the theme, the notification manager, the install message, the update monitor, and the toast messages.</li>
+    <li>The home page reads a visit flag from local storage. If the flag is not there, the page goes to the About page.</li>
+    <li>The board component starts the three stores at the same time.</li>
+    <li>The task store opens the database and reads all tasks. It changes the dates from text back into Date objects.</li>
+    <li>The board store reads the boards. If no board exists, it makes the Work Tasks board. Then it selects the board that you used last.</li>
+    <li>The settings store reads the settings. It adds the default value for each field that is not there.</li>
+    <li>When the three stores are ready, the board shows. Then Cascade registers the WebMCP tools and starts auto-archive.</li>
+  </ol>
+
+  <h3><span class="tn">4.3</span>Path of one change</h3>
+  <p>Each change to a task or a board goes through the same path. A change from a browser agent also goes through this path.</p>
+  <ol class="flow" aria-label="Path of one change">
+    <li><span class="who">You</span><p>You click, drag, or type.</p></li>
+    <li><span class="who">Component</span><p>The component calls a store action, for example <code>addTask</code>.</p></li>
+    <li><span class="who">Store action</span><p>The action removes HTML from the text and cuts the text to the limits.</p></li>
+    <li><span class="who">TaskDatabase</span><p>The database class writes the record to IndexedDB.</p></li>
+    <li><span class="who">Store</span><p>The store changes its state, applies the filters again, and clears the search cache.</p></li>
+    <li><span class="who">React</span><p>The components that use the changed state show the new data.</p></li>
+  </ol>
+  <p>The store changes its state only after the database write is complete. This makes sure that the screen does not show data that the database did not save. If the write fails, the store records an error, and a toast message shows the error.</p>
+
+  <h3><span class="tn">4.4</span>Storage</h3>
+  <p>Cascade uses one IndexedDB database with the name <code>cascade-tasks</code>. The database version is 1.</p>
+  <div class="table-wrap"><table>
+    <caption>TABLE 4-2. Object stores</caption>
+    <thead><tr><th scope="col">Object store</th><th scope="col">Key</th><th scope="col">Indexes</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">tasks</td><td class="mono">id</td><td class="mono">boardId, status, archivedAt, dueDate</td></tr>
+      <tr><td class="mono">boards</td><td class="mono">id</td><td class="mono">isDefault, order</td></tr>
+      <tr><td class="mono">settings</td><td class="mono">id</td><td>None</td></tr>
+    </tbody>
+  </table></div>
+  <p>An archived task stays in the <code>tasks</code> object store. Its <code>archivedAt</code> field has a date. The board does not show tasks that have this date.</p>
+  <p>If Cascade is open in more than one tab, a database upgrade in one tab can stop the other tabs. Cascade then tells you to close the other tabs.</p>
+
+  <h3><span class="tn">4.5</span>Search and filters</h3>
+  <p>Cascade applies the filters in this sequence: board, status, priority, tags, date range, and text. The text search is last because it uses the most time.</p>
+  <p>Cascade keeps search results in a cache for 5 minutes. The cache holds a maximum of 50 results. Cascade does not keep a result with 1000 tasks or more. Each change to a task clears the cache.</p>
+  <p>A search on all boards does not show tasks on archived boards.</p>
+
+  <h3><span class="tn">4.6</span>Auto-archive</h3>
+  <p>Cascade examines the tasks when the three stores are ready. It also examines them when you change the auto-archive setting. It selects a task if all of these conditions are true:</p>
+  <ul class="plain">
+    <li>The task is in the Done column.</li>
+    <li>The task has no archive date.</li>
+    <li>The completion date is the same as the auto-archive time or older.</li>
+  </ul>
+  <p>Some tasks from older data have no completion date. For these tasks, Cascade uses the date of the last change.</p>
+  <p>Cascade writes all selected tasks to the database in one transaction. Then a message shows the number of archived tasks. If the write fails, Cascade does not change the tasks, and the board shows an error message.</p>
+
+  <h3><span class="tn">4.7</span>Drag and drop</h3>
+  <p>The drag and drop function uses the @dnd-kit library. A mouse drag starts after the pointer moves 8 pixels. A touch drag starts after a delay of approximately 0.1 seconds. This delay lets you scroll the page with your finger.</p>
+
+  <h3><span class="tn">4.8</span>Notifications</h3>
+  <p>The notification manager examines the tasks each 5 minutes. It sends a browser notification for each task that is due in one hour or less. It also sends a notification for each task that is late.</p>
+  <p>The manager does not send notifications for tasks in the Done column or for archived tasks. It sends only one notification for each task. You must turn on the Notifications setting and give the browser permission.</p>
+
+  <h3><span class="tn">4.9</span>Security</h3>
+  <ul class="plain">
+    <li>React shows all user text as text. It does not use user text as HTML.</li>
+    <li>The host sends Content Security Policy headers with each page.</li>
+    <li>Before Cascade saves a task or a board, it removes HTML tags and angle brackets from the text.</li>
+    <li>Cascade also removes characters that it does not accept, and it cuts the text to the limits in Section 2.</li>
+    <li>Cascade imports only <code>.json</code> files of 10 MB or less. It examines the structure of each file before the import.</li>
+    <li>Cascade does not import a file from a newer major version of the export format.</li>
+  </ul>
+
+  <h3><span class="tn">4.10</span>Import conflicts</h3>
+  <p>Before an import, Cascade compares the file with the data in the browser. It finds these conflicts:</p>
+  <ul class="plain">
+    <li>A task or a board in the file has the same ID as a task or a board in Cascade.</li>
+    <li>A board in the file has the same name as a board in Cascade.</li>
+    <li>The file has a default board, and Cascade also has a default board.</li>
+    <li>A task in the file refers to a board that does not exist.</li>
+  </ul>
+  <p>For each conflict, you can skip the item, overwrite the item, merge the data, or give the item a new ID. When two boards have the same name, Cascade can add "(Copy)" or "(Copy 2)" to the name of the imported board.</p>
+
+  <h3><span class="tn">4.11</span>Updates and offline use</h3>
+  <p>The service worker <code>sw.js</code> gets each page from the network first. If the device has no network connection, it gives the copy from its cache.</p>
+  <p>When the host has a new version, a toast message tells you. The version indicator shows the version number, the build time, and the commit hash.</p>
+
+  <h3><span class="tn">4.12</span>Browser agents (WebMCP)</h3>
+  <p>Cascade registers eight tools on <code>document.modelContext</code>. If that object is not there, Cascade uses <code>navigator.modelContext</code>. If these two objects are not there, Cascade writes one line to the console and operates as before.</p>
+  <div class="table-wrap"><table>
+    <caption>TABLE 4-3. WebMCP tools</caption>
+    <thead><tr><th scope="col">Tool</th><th scope="col">Function</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">cascade_list_boards</td><td>Gives the list of boards.</td></tr>
+      <tr><td class="mono">cascade_get_board</td><td>Gives one board.</td></tr>
+      <tr><td class="mono">cascade_list_tasks</td><td>Gives the list of tasks.</td></tr>
+      <tr><td class="mono">cascade_get_task</td><td>Gives one task.</td></tr>
+      <tr><td class="mono">cascade_create_task</td><td>Creates a task.</td></tr>
+      <tr><td class="mono">cascade_update_task</td><td>Changes the fields of a task.</td></tr>
+      <tr><td class="mono">cascade_move_task</td><td>Moves a task to a different column or board.</td></tr>
+      <tr><td class="mono">cascade_delete_task</td><td>Deletes a task.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Each tool examines its input and then calls a store action. As a result, an agent change goes through the path in 4.3. The read tools tell the agent that the task text can come from an unknown source. The delete tool tells the agent that its result is permanent.</p>
+
+  <h3><span class="tn">4.13</span>Deployment</h3>
+  <p>The build makes a static export in the <code>out</code> folder. The deploy script copies these files to an Amazon S3 bucket. Amazon CloudFront sends the files to the browsers.</p>
+  <p>The browser does not keep a cached copy of the HTML files. The browser keeps the other files for one year. Next.js gives the JavaScript and CSS files new names in each build. Because of this, the browser gets the new files after each deployment.</p>
+</section>
+
+<section class="sec" id="s5" data-ste="desc">
+  <div class="sec-head"><span class="num">SECTION 5</span><h2>Known limits</h2><span class="kind">Descriptive</span></div>
+  <div class="caution" role="note" data-ste="proc">
+    <b>CAUTION</b>
+    <p>Export your data at regular intervals.</p>
+    <p>If you clear the data of your browser, you delete all of your tasks and boards.</p>
+  </div>
+  <ul class="plain">
+    <li>Your data is in one browser only. Cascade does not copy it to other devices.</li>
+    <li>The auto-archive setting has no value that stops auto-archive. The shortest time is 1 day, and the longest time is 1 year.</li>
+    <li>Auto-archive operates when Cascade starts and when you change the setting. If Cascade stays open for many days, reload the page to start auto-archive again.</li>
+    <li>Cascade shows the confetti only when you drag a card into the Done column. The <span class="ui">Move to Column</span> menu does not show it.</li>
+    <li>The code has a rate limit function for the search. No part of the application uses this function at this time.</li>
+  </ul>
+</section>
+
+<section class="sec" id="sa" data-ste="desc">
+  <div class="sec-head"><span class="num">APPENDIX A</span><h2>Technical words</h2><span class="kind">Descriptive</span></div>
+  <p>STE lets a writer use technical names and technical verbs that are not in its dictionary. This manual uses the words in the tables that follow.</p>
+  <div class="table-wrap"><table>
+    <caption>TABLE A-1. Technical names</caption>
+    <thead><tr><th scope="col">Name</th><th scope="col">Meaning in this manual</th></tr></thead>
+    <tbody>
+      <tr><td>Board</td><td>A set of tasks in three columns.</td></tr>
+      <tr><td>Card</td><td>The shape on a board that shows one task.</td></tr>
+      <tr><td>Column</td><td>One of the three status areas on a board: To Do, In Progress, or Done.</td></tr>
+      <tr><td>Tag</td><td>A short word that you attach to a task.</td></tr>
+      <tr><td>Archive</td><td>The area that keeps tasks that the board does not show.</td></tr>
+      <tr><td>Setting</td><td>A value that you can change in the Settings dialog.</td></tr>
+      <tr><td>Default</td><td>The value that Cascade uses if you do not set a value.</td></tr>
+      <tr><td>Field</td><td>One item of data in a record, or one text box in a dialog.</td></tr>
+      <tr><td>Toast message</td><td>A short message that shows at the edge of the screen for a short time.</td></tr>
+      <tr><td>Store</td><td>A Zustand object that keeps the state of the application in memory.</td></tr>
+      <tr><td>IndexedDB</td><td>The database in the browser that keeps the records.</td></tr>
+      <tr><td>Object store</td><td>One table in IndexedDB.</td></tr>
+      <tr><td>Cache</td><td>A temporary copy of data that Cascade can read quickly.</td></tr>
+      <tr><td>Service worker</td><td>A script in the browser that controls network requests for the pages.</td></tr>
+      <tr><td>WebMCP</td><td>A browser API that lets AI agents use tools on a web page.</td></tr>
+      <tr><td>Browser agent</td><td>An AI program that operates a web page for a person.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="table-wrap"><table>
+    <caption>TABLE A-2. Technical verbs (computer processes)</caption>
+    <thead><tr><th scope="col">Verb</th><th scope="col">Meaning in this manual</th></tr></thead>
+    <tbody>
+      <tr><td>Archive</td><td>Put a task in the archive.</td></tr>
+      <tr><td>Call</td><td>Start a function in the code.</td></tr>
+      <tr><td>Click</td><td>Push and release a mouse button on an item.</td></tr>
+      <tr><td>Create</td><td>Make a new task.</td></tr>
+      <tr><td>Delete</td><td>Remove data so that you cannot get it back.</td></tr>
+      <tr><td>Download</td><td>Copy a file from the browser to your device.</td></tr>
+      <tr><td>Drag</td><td>Move an item with the mouse button or your finger held down.</td></tr>
+      <tr><td>Edit</td><td>Change the text or the values of a task.</td></tr>
+      <tr><td>Export</td><td>Write data to a file.</td></tr>
+      <tr><td>Import</td><td>Read data from a file into Cascade.</td></tr>
+      <tr><td>Install</td><td>Add Cascade to your device as an application.</td></tr>
+      <tr><td>Merge</td><td>Combine the fields of two records into one record.</td></tr>
+      <tr><td>Overwrite</td><td>Replace a record with a different record.</td></tr>
+      <tr><td>Register</td><td>Give a tool to the browser so that agents can find it.</td></tr>
+      <tr><td>Reload</td><td>Load the page again.</td></tr>
+      <tr><td>Restore</td><td>Move a task from the archive back to its board.</td></tr>
+      <tr><td>Save</td><td>Write data to the database.</td></tr>
+      <tr><td>Scroll</td><td>Move the contents of the screen up or down.</td></tr>
+      <tr><td>Search</td><td>Find the tasks that contain a word.</td></tr>
+      <tr><td>Share</td><td>Copy or send the text of a task.</td></tr>
+      <tr><td>Skip</td><td>Do not import an item.</td></tr>
+      <tr><td>Type</td><td>Put text into a field with the keyboard.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="sec" id="sb" data-ste="desc">
+  <div class="sec-head"><span class="num">APPENDIX B</span><h2>STE rules</h2><span class="kind">Descriptive</span></div>
+  <p>The table gives the STE rules that this manual uses. The <span class="ui">Show sentence lengths</span> button at the top of the page counts the words for rules 2 and 3.</p>
+  <div class="table-wrap"><table>
+    <caption>TABLE B-1. STE rules in this manual</caption>
+    <thead><tr><th scope="col">Rule</th><th scope="col">How this manual applies the rule</th></tr></thead>
+    <tbody>
+      <tr><td class="num-cell">1</td><td>Use approved words with their approved meaning. Appendix A gives the other words.</td></tr>
+      <tr><td class="num-cell">2</td><td>A procedural sentence has a maximum of 20 words.</td></tr>
+      <tr><td class="num-cell">3</td><td>A descriptive sentence has a maximum of 25 words.</td></tr>
+      <tr><td class="num-cell">4</td><td>A paragraph has a maximum of six sentences and one topic.</td></tr>
+      <tr><td class="num-cell">5</td><td>An instruction uses the command form. Each sentence has one instruction.</td></tr>
+      <tr><td class="num-cell">6</td><td>The text uses the active voice and the simple tenses.</td></tr>
+      <tr><td class="num-cell">7</td><td>The text does not use the -ing form of verbs. Technical names are the only exception.</td></tr>
+      <tr><td class="num-cell">8</td><td>A noun cluster has a maximum of three words.</td></tr>
+      <tr><td class="num-cell">9</td><td>The text does not remove articles such as "a" and "the" to make sentences shorter.</td></tr>
+      <tr><td class="num-cell">10</td><td>A safety instruction starts with a clear command. A caution tells you about a risk of damage to data. This manual has no warnings, because no procedure can cause an injury.</td></tr>
+      <tr><td class="num-cell">11</td><td>Steps in a sequence are in a numbered list.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+</main>
+</div>
+
+<footer class="end">Cascade System Manual &middot; Cascade 5.3.1 with auto-archive fix &middot; 2026-10-02</footer>
+</div>
+
+<script>
+(function () {
+  var LIMITS = { proc: 20, desc: 25 };
+  var root = document.documentElement;
+  var button = document.getElementById("ste-toggle");
+
+  function wordCount(sentence) {
+    return sentence.split(/\s+/).filter(function (token) { return /[A-Za-z0-9]/.test(token); }).length;
+  }
+
+  function longestSentence(text) {
+    var sentences = text.replace(/\s+/g, " ").trim().split(/(?<=[.!?:])\s+(?=[A-Z0-9"(])/);
+    return Math.max.apply(null, sentences.map(wordCount));
+  }
+
+  function measure() {
+    document.querySelectorAll("main p, main li").forEach(function (el) {
+      var zone = el.closest("[data-ste]");
+      if (!zone) return;
+      var limit = LIMITS[zone.getAttribute("data-ste")];
+      var longest = longestSentence(el.textContent);
+      el.setAttribute("data-wc", longest + " / " + limit);
+      if (longest > limit) el.setAttribute("data-over", "");
+    });
+  }
+
+  measure();
+  button.addEventListener("click", function () {
+    var on = button.getAttribute("aria-pressed") !== "true";
+    button.setAttribute("aria-pressed", String(on));
+    button.textContent = on ? "Hide sentence lengths" : "Show sentence lengths";
+    document.body.classList.toggle("ste-on", on);
+  });
+})();
+</script>
+</body>
+</html>
