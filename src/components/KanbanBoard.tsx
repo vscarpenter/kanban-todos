@@ -71,7 +71,7 @@ export function KanbanBoard() {
       }
     };
 
-    initializeStores();
+    void initializeStores();
   }, [initializeStore, initializeBoards, initializeSettings]);
 
   // Expose the board to browser agents (WebMCP) once the data layer is
@@ -123,7 +123,7 @@ export function KanbanBoard() {
   useEffect(() => {
     if (!settings.enableNotifications) return;
 
-    initNotifications();
+    void initNotifications();
 
     return () => {
       notificationManager.stopPeriodicCheck();
