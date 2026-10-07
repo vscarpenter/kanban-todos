@@ -38,7 +38,14 @@ test.describe('PWA Features', () => {
     await boot(page);
 
     await expect(page.getByText(/Update available/i)).toHaveCount(0);
-    await expect(page.getByRole('status')).toHaveCount(0);
+    // The sidebar footer always renders the WebMCP indicator as a status
+    // region, and the board keeps an empty screen-reader announcer. Any other
+    // status region with text is a banner, so the page should have none.
+    const banners = page
+      .getByRole('status')
+      .filter({ hasNotText: /Agent tools/ })
+      .filter({ hasText: /\S/ });
+    await expect(banners).toHaveCount(0);
   });
 
   test('manifest.json is served with expected PWA metadata', async ({ request }) => {
