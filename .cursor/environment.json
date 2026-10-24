@@ -1,0 +1,6 @@
+{
+  "name": "Cascade (kanban-todos)",
+  "install": "bash .cursor/install.sh",
+  "start": "exec bun run dev",
+  "ports": [3000]
+}
